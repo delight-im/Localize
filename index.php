@@ -1082,15 +1082,19 @@ elseif (isset($_GET['project'])) {
 									if ($isDefaultLanguage) {
 										echo '<td style="width:0.1em"><input type="checkbox" '.($referencePhrase->isEnabled() ? ' checked="checked"' : '').'name="enablePhrase[]" value="'.$currentPhraseKey.'" /></td>';
                                         echo '<td>'.htmlspecialchars($referencePhrase->getIdentCode());
-                                        if ($referencePhrase->getPosition() != '') {
-                                            echo ' &rarr; '.htmlspecialchars($referencePhrase->getPosition());
+                                        if ($referencePhrase->getType() == 'plurals' && $referencePhrase->getPosition() != '') {
+                                            echo '<span class="inline_comment">'.htmlspecialchars($referencePhrase->getPosition()).'</span>';
                                         }
                                         echo '</td>';
 									}
 									else {
 										echo '<td style="width:0.1em"><a href="#phrase_'.$currentPhraseKey.'"><img src="/_images/link.png" alt="[L]" title="'.htmlspecialchars($referencePhrase->getIdentCode()).'" width="16" /></a></td>';
                                         $referenceIsRTL = isRTL($getProject3['default_language']);
-                                        echo '<td dir="'.($referenceIsRTL ? 'rtl' : 'ltr').'">'.nl2br(htmlspecialchars($referencePhrase->getPhrase())).'</td>';
+                                        echo '<td dir="'.($referenceIsRTL ? 'rtl' : 'ltr').'">'.nl2br(htmlspecialchars($referencePhrase->getPhrase()));
+                                        if ($referencePhrase->getType() == 'plurals' && $referencePhrase->getPosition() != '') {
+                                            echo '<span class="inline_comment">'.htmlspecialchars($referencePhrase->getPosition()).'</span>';
+                                        }
+                                        echo '</td>';
 									}
                                     $languageIsRTL = isRTL($languageCode);
 									if (stripos($referencePhrase->getPhrase(), "\n") !== FALSE || mb_strlen($referencePhrase->getPhrase()) >= 100) {

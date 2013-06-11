@@ -392,3 +392,11 @@ div.progressBar {
 .clickable {
     cursor: pointer;
 }
+span.inline_comment {
+    float: right;
+    display: inline-block;
+    background: transparent url(/_images/comment.png) scroll no-repeat left center;
+    margin: 0 4px;
+    padding-left: 17px;
+    color: #999;
+}
