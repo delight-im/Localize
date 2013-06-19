@@ -551,6 +551,21 @@ function isDeveloper() {
     return isset($_SESSION['userType']) && $_SESSION['userType'] == 'developer';
 }
 
+/**
+ * Recursively deletes a directory and its content
+ */
+function rrmdir($dir) { 
+    foreach(glob($dir.'/*') as $file) { // loop through child elements
+        if (is_dir($file)) {
+            rrmdir($file); // delete directories in this directory
+        }
+        else {
+            unlink($file); // delete files in this directory
+        }
+    }
+    rmdir($dir); // delete this directory itself
+}
+
 // AJAX DELETE PHRSASE BEGIN
 if (isset($_GET['project']) && isset($_GET['deleteID'])) {
 	$deleteID = intval(secure2id(trim($_GET['deleteID'])));
@@ -595,8 +610,10 @@ if (isset($_GET['project']) && isset($_POST['exportDoStart'])) {
 	if ($_SESSION['userID'] == $projectOwner) {
         $xmlFilename = isset($_POST['exportFilename']) ? trim($_POST['exportFilename']) : 'strings';
         if (preg_match('/^[a-z0-9_]+$/i', $xmlFilename)) {
-            $xmlSavePath = OUTPUT_DIR.'/'.id2short($projectID).'/'.time().'/';
-            if (mkdir($xmlSavePath, 0777, true)) { // if output folder has successfully been created
+			$xmlSaveDirectory = OUTPUT_DIR.'/'.id2short($projectID);
+			rrmdir($xmlSaveDirectory); // delete all old output files in the own directory first
+            $xmlSavePath = $xmlSaveDirectory.'/'.time().'/';
+            if (mkdir($xmlSavePath, 0755, true)) { // if output folder has successfully been created
                 foreach (array_keys($languages) as $language_key) {
                     $out = '<?xml version="1.0" encoding="utf-8"?>'."\n";
                     $out .= '<resources>'."\n";
@@ -658,7 +675,7 @@ if (isset($_GET['project']) && isset($_POST['exportDoStart'])) {
                         $tagToClose = '';
                     }
                     $out .= '</resources>';
-                    if (mkdir($xmlSavePath.$language_key.'/', 0777, true)) {
+                    if (mkdir($xmlSavePath.$language_key.'/', 0755, true)) {
                         if (file_put_contents($xmlSavePath.$language_key.'/'.$xmlFilename.'.xml', $out)) {
                             $export_success = true;
                         }
