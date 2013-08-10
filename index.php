@@ -1,23 +1,6 @@
 <?php
 
-// CONFIGURATION (PLASE ADJUST THIS TO YOUR SETTINGS) BEGIN
-define('PROJECT_TITLE', 'Example'); // short name of your translation platform
-define('PAGE_TITLE', 'Collaborative Android Project Translation'); // HTML page title for your translation platform
-define('PAGE_DESCRIPTION', 'Free web tool for collaborative translation of Android projects.'); // meta description for your translation platform
-define('PAGE_KEYWORDS', 'translation,localization,crowdsourcing,software,android,apps,internationalization,language'); // meta keywords for your translation platform
-define('BASE_PATH', 'http://example.org/'); // path that is used for absolute URLs (must end with a slash)
-define('MAX_FILESIZE', 1024*1024*1.5); // maximum size for file uploads (XML files)
-define('TMP_DIR', '/var/tmp');
-define('OUTPUT_DIR', '/var/www/vhosts/example.org/httpdocs/_output');
-define('HASH_SALT_1', '839453845'); // first arbitrary value that is used as a salt value for hashing (may not be changed later)
-define('HASH_SALT_2', '123983589'); // second arbitrary value that is used as a salt value for hashing (may not be changed later)
-define('LANDING_HTML_DEFAULT', "''Welcome to our translation pages!''\n\n\nWe would be glad if you could help us to translate this application to new languages and improve existing translations. Thank you so much!\n\n''Get started:''\n\n* [".BASE_PATH." ".PROJECT_TITLE."]\n* [".BASE_PATH."_demo Demo]\n\nIf you have any questions, feel free to ask us."); // default text for custom landing pages that is displayed to the user as an example
-define('SUPPORT_EMAIL', 'info@example.org'); // email address that is displayed so that users may contact you for help
-define('FOOTER_HTML', '<p><a href="'.BASE_PATH.'">'.PROJECT_TITLE.'</a> &middot; <a href="http://developer.android.com/guide/topics/resources/localization.html">Android&trade;</a></p>'); // HTML text that is displayed at the bottom of your translation platform page
-define('DEMO_USER_ID', 1); // requests from this user ID will not result in any real actions and can be used to showcase the platform
-date_default_timezone_set('Europe/Berlin'); // your default timezone
-include '/var/www/vhosts/example.org/database.php'; // file that establishes MySQL database connection
-// CONFIGURATION (PLASE ADJUST THIS TO YOUR SETTINGS) END
+include 'config.php';
 
 // DEFINITIONS (DO NOT CHANGE) BEGIN
 header('Expires: Mon, 24 Mar 2008 00:00:00 GMT'); // to prevent caching
@@ -29,7 +12,16 @@ define('STATUS_VISIBILITY_SIGNIN', 2);
 define('STATUS_VISIBILITY_APPLY', 3);
 define('STATUS_VISIBILITY_APPLICATION_SENT', 4);
 define('STATUS_VISIBILITY_REJECTED', 5);
+define('DEMO_USER_ID', 3); // requests from this user ID will not result in any real actions and can be used to showcase the platform
 // DEFINITIONS (DO NOT CHANGE) END
+
+// OPTIONAL CUSTOM ERROR HANDLER THAT SAVES PHP ERRORS TO THE DATABASE BEGIN
+error_reporting(E_ALL);
+function my_error_handler($error, $description, $file, $line) {
+	mysql_query("INSERT INTO php_fehler (datei, zeile, beschreibung, zeit) VALUES ('".mysql_real_escape_string($file)." (".intval($error).")', '".mysql_real_escape_string($line)."', '".mysql_real_escape_string($description)."', ".time().")");
+}
+set_error_handler('my_error_handler');
+// OPTIONAL CUSTOM ERROR HANDLER THAT SAVES PHP ERRORS TO THE DATABASE BEGIN
 
 /**
  * Decodes a phrase from XML-encoded input to plain text output
@@ -610,8 +602,8 @@ if (isset($_GET['project']) && isset($_POST['exportDoStart'])) {
 	if ($_SESSION['userID'] == $projectOwner) {
         $xmlFilename = isset($_POST['exportFilename']) ? trim($_POST['exportFilename']) : 'strings';
         if (preg_match('/^[a-z0-9_]+$/i', $xmlFilename)) {
-			$xmlSaveDirectory = OUTPUT_DIR.'/'.id2short($projectID);
-			rrmdir($xmlSaveDirectory); // delete all old output files in the own directory first
+            $xmlSaveDirectory = OUTPUT_DIR.'/'.id2short($projectID);
+            rrmdir($xmlSaveDirectory); // delete all old output files in the own directory first
             $xmlSavePath = $xmlSaveDirectory.'/'.time().'/';
             if (mkdir($xmlSavePath, 0755, true)) { // if output folder has successfully been created
                 foreach (array_keys($languages) as $language_key) {
@@ -777,10 +769,8 @@ header('content-type: text/html; charset=utf-8');
         else { // logged-in user
             echo '<li><a href="/">Home</a></li>';
             echo '<li><a href="mailto:'.SUPPORT_EMAIL.'">Feedback</a></li>';
-            if (isDeveloper()) {
-                echo '<li><a href="https://github.com/marcow/Localize">Open Source</a></li>';
-            }
         }
+        echo '<li><a href="https://github.com/marcow/Localize">Open Source</a></li>';
         ?>
 	</ul>
 	<div class="clear"></div>
@@ -843,7 +833,13 @@ elseif ($login_message != '') {
 }
 // APPLICATION FOR INVITE END
 
-if (isset($_GET['demo'])) {
+if (isset($_GET['contact'])) {
+	echo '<div class="contentBox">';
+	echo '<h1>Contact</h1>';
+	echo '<p><img src="/_contact.png" alt="Contact" width="300" /></p>';
+	echo '</div>';
+}
+elseif (isset($_GET['demo'])) {
 	echo '<div class="contentBox">';
 	echo '<h1>Demo</h1>';
 	if ($_SESSION['userID'] == -1) {
@@ -1068,18 +1064,21 @@ elseif (isset($_GET['project'])) {
 							}
 							$referenceLanguage = array();
 							$editingLanguage = array();
-							$lang1 = "SELECT id, ident_code, position, type, phrase, enabled FROM translations WHERE project = '".$projectID."' AND language = '".mysql_real_escape_string($getProject3['default_language'])."'";
+
+                            $lang1 = "SELECT id, ident_code, position, type, phrase, enabled FROM translations WHERE project = '".$projectID."' AND language = '".mysql_real_escape_string($getProject3['default_language'])."'";
 							$lang2 = mysql_query($lang1);
 							while ($lang3 = mysql_fetch_assoc($lang2)) {
 								$newTrans = new Translation($lang3['id'], $lang3['ident_code'], $lang3['position'], $lang3['type'], $lang3['phrase'], $lang3['enabled']);
-								$referenceLanguage[$newTrans->getKey()] = $newTrans;
+                                $referenceLanguage[$newTrans->getKey()] = $newTrans;
 							}
+
 							$lang1 = "SELECT id, ident_code, position, type, phrase FROM translations WHERE project = '".$projectID."' AND language = '".$languageCode."'";
 							$lang2 = mysql_query($lang1);
 							while ($lang3 = mysql_fetch_assoc($lang2)) {
 								$newTrans = new Translation($lang3['id'], $lang3['ident_code'], $lang3['position'], $lang3['type'], $lang3['phrase'], 1);
 								$editingLanguage[$newTrans->getKey()] = $newTrans;
 							}
+
 							if (count($referenceLanguage) > 0) {
 								echo '<form action="/'.id2short($projectID).'/'.cleanName($getProject3['name']).'/'.$languageCode.'" method="post" accept-charset="utf-8">';
 								echo '<fieldset><input type="submit" name="doSave" value="Save changes" style="margin-left:0.8em;" onclick="return confirm(\'Are you sure you want to submit all changes on this page?\');" /> <input type="submit" name="doMarkProblems" value="Mark possible problems" style="margin-left:0.8em;" onclick="markPossibleProblems(); alert(\'Long paragraphs without line breaks and extremely long words are now marked in orange.\'); return false;" /></fieldset>';
@@ -1091,41 +1090,49 @@ elseif (isset($_GET['project'])) {
                                 }
 								echo '</tr>';
 								echo '</thead><tbody>';
+                                $out = '';
 								foreach ($referenceLanguage as $referencePhrase) {
 									if (!$referencePhrase->isEnabled() && !$isDefaultLanguage) { continue; }
 									$currentPhraseKey = id2short($referencePhrase->getID());
 									$textFieldContent = isset($_SESSION['edits'][$projectID][$languageCode][$currentPhraseKey]) ? $_SESSION['edits'][$projectID][$languageCode][$currentPhraseKey] : (isset($editingLanguage[$referencePhrase->getKey()]) ? $editingLanguage[$referencePhrase->getKey()]->getPhrase() : '');
-									echo '<tr id="phrase_'.$currentPhraseKey.'"'.(($isDefaultLanguage && !$referencePhrase->isEnabled()) ? ' class="disabledPhrase"' : (phraseContainsProblem($textFieldContent) ? ' class="problemPhrase"' : '')).'>';
+									$rowHTML = '<tr id="phrase_'.$currentPhraseKey.'"'.(($isDefaultLanguage && !$referencePhrase->isEnabled()) ? ' class="disabledPhrase"' : (phraseContainsProblem($textFieldContent) ? ' class="problemPhrase"' : '')).'>';
 									if ($isDefaultLanguage) {
-										echo '<td style="width:0.1em"><input type="checkbox" '.($referencePhrase->isEnabled() ? ' checked="checked"' : '').'name="enablePhrase[]" value="'.$currentPhraseKey.'" /></td>';
-                                        echo '<td>'.htmlspecialchars($referencePhrase->getIdentCode());
+										$rowHTML .= '<td style="width:0.1em"><input type="checkbox" '.($referencePhrase->isEnabled() ? ' checked="checked"' : '').'name="enablePhrase[]" value="'.$currentPhraseKey.'" /></td>';
+                                        $rowHTML .= '<td>'.htmlspecialchars($referencePhrase->getIdentCode());
                                         if ($referencePhrase->getType() == 'plurals' && $referencePhrase->getPosition() != '') {
-                                            echo '<span class="inline_comment">'.htmlspecialchars($referencePhrase->getPosition()).'</span>';
+                                            $rowHTML .= '<span class="inline_comment">'.htmlspecialchars($referencePhrase->getPosition()).'</span>';
                                         }
-                                        echo '</td>';
+                                        $rowHTML .= '</td>';
 									}
 									else {
-										echo '<td style="width:0.1em"><a href="#phrase_'.$currentPhraseKey.'"><img src="/_images/link.png" alt="[L]" title="'.htmlspecialchars($referencePhrase->getIdentCode()).'" width="16" /></a></td>';
+										$rowHTML .= '<td style="width:0.1em"><a href="#phrase_'.$currentPhraseKey.'"><img src="/_images/link.png" alt="[L]" title="'.htmlspecialchars($referencePhrase->getIdentCode()).'" width="16" /></a></td>';
                                         $referenceIsRTL = isRTL($getProject3['default_language']);
-                                        echo '<td dir="'.($referenceIsRTL ? 'rtl' : 'ltr').'">'.nl2br(htmlspecialchars($referencePhrase->getPhrase()));
+                                        $rowHTML .= '<td dir="'.($referenceIsRTL ? 'rtl' : 'ltr').'">'.nl2br(htmlspecialchars($referencePhrase->getPhrase()));
                                         if ($referencePhrase->getType() == 'plurals' && $referencePhrase->getPosition() != '') {
-                                            echo '<span class="inline_comment">'.htmlspecialchars($referencePhrase->getPosition()).'</span>';
+                                            $rowHTML .= '<span class="inline_comment">'.htmlspecialchars($referencePhrase->getPosition()).'</span>';
                                         }
-                                        echo '</td>';
+                                        $rowHTML .= '</td>';
 									}
                                     $languageIsRTL = isRTL($languageCode);
 									if (stripos($referencePhrase->getPhrase(), "\n") !== FALSE || mb_strlen($referencePhrase->getPhrase()) >= 100) {
-										echo '<td><textarea name="edits['.$currentPhraseKey.']" style="height:'.round(mb_strlen($referencePhrase->getPhrase())/100*5.25).'em;" dir="'.($languageIsRTL ? 'rtl' : 'ltr').'">'.htmlspecialchars($textFieldContent).'</textarea>';
+										$rowHTML .= '<td><textarea name="edits['.$currentPhraseKey.']" style="height:'.round(mb_strlen($referencePhrase->getPhrase())/100*5.25).'em;" dir="'.($languageIsRTL ? 'rtl' : 'ltr').'">'.htmlspecialchars($textFieldContent).'</textarea>';
 									}
 									else {
-										echo '<td><input type="text" name="edits['.$currentPhraseKey.']" value="'.htmlspecialchars($textFieldContent).'" dir="'.($languageIsRTL ? 'rtl' : 'ltr').'" />';
+										$rowHTML .= '<td><input type="text" name="edits['.$currentPhraseKey.']" value="'.htmlspecialchars($textFieldContent).'" dir="'.($languageIsRTL ? 'rtl' : 'ltr').'" />';
 									}
-									echo '<input type="hidden" name="previous['.$currentPhraseKey.']" value="'.htmlspecialchars($textFieldContent).'" /></td>';
+									$rowHTML .= '<input type="hidden" name="previous['.$currentPhraseKey.']" value="'.htmlspecialchars($textFieldContent).'" /></td>';
                                     if ($isDefaultLanguage) {
-                                        echo '<td style="width:0.1em"><a href="#" onclick="deletePhrase(\''.BASE_PATH.'\', \''.id2short($projectID).'\', \''.$currentPhraseKey.'\', this.parentNode.parentNode); return false;"><img src="/_images/delete.png" alt="[D]" title="Delete this phrase" width="16" /></a></td>';
+                                        $rowHTML .= '<td style="width:0.1em"><a href="#" onclick="deletePhrase(\''.BASE_PATH.'\', \''.id2short($projectID).'\', \''.$currentPhraseKey.'\', this.parentNode.parentNode); return false;"><img src="/_images/delete.png" alt="[D]" title="Delete this phrase" width="16" /></a></td>';
                                     }
-									echo '</tr>';
+									$rowHTML .= '</tr>';
+                                    if (!isset($editingLanguage[$referencePhrase->getKey()]) || $editingLanguage[$referencePhrase->getKey()]->getPhrase() == '') { // translation is not available yet in editing language
+                                        $out = $rowHTML.$out; // append row at the beginning
+                                    }
+                                    else { // translation has already been added to editing language
+                                        $out .= $rowHTML; // append row at the end
+                                    }
 								}
+                                echo $out;
 								echo '</tbody></table>';
 								echo '<fieldset><input type="submit" name="doSave" value="Save changes" style="margin-left:0.8em;" onclick="return confirm(\'Are you sure you want to submit all changes on this page?\');" /> <input type="submit" name="doMarkProblems" value="Mark possible problems" style="margin-left:0.8em;" onclick="markPossibleProblems(); alert(\'Long paragraphs without line breaks and extremely long words are now marked in orange.\'); return false;" /></fieldset>';
 								echo '</form>';

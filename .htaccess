@@ -1,6 +1,6 @@
 RewriteEngine On
-RewriteCond %{HTTP_HOST} !^localize\.li$ [NC]
-RewriteRule ^(.*)$ http://localize.li/$1 [L,R=301]
+RewriteCond %{HTTP_HOST} !^www\.localize\.li$ [NC]
+RewriteRule ^(.*)$ http://www.localize.li/$1 [L,R=301]
 RewriteRule ^([a-zA-Z0-9]+)/([^/]+)$ index.php?project=$1
 RewriteRule ^([a-zA-Z0-9]+)/([^/]+)/translate$ index.php?project=$1&doTranslate=1
 RewriteRule ^([a-zA-Z0-9]+)/([^/]+)/([^/]+)$ index.php?project=$1&languageCode=$3
@@ -9,3 +9,5 @@ RewriteRule ^([a-zA-Z0-9]+)/_invite/([a-zA-Z0-9]+)/([a-zA-Z0-9]+)$ index.php?pro
 RewriteRule ^([a-zA-Z0-9]+)/_reject/([a-zA-Z0-9]+)/([a-zA-Z0-9]+)$ index.php?project=$1&inviteUser=$2&inviteMode=0&inviteHash=$3
 RewriteRule ^_demo$ index.php?demo=1
 RewriteRule ^_logout/([^/]+)$ index.php?logout=$1
+RewriteRule ^_contact$ index.php?contact=1
+RewriteRule ^_contact\.png$ contact.php
