@@ -1,5 +1,4 @@
-Localize
-========
+# Localize
 
 **Android Localization Platform for Collaborative Translation of Applications**
 
@@ -11,8 +10,7 @@ Hopefully, this will speed-up the development and localization process for you, 
 
 **Live Demo:** www.localize.li
 
-Features
-------
+## Features
 
 + Easily set up project folders and manage your translations online
 + Import existing translation XML files from your Android projects
@@ -28,18 +26,15 @@ Features
 + 100% free and without restrictions
 + Open Source
 
-Contributing
-------
+## Contributing
 
 Every contribution is warmly welcomed. Please fork this repository, apply your changes, and submit your contributions by sending a pull request.
 
-Third-party libraries
-------
+## Third-party libraries
 
 + jQuery by the jQuery Foundation and other contributors (MIT License)
 
-License
-========
+## License
 
 ```
 	Copyright 2013 delight.im
