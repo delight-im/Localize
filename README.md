@@ -28,21 +28,6 @@ Features
 + 100% free and without restrictions
 + Open Source
 
-Requirements
-------
-
-+ PHP
-+ MySQL
-+ mod_rewrite
-
-Installation
-------
-
-+ Upload all files to a public directory on your webserver
-+ Import the file `database.sql` into your MySQL database
-+ Edit the first 20 lines of file `index.php` and update it with your own configuration
-+ Make the directory `_output` writable to the PHP user
-
 Contributing
 ------
 
