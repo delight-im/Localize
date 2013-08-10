@@ -36,7 +36,7 @@ Every contribution is warmly welcomed. Please fork this repository, apply your c
 Third-party libraries
 ------
 
-+ jQuery by the jQuery Foundation and other contributors (MIT License: https://github.com/jquery/jquery/blob/master/MIT-LICENSE.txt)
++ jQuery by the jQuery Foundation and other contributors (MIT License)
 
 License
 ========
