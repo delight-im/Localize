@@ -981,10 +981,10 @@ elseif (isset($_GET['project'])) {
 							echo '<table class="p50">';
                             $referenceIsRTL = isRTL($getProject3['default_language']);
                             $languageIsRTL = isRTL($languageCode);
-							echo '<tr style="font-weight:bold;"><td>'.$languages[$getProject3['default_language']].'</td><td dir="'.($referenceIsRTL ? 'rtl' : 'ltr').'">'.htmlspecialchars($getPending3['defaultPhrase']).'</td></tr>';
-							echo '<tr><td>'.$languages[$languageCode].' &mdash; Old</td><td dir="'.($languageIsRTL ? 'rtl' : 'ltr').'">'.htmlspecialchars($sameLanguageOriginal).'</td></tr>';
-							echo '<tr><td>Applied changes</td><td dir="'.($languageIsRTL ? 'rtl' : 'ltr').'">'.htmlDiff(htmlspecialchars($sameLanguageOriginal), htmlspecialchars($getPending3['pendingPhrase'])).'</td></tr>';
-							echo '<tr style="font-weight:bold;"><td dir="'.($languageIsRTL ? 'rtl' : 'ltr').'">'.$languages[$languageCode].' &mdash; New</td><td>'.htmlspecialchars($getPending3['pendingPhrase']).'</td></tr>';
+							echo '<tr style="font-weight:bold;"><td>'.$languages[$getProject3['default_language']].'</td><td dir="'.($referenceIsRTL ? 'rtl' : 'ltr').'">'.nl2br(htmlspecialchars($getPending3['defaultPhrase'])).'</td></tr>';
+							echo '<tr><td>'.$languages[$languageCode].' &mdash; Old</td><td dir="'.($languageIsRTL ? 'rtl' : 'ltr').'">'.nl2br(htmlspecialchars($sameLanguageOriginal)).'</td></tr>';
+							echo '<tr><td>Applied changes</td><td dir="'.($languageIsRTL ? 'rtl' : 'ltr').'">'.nl2br(htmlDiff(htmlspecialchars($sameLanguageOriginal), htmlspecialchars($getPending3['pendingPhrase']))).'</td></tr>';
+							echo '<tr style="font-weight:bold;"><td dir="'.($languageIsRTL ? 'rtl' : 'ltr').'">'.$languages[$languageCode].' &mdash; New</td><td>'.nl2br(htmlspecialchars($getPending3['pendingPhrase'])).'</td></tr>';
 							echo '</table>';
 							echo '<p style="margin:0; padding:0;">&nbsp;</p>'; // bottom-margin of table does not work otherwise (unknown why)
 							$getPendingCount1 = "SELECT COUNT(*) FROM translations_pending AS a JOIN translations AS b ON a.originalID = b.id WHERE a.project = ".$projectID." AND a.done = 0 AND a.language = '".$languageCode."' AND b.enabled = 1";
