@@ -32,8 +32,10 @@ function phraseDecode($text) {
 	$text = str_replace('\n', "\n", $text);
 	$text = str_replace('\\\'', '\'', $text);
 	$text = str_replace('\\"', '"', $text);
+
 	$text = str_replace('&#8230;', '...', $text);
-	$text = str_replace('&#38;', '&', $text);
+	$text = str_replace('&#38;', '&', $text); // do ampersand last here so that it will not be double-decoded
+
 	return $text;
 }
 
@@ -46,8 +48,10 @@ function phraseEncode($text) {
 	$text = str_replace("\n", '\n', $text);
 	$text = str_replace('\'', '\\\'', $text);
 	$text = str_replace('"', '\\"', $text);
-	$text = str_replace('&', '&#38;', $text);
+
+	$text = str_replace('&', '&#38;', $text); // do ampersand first here so that it will not be double-encoded
 	$text = str_replace('...', '&#8230;', $text);
+
 	return $text;
 }
 
