@@ -932,7 +932,7 @@ elseif (isset($_GET['project'])) {
 							$reviewIdentCode = mysql_real_escape_string(trim(strip_tags($_POST['reviewIdentCode'])));
 							$reviewPosition = mysql_real_escape_string(trim(strip_tags($_POST['reviewPosition'])));
 							$reviewType = mysql_real_escape_string(trim(strip_tags($_POST['reviewType'])));
-							$reviewPhrase = mysql_real_escape_string(trim($_POST['reviewPhrase']));
+                            $reviewPhrase = mysql_real_escape_string(trim($_POST['reviewPhrase']));
 							$reviewAction = trim($_POST['reviewAction']);
 							if ($_SESSION['userID'] != DEMO_USER_ID) {
 								if ($reviewAction == 'Approve') {
@@ -966,25 +966,24 @@ elseif (isset($_GET['project'])) {
 							if (mysql_num_rows($sameLanguageOriginal2) == 1) {
 								$sameLanguageOriginal = mysql_result($sameLanguageOriginal2, 0);
 							}
+							echo '<table class="p50">';
 							echo '<form action="/'.id2short($projectID).'/'.cleanName($getProject3['name']).'/'.$languageCode.'/review" method="post" accept-charset="utf-8">';
-							echo '<fieldset>';
+                            echo '<tr><td colspan="2">';
 							echo '<input type="hidden" name="reviewID" value="'.id2short($getPending3['id']).'" />';
 							echo '<input type="hidden" name="reviewIdentCode" value="'.htmlspecialchars($getPending3['ident_code']).'" />';
 							echo '<input type="hidden" name="reviewPosition" value="'.htmlspecialchars($getPending3['position']).'" />';
 							echo '<input type="hidden" name="reviewType" value="'.htmlspecialchars($getPending3['type']).'" />';
-							echo '<input type="hidden" name="reviewPhrase" value="'.htmlspecialchars($getPending3['pendingPhrase']).'" />';
-							echo '<input type="submit" name="reviewAction" value="Approve" style="display:inline-block; width:30%;" />';
+							echo '<input type="submit" name="reviewAction" value="Approve" onclick="return checkAndApprove(document.getElementById(\'pending_phrase_original\'), document.getElementById(\'pending_phrase_new\'));" style="display:inline-block; width:30%;" />';
 							echo '<input type="submit" name="reviewAction" value="Review later" style="display:inline-block; width:30%;" />';
 							echo '<input type="submit" name="reviewAction" value="Reject" style="display:inline-block; width:30%;" />';
-							echo '</fieldset>';
-							echo '</form>';
-							echo '<table class="p50">';
+                            echo '</td></tr>';
                             $referenceIsRTL = isRTL($getProject3['default_language']);
                             $languageIsRTL = isRTL($languageCode);
-							echo '<tr style="font-weight:bold;"><td>'.$languages[$getProject3['default_language']].'</td><td dir="'.($referenceIsRTL ? 'rtl' : 'ltr').'">'.nl2br(htmlspecialchars($getPending3['defaultPhrase'])).'</td></tr>';
+							echo '<tr style="font-weight:bold;"><td>'.$languages[$getProject3['default_language']].'</td><td dir="'.($referenceIsRTL ? 'rtl' : 'ltr').'" id="pending_phrase_original">'.nl2br(htmlspecialchars($getPending3['defaultPhrase'])).'</td></tr>';
 							echo '<tr><td>'.$languages[$languageCode].' &mdash; Old</td><td dir="'.($languageIsRTL ? 'rtl' : 'ltr').'">'.nl2br(htmlspecialchars($sameLanguageOriginal)).'</td></tr>';
 							echo '<tr><td>Applied changes</td><td dir="'.($languageIsRTL ? 'rtl' : 'ltr').'">'.nl2br(htmlDiff(htmlspecialchars($sameLanguageOriginal), htmlspecialchars($getPending3['pendingPhrase']))).'</td></tr>';
-							echo '<tr style="font-weight:bold;"><td dir="'.($languageIsRTL ? 'rtl' : 'ltr').'">'.$languages[$languageCode].' &mdash; New</td><td>'.nl2br(htmlspecialchars($getPending3['pendingPhrase'])).'</td></tr>';
+							echo '<tr style="font-weight:bold;"><td dir="'.($languageIsRTL ? 'rtl' : 'ltr').'">'.$languages[$languageCode].' &mdash; New</td><td><textarea id="pending_phrase_new" name="reviewPhrase" style="height:'.round(mb_strlen($getPending3['defaultPhrase'])/100*5.25).'em;" dir="'.($languageIsRTL ? 'rtl' : 'ltr').'">'.htmlspecialchars($getPending3['pendingPhrase']).'</textarea></td></tr>';
+							echo '</form>';
 							echo '</table>';
 							echo '<p style="margin:0; padding:0;">&nbsp;</p>'; // bottom-margin of table does not work otherwise (unknown why)
 							$getPendingCount1 = "SELECT COUNT(*) FROM translations_pending AS a JOIN translations AS b ON a.originalID = b.id WHERE a.project = ".$projectID." AND a.done = 0 AND a.language = '".$languageCode."' AND b.enabled = 1";
@@ -1085,7 +1084,7 @@ elseif (isset($_GET['project'])) {
 
 							if (count($referenceLanguage) > 0) {
 								echo '<form action="/'.id2short($projectID).'/'.cleanName($getProject3['name']).'/'.$languageCode.'" method="post" accept-charset="utf-8">';
-								echo '<fieldset><input type="submit" name="doSave" value="Save changes" style="margin-left:0.8em;" onclick="return confirm(\'Are you sure you want to submit all changes on this page?\');" /> <input type="submit" name="doMarkProblems" value="Mark possible problems" style="margin-left:0.8em;" onclick="markPossibleProblems(); alert(\'Long paragraphs without line breaks and extremely long words are now marked in orange.\'); return false;" /></fieldset>';
+								echo '<fieldset><input type="submit" name="doSave" value="Save changes" style="margin-left:0.8em;" onclick="return checkAndSubmit(this.parentNode.parentNode);" /> <input type="submit" name="doMarkProblems" value="Mark possible problems" style="margin-left:0.8em;" onclick="markPossibleProblems(); alert(\'Long paragraphs without line breaks and extremely long words are now marked in orange.\'); return false;" /></fieldset>';
 								echo '<table class="p50"><thead>';
 								echo '<tr>';
 								echo '<th style="width:0.1em">&nbsp;</th><th>'.($isDefaultLanguage ? 'Unique name' : $languages[$getProject3['default_language']]).'</th><th>'.$languages[$languageCode].'</th>';
@@ -1111,7 +1110,7 @@ elseif (isset($_GET['project'])) {
 									else {
 										$rowHTML .= '<td style="width:0.1em"><a href="#phrase_'.$currentPhraseKey.'"><img src="/_images/link.png" alt="[L]" title="'.htmlspecialchars($referencePhrase->getIdentCode()).'" width="16" /></a></td>';
                                         $referenceIsRTL = isRTL($getProject3['default_language']);
-                                        $rowHTML .= '<td dir="'.($referenceIsRTL ? 'rtl' : 'ltr').'">'.nl2br(htmlspecialchars($referencePhrase->getPhrase()));
+                                        $rowHTML .= '<td><span class="originalItem" dir="'.($referenceIsRTL ? 'rtl' : 'ltr').'">'.nl2br(htmlspecialchars($referencePhrase->getPhrase())).'</span>';
                                         if ($referencePhrase->getType() == 'plurals' && $referencePhrase->getPosition() != '') {
                                             $rowHTML .= '<span class="inline_comment">'.htmlspecialchars($referencePhrase->getPosition()).'</span>';
                                         }
@@ -1119,10 +1118,10 @@ elseif (isset($_GET['project'])) {
 									}
                                     $languageIsRTL = isRTL($languageCode);
 									if (stripos($referencePhrase->getPhrase(), "\n") !== FALSE || mb_strlen($referencePhrase->getPhrase()) >= 100) {
-										$rowHTML .= '<td><textarea name="edits['.$currentPhraseKey.']" style="height:'.round(mb_strlen($referencePhrase->getPhrase())/100*5.25).'em;" dir="'.($languageIsRTL ? 'rtl' : 'ltr').'">'.htmlspecialchars($textFieldContent).'</textarea>';
+										$rowHTML .= '<td><textarea class="translationItem" name="edits['.$currentPhraseKey.']" style="height:'.round(mb_strlen($referencePhrase->getPhrase())/100*5.25).'em;" dir="'.($languageIsRTL ? 'rtl' : 'ltr').'">'.htmlspecialchars($textFieldContent).'</textarea>';
 									}
 									else {
-										$rowHTML .= '<td><input type="text" name="edits['.$currentPhraseKey.']" value="'.htmlspecialchars($textFieldContent).'" dir="'.($languageIsRTL ? 'rtl' : 'ltr').'" />';
+										$rowHTML .= '<td><input class="translationItem" type="text" name="edits['.$currentPhraseKey.']" value="'.htmlspecialchars($textFieldContent).'" dir="'.($languageIsRTL ? 'rtl' : 'ltr').'" />';
 									}
 									$rowHTML .= '<input type="hidden" name="previous['.$currentPhraseKey.']" value="'.htmlspecialchars($textFieldContent).'" /></td>';
                                     if ($isDefaultLanguage) {
@@ -1138,7 +1137,7 @@ elseif (isset($_GET['project'])) {
 								}
                                 echo $out;
 								echo '</tbody></table>';
-								echo '<fieldset><input type="submit" name="doSave" value="Save changes" style="margin-left:0.8em;" onclick="return confirm(\'Are you sure you want to submit all changes on this page?\');" /> <input type="submit" name="doMarkProblems" value="Mark possible problems" style="margin-left:0.8em;" onclick="markPossibleProblems(); alert(\'Long paragraphs without line breaks and extremely long words are now marked in orange.\'); return false;" /></fieldset>';
+								echo '<fieldset><input type="submit" name="doSave" value="Save changes" style="margin-left:0.8em;" onclick="return checkAndSubmit(this.parentNode.parentNode);" /> <input type="submit" name="doMarkProblems" value="Mark possible problems" style="margin-left:0.8em;" onclick="markPossibleProblems(); alert(\'Long paragraphs without line breaks and extremely long words are now marked in orange.\'); return false;" /></fieldset>';
 								echo '</form>';
 							}
 							else {
