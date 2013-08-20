@@ -261,6 +261,20 @@ function showInviteApplicationForm($project_id, $project_name) {
 }
 
 /**
+ * Returns the name of the contributor as they named themselves
+ * @param string $creation_user raw creation_user string from database
+ * @return string contributor's name (if available) or empty string (otherwise)
+ */
+function getContributorName($creation_user) {
+	if (mb_strlen($creation_user) == 64) {
+		return '';
+	}
+	else {
+		return $creation_user;
+	}
+}
+
+/**
  * Encodes a decimal integer ID to a shorter ID with another base
  * @param int $old_number the original decimal ID
  * @return string the short base-converted ID
@@ -956,7 +970,7 @@ elseif (isset($_GET['project'])) {
 						echo '<div class="contentBox">';
 						echo '<h1>'.htmlspecialchars($getProject3['name']).' &mdash; '.htmlspecialchars($languages[$languageCode]).'</h1>';
 						echo '<h2>Review mode</h2>';
-						$getPending1 = "SELECT a.id, a.originalID, a.phrase AS pendingPhrase, b.ident_code, b.position, b.type, b.phrase AS defaultPhrase FROM translations_pending AS a JOIN translations AS b ON a.originalID = b.id WHERE a.project = ".$projectID." AND a.done = 0 AND a.language = '".$languageCode."' AND b.enabled = 1 ORDER BY a.id ASC LIMIT 0, 1";
+						$getPending1 = "SELECT a.id, a.originalID, a.phrase AS pendingPhrase, a.creation_user, b.ident_code, b.position, b.type, b.phrase AS defaultPhrase FROM translations_pending AS a JOIN translations AS b ON a.originalID = b.id WHERE a.project = ".$projectID." AND a.done = 0 AND a.language = '".$languageCode."' AND b.enabled = 1 ORDER BY a.id ASC LIMIT 0, 1";
 						$getPending2 = mysql_query($getPending1);
 						if (mysql_num_rows($getPending2) == 1) {
 							$getPending3 = mysql_fetch_assoc($getPending2);
@@ -989,7 +1003,8 @@ elseif (isset($_GET['project'])) {
 							$getPendingCount1 = "SELECT COUNT(*) FROM translations_pending AS a JOIN translations AS b ON a.originalID = b.id WHERE a.project = ".$projectID." AND a.done = 0 AND a.language = '".$languageCode."' AND b.enabled = 1";
 							$getPendingCount2 = mysql_query($getPendingCount1);
 							$getPendingCount3 = mysql_result($getPendingCount2, 0);
-							echo '<p style="text-align:center; color:#666; font-size:90%;">['.$getPendingCount3.' translation'.($getPendingCount3 == 1 ? '' : 's').' left to review]</p>';
+                            $contributorName = getContributorName($getPending3['creation_user']);
+							echo '<p style="color:#666; font-size:90%;"><strong>Contributor:</strong> '.($contributorName == '' ? '<em>unknown</em>' : $contributorName).'<br /><strong>Waiting for approval:</strong> '.($getPendingCount3 == 1 ? 'only this one' : ($getPendingCount3-1).' more').'</p>';
 						}
 						else {
 							$deleteBlockedPending1 = "DELETE FROM translations_pending WHERE project = ".$projectID." AND done = 0 AND language = '".$languageCode."' AND (SELECT enabled FROM translations WHERE id = translations_pending.originalID LIMIT 0, 1) = 0";
@@ -1005,8 +1020,9 @@ elseif (isset($_GET['project'])) {
 							if (mysql_num_rows($topTranslators2) > 0) {
 								$topTranslatorsOut = '';
 								while ($topTranslators3 = mysql_fetch_assoc($topTranslators2)) {
-									if (mb_strlen($topTranslators3['creation_user']) != 64) {
-										$topTranslatorsOut .= '<li>'.htmlspecialchars($topTranslators3['creation_user']).' <span style="color:#666;">('.$topTranslators3['nEdits'].' improvements)</span></li>';
+                                    $contributorName = getContributorName($topTranslators3['creation_user']);
+									if ($contributorName != '') {
+										$topTranslatorsOut .= '<li>'.htmlspecialchars($contributorName).' <span style="color:#666;">('.$topTranslators3['nEdits'].' improvements)</span></li>';
 									}
 								}
 								if ($topTranslatorsOut != '') {

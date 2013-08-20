@@ -16,6 +16,7 @@ Hopefully, this will speed-up the development and localization process for you, 
 + Import existing translation XML files from your Android projects
 + Export your collaboratively edited translations as Android-ready XML files
 + Support for string, string-array and plurals elements
++ Automatic validation of quantity strings and placeholders
 + Keep all translations for your projects in sync
 + Three levels of visibility: public, signed-in users and invite-only
 + Convenient review system for suggested translations and applying translators
