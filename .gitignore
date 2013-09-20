@@ -1,3 +1,5 @@
-*.html
+.idea/*
+temp/*/*
+uploads/*.xml
 config.php
 contact.php

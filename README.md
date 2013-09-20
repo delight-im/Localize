@@ -10,45 +10,25 @@ Hopefully, this will speed-up the development and localization process for you, 
 
 **Live Demo:** www.localize.li
 
-## Features
-
-+ Easily set up project folders and manage your translations online
-+ Import existing translation XML files from your Android projects
-+ Export your collaboratively edited translations as Android-ready XML files
-+ Support for string, string-array and plurals elements
-+ Automatic validation of quantity strings and placeholders
-+ Keep all translations for your projects in sync
-+ Three levels of visibility: public, signed-in users and invite-only
-+ Convenient review system for suggested translations and applying translators
-+ Support for LTR languages (English, Spanish, French, etc.)
-+ Support for RTL languages (Arabian, Hebrew, Persian, etc.)
-+ 83 supported languages
-+ Unlimited projects, phrases and contributors
-+ 100% free and without restrictions
-+ Open Source
-
 ## Contributing
 
 Every contribution is warmly welcomed. Please fork this repository, apply your changes, and submit your contributions by sending a pull request.
 
-## Third-party libraries
-
-+ jQuery by the jQuery Foundation and other contributors (MIT License)
-
 ## License
 
 ```
-	Copyright 2013 delight.im
+    Copyright (C) 2013  delight.im
 
-	Licensed under the Apache License, Version 2.0 (the "License");
-	you may not use this file except in compliance with the License.
-	You may obtain a copy of the License at
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-	http://www.apache.org/licenses/LICENSE-2.0
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-	Unless required by applicable law or agreed to in writing, software
-	distributed under the License is distributed on an "AS IS" BASIS,
-	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	See the License for the specific language governing permissions and
-	limitations under the License.
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see {http://www.gnu.org/licenses/}.
 ```
