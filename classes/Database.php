@@ -10,6 +10,11 @@ class Database {
     const TABLE_USERS_SEQUENCE = NULL; // needed on same DB systems (e.g. Postgres) for getLastInsertID()
     const TABLE_REPOSITORIES_SEQUENCE = NULL; // needed on same DB systems (e.g. Postgres) for getLastInsertID()
 
+    /**
+     * PDO database object that is used internally to communicate with the DB
+     *
+     * @var PDO
+     */
     protected static $db;
 
     public static function init() {

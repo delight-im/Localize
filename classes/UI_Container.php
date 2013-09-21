@@ -4,8 +4,8 @@ require_once('UI.php');
 
 class UI_Container extends UI {
 
-    private $contents;
-    private $isLandingPage;
+    protected $contents;
+    protected $isLandingPage;
 
     function __construct($contents, $isLandingPage = FALSE) {
         $this->contents = array();

@@ -3,17 +3,22 @@
 class Repository {
 
     const VISIBILITY_PUBLIC = 1;
-    const VISIBILITY_PROTECTED = 2;
-    const VISIBILITY_PRIVATE = 3;
+    const VISIBILITY_PRIVATE = 2;
     const ROLE_NONE = 0;
     const ROLE_ADMINISTRATOR = 1;
     const ROLE_DEVELOPER = 2;
     const ROLE_MODERATOR = 3;
+    const ROLE_CONTRIBUTOR = 4;
 
     protected $id;
     protected $name;
     protected $visibility;
     protected $defaultLanguage;
+    /**
+     * List of all language data objects
+     *
+     * @var array[Language]
+     */
     protected $languages;
 
     public function __construct($id, $name, $visibility, $defaultLanguage) {
@@ -57,8 +62,6 @@ class Repository {
         switch ($visibilityID) {
             case self::VISIBILITY_PUBLIC:
                 return 'public';
-            case self::VISIBILITY_PROTECTED:
-                return 'protected';
             case self::VISIBILITY_PRIVATE:
                 return 'private';
             default:
@@ -73,9 +76,7 @@ class Repository {
     public static function getRepositoryVisibilityDescription($visibilityID) {
         switch ($visibilityID) {
             case self::VISIBILITY_PUBLIC:
-                return 'Visible to everybody';
-            case self::VISIBILITY_PROTECTED:
-                return 'Visible to signed-in users only';
+                return 'Visible to all signed-in users';
             case self::VISIBILITY_PRIVATE:
                 return 'Visible to invited users only';
             default:
@@ -139,6 +140,13 @@ class Repository {
         }
     }
 
+    /**
+     * Get the language data object for the given language ID
+     *
+     * @param int $languageID ID of the language to fetch the data object for
+     * @return Language the language object for the given ID
+     * @throws Exception if no language with the given ID could be found
+     */
     public function getLanguage($languageID) {
         if (isset($this->languages[$languageID])) {
             return $this->languages[$languageID];
@@ -148,12 +156,12 @@ class Repository {
         }
     }
 
-    public static function hasUserPermissions($userID, $repositoryID, $repositoryData, $minimumRole) {
+    public static function hasUserPermissions($userID, $repositoryID, $repositoryData, $requiredRole) {
         $repository = new Repository($repositoryID, $repositoryData['name'], $repositoryData['visibility'], $repositoryData['defaultLanguage']);
         $role = Database::getRepositoryRole(Authentication::getUserID(), $repositoryID);
         $permissions = $repository->getPermissions($userID, $role);
-        if (!$permissions->isLoginMissing() && !$permissions->isInvitationMissing()) {
-            if ($role == Repository::ROLE_ADMINISTRATOR || $role == Repository::ROLE_DEVELOPER) {
+        if (Authentication::getUserID() > 0 && !$permissions->isInvitationMissing()) {
+            if ($role != self::ROLE_NONE && $role <= $requiredRole) {
                 return true;
             }
         }
@@ -183,28 +191,8 @@ class RepositoryPermissions {
         $this->role = $role;
     }
 
-    public function isLoginMissing() {
-        if ($this->repositoryVisibility == Repository::VISIBILITY_PUBLIC) {
-            return false;
-        }
-        elseif ($this->repositoryVisibility == Repository::VISIBILITY_PROTECTED || $this->repositoryVisibility == Repository::VISIBILITY_PRIVATE) {
-            if ($this->userID > 0) {
-                return false;
-            }
-            else {
-                return true;
-            }
-        }
-        else {
-            throw new Exception('Unknown visibility ID '.$this->repositoryVisibility);
-        }
-    }
-
     public function isInvitationMissing() {
         if ($this->repositoryVisibility == Repository::VISIBILITY_PUBLIC) {
-            return false;
-        }
-        elseif ($this->repositoryVisibility == Repository::VISIBILITY_PROTECTED) {
             return false;
         }
         elseif ($this->repositoryVisibility == Repository::VISIBILITY_PRIVATE) {
@@ -215,6 +203,9 @@ class RepositoryPermissions {
                 return false;
             }
             elseif ($this->role == Repository::ROLE_MODERATOR) {
+                return false;
+            }
+            elseif ($this->role == Repository::ROLE_CONTRIBUTOR) {
                 return false;
             }
             elseif ($this->role == Repository::ROLE_NONE) {

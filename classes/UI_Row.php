@@ -4,7 +4,7 @@ require_once('UI.php');
 
 class UI_Row extends UI {
 
-    private $contents;
+    protected $contents;
 
     function __construct($contents) {
         $this->contents = array();

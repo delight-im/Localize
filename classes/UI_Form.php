@@ -4,10 +4,10 @@ require_once('UI.php');
 
 class UI_Form extends UI {
 
-    private $targetURL;
-    private $isGET;
-    private $contents;
-    private $hasFileUpload;
+    protected $targetURL;
+    protected $isGET;
+    protected $contents;
+    protected $hasFileUpload;
 
     function __construct($targetURL, $isGET, $hasFileUpload = false) {
         $this->targetURL = $targetURL;

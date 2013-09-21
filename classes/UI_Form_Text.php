@@ -4,17 +4,17 @@ require_once('UI.php');
 
 class UI_Form_Text extends UI {
 
-    private $label;
-    private $key;
-    private $placeholder;
-    private $isPassword;
-    private $helpText;
-    private $cssClasses;
-    private $cssStyles;
-    private $hasUniqueID;
-    private $isInline;
-    private $isRTL;
-    private $defaultValue;
+    protected $label;
+    protected $key;
+    protected $placeholder;
+    protected $isPassword;
+    protected $helpText;
+    protected $cssClasses;
+    protected $cssStyles;
+    protected $hasUniqueID;
+    protected $isInline;
+    protected $isRTL;
+    protected $defaultValue;
 
     function __construct($label, $key, $placeholder, $isPassword = false, $helpText = '', $cssClasses = '', $cssStyles = '', $hasUniqueID = true, $isInline = false, $isRTL = false) {
         $this->label = $label;

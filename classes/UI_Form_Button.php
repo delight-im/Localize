@@ -13,11 +13,9 @@ class UI_Form_Button extends UI {
     const ACTION_SUBMIT = 1;
     const ACTION_CANCEL = 2;
 
-    private $label;
-    private $type;
-    private $action;
-    private $cssClasses;
-    private $cssStyles;
+    protected $label;
+    protected $type;
+    protected $action;
 
     function __construct($label, $type = self::TYPE_SUCCESS, $action = self::ACTION_SUBMIT) {
         $this->label = $label;
@@ -27,11 +25,8 @@ class UI_Form_Button extends UI {
 
     public function getHTML() {
         $out = '<button';
-        if (!empty($this->cssStyles)) {
-            $out .= ' style="'.$this->cssStyles.'"';
-        }
         if ($this->action == self::ACTION_CANCEL) {
-            $out .= ' type="reset" onclick="javascript:history.back();"';
+            $out .= ' type="reset"';
         }
         else {
             $out .= ' type="submit"';
@@ -63,6 +58,11 @@ class UI_Form_Button extends UI {
 
 class UI_Form_ButtonGroup extends UI {
 
+    /**
+     * List of all buttons and links that will be rendered in this button group
+     *
+     * @var array(UI_Form_Button|UI_Link]
+     */
     private $buttons;
     private $isInline;
 

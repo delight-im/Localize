@@ -4,8 +4,8 @@ require_once('UI.php');
 
 class UI_Paragraph extends UI {
 
-    private $uiInstance;
-    private $text;
+    protected $uiInstance;
+    protected $text;
 
     public function __construct($textOrUI) {
         if ($textOrUI instanceof UI) {

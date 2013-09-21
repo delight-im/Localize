@@ -12,12 +12,12 @@ class UI_Link extends UI {
     const TYPE_IMPORTANT = 5;
     const TYPE_UNIMPORTANT = 6;
 
-    private $label;
-    private $target;
-    private $buttonType;
-    private $cssClasses;
-    private $cssStyles;
-    private $jsEvents;
+    protected $label;
+    protected $target;
+    protected $buttonType;
+    protected $cssClasses;
+    protected $cssStyles;
+    protected $jsEvents;
 
     function __construct($label, $target, $buttonType = self::TYPE_NONE, $cssClasses = '', $cssStyles = '', $jsEvents = '') {
         $this->label = $label;

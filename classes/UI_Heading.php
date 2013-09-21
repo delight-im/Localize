@@ -7,8 +7,8 @@ class UI_Heading extends UI {
     const LEVEL_MIN = 1;
     const LEVEL_MAX = 6;
 
-    private $text;
-    private $isTextCentered;
+    protected $text;
+    protected $isTextCentered;
 
     function __construct($text, $isTextCentered = FALSE, $level = self::LEVEL_MIN) {
         $this->text = $text;

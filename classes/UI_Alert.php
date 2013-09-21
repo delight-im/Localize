@@ -8,8 +8,8 @@ class UI_Alert extends UI {
     const TYPE_INFO = 2;
     const TYPE_WARNING = 3;
 
-    private $type;
-    private $message;
+    protected $type;
+    protected $message;
 
     public function __construct($message, $type = self::TYPE_INFO) {
         $this->message = $message;

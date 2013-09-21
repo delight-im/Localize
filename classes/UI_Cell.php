@@ -7,8 +7,8 @@ class UI_Cell extends UI {
     const SIZE_MIN = 1;
     const SIZE_MAX = 12;
 
-    private $size;
-    private $contents;
+    protected $size;
+    protected $contents;
 
     function __construct($contents, $size = self::SIZE_MAX) {
         if ($size >= self::SIZE_MIN && $size <= self::SIZE_MAX) {

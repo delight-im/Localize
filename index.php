@@ -85,7 +85,7 @@ elseif (UI::isPage('language')) {
             $role = Database::getRepositoryRole(Authentication::getUserID(), $repositoryID);
             $permissions = $repository->getPermissions(Authentication::getUserID(), $role);
 
-            if (!$permissions->isLoginMissing() && !$permissions->isInvitationMissing()) {
+            if (Authentication::getUserID() > 0 && !$permissions->isInvitationMissing()) {
                 $data = UI::getDataPOST('updatePhrases');
                 if (isset($data['edits']) && is_array($data['edits']) && isset($data['previous']) && is_array($data['previous'])) {
                     Authentication::saveCachedEdits($repositoryID, $languageID, $data['edits']);
@@ -353,7 +353,7 @@ elseif (UI::isPage('create_project') && Authentication::isSignedIn()) {
             $isAllowed = true;
         }
 
-        if ($data_visibility == Repository::VISIBILITY_PUBLIC || $data_visibility == Repository::VISIBILITY_PROTECTED || $data_visibility == Repository::VISIBILITY_PRIVATE) {
+        if ($data_visibility == Repository::VISIBILITY_PUBLIC || $data_visibility == Repository::VISIBILITY_PRIVATE) {
             $allLanguages = Language::getList();
             if (in_array($data_defaultLanguage, $allLanguages)) {
                 if (mb_strlen($data_name) >= 3) {

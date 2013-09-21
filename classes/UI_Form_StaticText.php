@@ -4,9 +4,9 @@ require_once('UI.php');
 
 class UI_Form_StaticText extends UI {
 
-    private $label;
-    private $content;
-    private $helpText;
+    protected $label;
+    protected $content;
+    protected $helpText;
 
     function __construct($label, $content, $helpText = '') {
         $this->label = $label;

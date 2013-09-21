@@ -4,9 +4,9 @@ require_once('UI.php');
 
 class UI_Table extends UI {
 
-    private $columnCount;
-    private $headers;
-    private $rows;
+    protected $columnCount;
+    protected $headers;
+    protected $rows;
 
     function __construct($headers) {
         if (isset($headers) && is_array($headers) && !empty($headers)) {

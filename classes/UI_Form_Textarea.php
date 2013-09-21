@@ -4,15 +4,15 @@ require_once('UI.php');
 
 class UI_Form_Textarea extends UI {
 
-    private $label;
-    private $key;
-    private $placeholder;
-    private $helpText;
-    private $isInline;
-    private $defaultText;
-    private $rows;
-    private $isRTL;
-    private $onChangeJS;
+    protected $label;
+    protected $key;
+    protected $placeholder;
+    protected $helpText;
+    protected $isInline;
+    protected $defaultText;
+    protected $rows;
+    protected $isRTL;
+    protected $onChangeJS;
 
     function __construct($label, $key, $placeholder, $helpText = '', $isInline = false, $defaultText = '', $rows = 1, $isRTL = false, $onChangeJS = '') {
         $this->label = $label;

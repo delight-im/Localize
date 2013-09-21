@@ -4,10 +4,10 @@ require_once('UI.php');
 
 class UI_Form_Radio extends UI {
 
-    private $label;
-    private $key;
-    private $options;
-    private $defaultOptionKey;
+    protected $label;
+    protected $key;
+    protected $options;
+    protected $defaultOptionKey;
 
     public function __construct($label, $key) {
         $this->label = $label;

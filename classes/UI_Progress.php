@@ -4,7 +4,7 @@ require_once('UI.php');
 
 class UI_Progress extends UI {
 
-    private $progress;
+    protected $progress;
 
     function __construct($progress) {
         $this->progress = $progress;

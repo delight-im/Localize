@@ -4,9 +4,9 @@ require_once('UI.php');
 
 class UI_Form_File extends UI {
 
-    private $label;
-    private $key;
-    private $helpText;
+    protected $label;
+    protected $key;
+    protected $helpText;
 
     function __construct($label, $key, $helpText = '') {
         $this->label = $label;

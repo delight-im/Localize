@@ -180,7 +180,7 @@ abstract class UI {
         ), 4);
         $featureColumn2 = new UI_Cell(array(
             new UI_Heading('Free of charge', false, 2),
-            new UI_Paragraph('Smaller teams and single developers don\'t always want to pay for their app translation. Create any number of projects with unlimited number of words and contributors. Control contributions with three levels of visibility: <abbr title="Visible to everyone without prior sign-up">public</abbr>, <abbr title="Visible to users who have previously signed-up and logged in">signed-in users</abbr> and <abbr title="Visible to those only who you have invited">invite-only</abbr>')
+            new UI_Paragraph('Smaller teams and single developers don\'t always want to pay for their app translation. Create any number of projects with unlimited number of words and contributors. Control access to your project with two levels of visibility: '.Repository::getRepositoryVisibilityTag(Repository::VISIBILITY_PUBLIC).' and '.Repository::getRepositoryVisibilityTag(Repository::VISIBILITY_PRIVATE))
         ), 4);
         $featureColumn3 = new UI_Cell(array(
             new UI_Heading('Simple and convenient', false, 2),
@@ -263,7 +263,6 @@ abstract class UI {
 
         $radioVisibility = new UI_Form_Radio('Visibility', 'create_project[visibility]');
         $radioVisibility->addOption(Repository::getRepositoryVisibilityTag(Repository::VISIBILITY_PUBLIC), Repository::VISIBILITY_PUBLIC);
-        $radioVisibility->addOption(Repository::getRepositoryVisibilityTag(Repository::VISIBILITY_PROTECTED), Repository::VISIBILITY_PROTECTED);
         $radioVisibility->addOption(Repository::getRepositoryVisibilityTag(Repository::VISIBILITY_PRIVATE), Repository::VISIBILITY_PRIVATE);
         if (!empty($repositoryData)) {
             $radioVisibility->setDefaultOption($repositoryData['visibility']);
@@ -375,7 +374,7 @@ abstract class UI {
             $role = Database::getRepositoryRole(Authentication::getUserID(), $repositoryID);
             $permissions = $repository->getPermissions(Authentication::getUserID(), $role);
 
-            if ($permissions->isLoginMissing()) {
+            if (Authentication::getUserID() <= 0) {
                 $contents[] = new UI_Heading(htmlspecialchars($repositoryData['name']), true);
                 $contents[] = new UI_Paragraph('Please sign in and come back to this page in order to access this project');
             }
