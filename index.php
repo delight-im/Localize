@@ -72,16 +72,6 @@ elseif (UI::isPage('sign_out')) {
     echo UI::getPage(UI::PAGE_INDEX, array($alert));
 }
 elseif (UI::isPage('project')) {
-    if (UI::isAction('exportXML')) {
-        $repositoryID = UI::validateID(UI::getDataGET('project'), true);
-        $repositoryData = Database::getRepositoryData($repositoryID);
-        if (!empty($repositoryData)) {
-            $repository = new Repository($repositoryID, $repositoryData['name'], $repositoryData['visibility'], $repositoryData['defaultLanguage']);
-            $repository->loadLanguages(true);
-            File_IO::exportRepository($repository, 'strings.xml');
-            exit;
-        }
-    }
     echo UI::getPage(UI::PAGE_PROJECT);
 }
 elseif (UI::isPage('language')) {
@@ -124,6 +114,43 @@ elseif (UI::isPage('language')) {
             }
             else {
                 $alert = new UI_Alert('<p>You are not allowed to submit changes to this project.</p>', UI_Alert::TYPE_WARNING);
+            }
+        }
+        else {
+            $alert = new UI_Alert('<p>The project could not be found.</p>', UI_Alert::TYPE_WARNING);
+        }
+    }
+    if (empty($alert)) {
+        echo UI::getPage(UI::PAGE_PROJECT);
+    }
+    else {
+        echo UI::getPage(UI::PAGE_PROJECT, array($alert));
+    }
+}
+elseif (UI::isPage('export')) {
+    $alert = NULL;
+    if (UI::isAction('export')) {
+        $repositoryID = UI::validateID(UI::getDataGET('project'), true);
+        $repositoryData = Database::getRepositoryData($repositoryID);
+        if (!empty($repositoryData)) {
+            $repositoryDefaultLanguage = $repositoryData['defaultLanguage'];
+            $isAllowed = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_DEVELOPER);
+            if ($isAllowed) {
+                $data = UI::getDataPOST('export');
+                $filename = isset($data['filename']) ? trim($data['filename']) : '';
+                if (File_IO::isFilenameValid($filename)) {
+                    $repository = new Repository($repositoryID, $repositoryData['name'], $repositoryData['visibility'], $repositoryData['defaultLanguage']);
+                    $repository->loadLanguages(true);
+                    File_IO::exportRepository($repository, $filename);
+                    exit;
+                }
+                else {
+                    $alert = new UI_Alert('<p>Please enter a valid filename.</p>', UI_Alert::TYPE_WARNING);
+                }
+
+            }
+            else {
+                $alert = new UI_Alert('<p>You are not allowed to export files from this project.</p>', UI_Alert::TYPE_WARNING);
             }
         }
         else {

@@ -357,6 +357,7 @@ abstract class UI {
         $repositoryID = self::validateID(self::getDataGET('project'), true);
         $languageID = self::validateID(self::getDataGET('language'), true);
         $isAddingMode = isset($page) && $page == 'add_phrase';
+        $isExportMode = isset($page) && $page == 'export';
         $isImportMode = isset($page) && $page == 'import';
 
         $repositoryData = Database::getRepositoryData($repositoryID);
@@ -423,6 +424,26 @@ abstract class UI {
                     $contents[] = new UI_Heading('Add phrase to default language', true);
                     $contents[] = $form;
                 }
+                elseif ($isExportMode) {
+                    $formTargetURL = '?p=export&amp;project='.Helper::encodeID($repositoryID);
+                    self::addBreadcrumbItem($formTargetURL, 'Export XML');
+
+                    $form = new UI_Form($formTargetURL, false);
+
+                    $textFilename = new UI_Form_Text('Filename', 'export[filename]', 'strings.xml', false, 'Please choose a name for the XML files that will be exported inside each language folder.');
+                    $textFilename->setDefaultValue('strings.xml');
+                    $form->addContent($textFilename);
+
+                    $buttonSubmit = new UI_Form_Button('Export XML', UI_Form_Button::TYPE_SUCCESS);
+                    $buttonCancel = new UI_Link('Cancel', '?p=project&amp;project='.Helper::encodeID($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
+                    $form->addContent(new UI_Form_ButtonGroup(array(
+                        $buttonSubmit,
+                        $buttonCancel
+                    )));
+
+                    $contents[] = new UI_Heading('Export XML', true);
+                    $contents[] = $form;
+                }
                 elseif ($isImportMode) {
                     $formTargetURL = '?p=import&amp;project='.Helper::encodeID($repositoryID);
                     self::addBreadcrumbItem($formTargetURL, 'Import XML');
@@ -478,7 +499,7 @@ abstract class UI {
                     }
 
                     $actionsForm = new UI_Form('?p=project&amp;project='.Helper::encodeID($repositoryID), false);
-                    $buttonExport = new UI_Form_Button('Export XML', UI_Form_Button::TYPE_SUCCESS);
+                    $buttonExport = new UI_Link('Export XML', '?p=export&amp;project='.Helper::encodeID($repositoryID), UI_Form_Button::TYPE_SUCCESS);
                     $buttonImport = new UI_Link('Import XML', '?p=import&amp;project='.Helper::encodeID($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
                     $buttonEdit = new UI_Link('Edit project', '?p=create_project&amp;project='.Helper::encodeID($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
                     $actionsForm->addContent(new UI_Form_Hidden('exportXML', 1));

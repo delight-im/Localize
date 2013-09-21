@@ -10,6 +10,7 @@ class File_IO {
     const UPLOAD_ERROR_TOO_LARGE = 3;
     const UPLOAD_ERROR_XML_INVALID = 4;
     const UPLOAD_ERROR_NO_TRANSLATIONS_FOUND = 5;
+    const FILENAME_REGEX = '/^[a-z]+[a-z0-9_.]*$/';
 
     public static function getMaxFileSize() {
         return self::MAX_FILE_SIZE;
@@ -71,7 +72,7 @@ class File_IO {
     }
 
     public static function isFilenameValid($filename) {
-        return isset($filename) && preg_match('/^[a-z0-9_]+$/i', $filename);
+        return isset($filename) && preg_match(self::FILENAME_REGEX, $filename);
     }
 
     public static function exportRepository($repository, $filename) {
