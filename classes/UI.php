@@ -527,21 +527,29 @@ abstract class UI {
                     $languageLeftPhrases = $languageLeft->getPhrases();
                     if ($language->getID() == $defaultLanguage->getID()) { // viewing the default language itself
                         $phrasesTable = new UI_Table(array('Unique key', $language->getNameFull()));
-                        if (count($languageLeftPhrases) <= 0) {
-                            $phrasesTable->addRow(array(
-                                'No phrases yet',
-                                'No phrases yet'
-                            ));
-                        }
-                        else {
+                    }
+                    else { // viewing another language that will be compared to default language
+                        $phrasesTable = new UI_Table(array($defaultLanguage->getNameFull(), $language->getNameFull()));
+                    }
+                    if (count($languageLeftPhrases) <= 0) {
+                        $phrasesTable->addRow(array(
+                            'No phrases yet',
+                            'No phrases yet'
+                        ));
+                    }
+                    else {
+                        if ($language->getID() == $defaultLanguage->getID()) { // viewing the default language itself
                             foreach ($languageLeftPhrases as $defaultPhrase) {
                                 $values = $defaultPhrase->getPhraseValues();
                                 foreach ($values as $subKey => $value) {
                                     $editLinkURL = '?p=edit_phrase&amp;project='.Helper::encodeID($repositoryID).'&amp;language='.Helper::encodeID($languageID).'&amp;phrase='.$defaultPhrase->getPhraseKey();
                                     $editLink = new UI_Link('<span dir="ltr">'.htmlspecialchars($defaultPhrase->getPhraseKey()).'</span>', $editLinkURL);
                                     $phraseKey = 'updatePhrases[edits]['.Helper::encodeID($defaultPhrase->getID()).']['.$subKey.']';
+                                    $value = Authentication::getCachedEdit($repositoryID, $languageID, Helper::encodeID($defaultPhrase->getID()), $subKey, $value);
+
                                     $valuePrevious = new UI_Form_Hidden(str_replace('[edits]', '[previous]', $phraseKey), htmlspecialchars($value));
                                     $valueEdit = new UI_Form_Textarea('', $phraseKey, htmlspecialchars($value), '', true, $value, UI_Form_Textarea::getOptimalRowCount($value, 2), $defaultLanguage->isRTL());
+
                                     $phrasesTable->addRow(array(
                                         ($mayMovePhrases ? $editLink->getHTML() : $defaultPhrase->getPhraseKey()),
                                         $valuePrevious->getHTML().$valueEdit->getHTML()
@@ -549,16 +557,7 @@ abstract class UI {
                                 }
                             }
                         }
-                    }
-                    else { // viewing another language that will be compared to default language
-                        $phrasesTable = new UI_Table(array($defaultLanguage->getNameFull(), $language->getNameFull()));
-                        if (count($languageLeftPhrases) <= 0) {
-                            $phrasesTable->addRow(array(
-                                'No phrases yet',
-                                'No phrases yet'
-                            ));
-                        }
-                        else {
+                        else { // viewing another language that will be compared to default language
                             foreach ($languageLeftPhrases as $defaultPhrase) {
                                 $rightPhrase = $languageRight->getPhraseByKey($defaultPhrase->getPhraseKey());
                                 $valuesLeft = $defaultPhrase->getPhraseValues();
@@ -566,8 +565,11 @@ abstract class UI {
                                 foreach ($valuesLeft as $subKey => $valueLeft) {
                                     $valueLeft = '<span dir="'.($defaultLanguage->isRTL() ? 'rtl' : 'ltr').'">'.htmlspecialchars($valueLeft).'</span>';
                                     $phraseKey = 'updatePhrases[edits]['.Helper::encodeID($defaultPhrase->getID()).']['.$subKey.']';
+                                    $valuesRight[$subKey] = Authentication::getCachedEdit($repositoryID, $languageID, Helper::encodeID($defaultPhrase->getID()), $subKey, $valuesRight[$subKey]);
+
                                     $valuePrevious = new UI_Form_Hidden(str_replace('[edits]', '[previous]', $phraseKey), htmlspecialchars($valuesRight[$subKey]));
                                     $valueEdit = new UI_Form_Textarea('', $phraseKey, htmlspecialchars($valuesRight[$subKey]), '', true, $valuesRight[$subKey], UI_Form_Textarea::getOptimalRowCount($valuesRight[$subKey]), $language->isRTL());
+
                                     $phrasesTable->addRow(array(
                                         $valueLeft,
                                         $valuePrevious->getHTML().$valueEdit->getHTML()

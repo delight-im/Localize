@@ -88,6 +88,7 @@ elseif (UI::isPage('language')) {
             if (!$permissions->isLoginMissing() && !$permissions->isInvitationMissing()) {
                 $data = UI::getDataPOST('updatePhrases');
                 if (isset($data['edits']) && is_array($data['edits']) && isset($data['previous']) && is_array($data['previous'])) {
+                    Authentication::saveCachedEdits($repositoryID, $languageID, $data['edits']);
                     $editData = array();
                     $counter = 0;
                     foreach ($data['edits'] as $phraseID => $phraseSubKeys) {
@@ -407,7 +408,9 @@ else {
             if (isset($userData['password']) && password_verify($data_password, $userData['password'])) {
                 $userObject = new User($userData['id'], $userData['type'], $userData['username'], $userData['real_name'], $userData['join_date']);
                 Authentication::signIn($userObject);
-                Database::update("UPDATE users SET last_login = ".time()." WHERE id = ".intval($userData['id']));
+                $pendingEdits = Database::getPendingEditsByUser($userData['id']);
+                Authentication::restoreCachedEdits($pendingEdits);
+                Database::setLastLogin($userData['id'], time());
                 $alert = new UI_Alert('<p>You have successfully been signed in!</p>', UI_Alert::TYPE_SUCCESS);
             }
             else {

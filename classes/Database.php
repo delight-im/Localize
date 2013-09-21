@@ -155,4 +155,12 @@ class Database {
         }
     }
 
+    public static function setLastLogin($userID, $loginTime) {
+        self::update("UPDATE users SET last_login = ".intval($loginTime)." WHERE id = ".intval($userID));
+    }
+
+    public static function getPendingEditsByUser($userID) {
+        return self::select("SELECT repositoryID, languageID, referencedPhraseID, phraseSubKey, suggestedValue FROM edits WHERE userID = ".intval($userID));
+    }
+
 }

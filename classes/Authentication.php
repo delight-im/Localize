@@ -88,6 +88,27 @@ class Authentication {
         session_destroy(); // delete session data
     }
 
+    public static function saveCachedEdits($repositoryID, $languageID, $editsArray) {
+        $_SESSION['edits'][$repositoryID][$languageID] = $editsArray;
+    }
+
+    public static function getCachedEdit($repositoryID, $languageID, $phraseID, $phraseSubKey, $defaultValue = '') {
+        if (isset($_SESSION['edits'][$repositoryID][$languageID][$phraseID][$phraseSubKey])) {
+            return trim($_SESSION['edits'][$repositoryID][$languageID][$phraseID][$phraseSubKey]);
+        }
+        else {
+            return $defaultValue;
+        }
+    }
+
+    public static function restoreCachedEdits($databaseResults) {
+        $restoredEditsArray = array();
+        foreach ($databaseResults as $databaseResult) {
+            $restoredEditsArray[$databaseResult['repositoryID']][$databaseResult['languageID']][Helper::encodeID($databaseResult['referencedPhraseID'])][$databaseResult['phraseSubKey']] = $databaseResult['suggestedValue'];
+        }
+        $_SESSION['edits'] = $restoredEditsArray;
+    }
+
 }
 
 ?>
