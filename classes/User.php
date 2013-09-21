@@ -8,12 +8,14 @@ class User {
     protected $id;
     protected $type;
     protected $username;
+    protected $realName;
     protected $join_date;
 
-    public function __construct($id, $type, $username, $join_date) {
+    public function __construct($id, $type, $username, $realName, $join_date) {
         $this->id = $id;
         $this->type = $type;
         $this->username = $username;
+        $this->realName = $realName;
         $this->join_date = $join_date;
     }
 
@@ -31,12 +33,19 @@ class User {
         return $this->username;
     }
 
-    public function isDeveloper() {
-        return $this->type == self::TYPE_DEVELOPER;
+    /**
+     * @return string the user's name
+     */
+    public function getRealName() {
+        return $this->realName;
     }
 
-    public function isTranslator() {
-        return $this->type == self::TYPE_TRANSLATOR;
+    public function setRealName($realName) {
+        return $this->realName = $realName;
+    }
+
+    public function isDeveloper() {
+        return $this->type == self::TYPE_DEVELOPER;
     }
 
 }

@@ -129,4 +129,30 @@ class Database {
         }
     }
 
+    public static function getNativeLanguages($userID) {
+        $out = array();
+        $entries = self::select("SELECT languageID FROM native_languages WHERE userID = ".intval($userID));
+        foreach ($entries as $entry) {
+            $out[] = $entry['languageID'];
+        }
+        return $out;
+    }
+
+    public static function updateAccountInfo($userID, $realName, $nativeLanguages) {
+        self::update("UPDATE users SET real_name = ".self::escape($realName)." WHERE id = ".intval($userID));
+        self::delete("DELETE FROM native_languages WHERE userID = ".intval($userID));
+        if (is_array($nativeLanguages) && count($nativeLanguages) > 0) {
+            $values = "";
+            $counter = 0;
+            foreach ($nativeLanguages as $nativeLanguage) {
+                if ($counter > 0) {
+                    $values .= ",";
+                }
+                $values .= "(".intval($userID).", ".intval($nativeLanguage).")";
+                $counter++;
+            }
+            self::insert("INSERT INTO native_languages (userID, languageID) VALUES ".$values);
+        }
+    }
+
 }

@@ -39,13 +39,42 @@ class Authentication {
         }
     }
 
+    public static function getUserRealName() {
+        $userObject = self::getUser();
+        if (empty($userObject)) {
+            return '';
+        }
+        else {
+            return $userObject->getRealName();
+        }
+    }
+
+    public static function isUserDeveloper() {
+        $userObject = self::getUser();
+        if (empty($userObject)) {
+            return true;
+        }
+        else {
+            return $userObject->isDeveloper();
+        }
+    }
+
     public static function signIn($user) {
         if ($user instanceof User) {
             session_regenerate_id(true);
-            $_SESSION['user'] = serialize($user);
+            self::updateUserInfo($user);
         }
         else {
             throw new Exception('User must be an instance of class User');
+        }
+    }
+
+    public static function updateUserInfo($userObject) {
+        if (!empty($userObject)) {
+            $_SESSION['user'] = serialize($userObject);
+        }
+        else {
+            $_SESSION['user'] = NULL;
         }
     }
 

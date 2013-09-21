@@ -205,22 +205,42 @@ abstract class UI {
 
         $projectList = Database::select("SELECT a.repositoryID, a.role, b.name, b.visibility, b.defaultLanguage FROM roles AS a JOIN repositories AS b ON a.repositoryID = b.id WHERE a.userID = ".intval(Authentication::getUserID())." ORDER BY b.name ASC");
 
-        $heading = new UI_Heading('Dashboard', true);
-        $contents[] = $heading;
-        if (count($projectList) > 0) {
-            $projectTable = new UI_Table(array('Project', 'Default language', 'Visibility'));
-            foreach ($projectList as $projectData) {
-                $linkedName = '<a href="?p=project&amp;project='.Helper::encodeID($projectData['repositoryID']).'">'.htmlspecialchars($projectData['name']).'</a>';
-                $languageName = Language::getLanguageNameFull($projectData['defaultLanguage']);
-                $projectTable->addRow(array($linkedName, $languageName, Repository::getRepositoryVisibilityTag($projectData['visibility'])));
+        if (Authentication::isUserDeveloper()) {
+            $contents[] = new UI_Heading('Dashboard', true);
+            if (count($projectList) > 0) {
+                $projectTable = new UI_Table(array('Project', 'Default language', 'Visibility'));
+                foreach ($projectList as $projectData) {
+                    $linkedName = '<a href="?p=project&amp;project='.Helper::encodeID($projectData['repositoryID']).'">'.htmlspecialchars($projectData['name']).'</a>';
+                    $languageName = Language::getLanguageNameFull($projectData['defaultLanguage']);
+                    $projectTable->addRow(array($linkedName, $languageName, Repository::getRepositoryVisibilityTag($projectData['visibility'])));
+                }
+                $contents[] = new UI_Paragraph($createProjectButton);
+                $contents[] = $projectTable;
             }
-            $contents[] = new UI_Paragraph($createProjectButton);
-            $contents[] = $projectTable;
+            else {
+                $contents[] = new UI_Paragraph($createProjectButton);
+                $contents[] = new UI_Paragraph('You have no projects yet. You may either host your own projects or contribute to other projects by using their direct link.');
+            }
         }
-        else {
-            $contents[] = new UI_Paragraph($createProjectButton);
-            $contents[] = new UI_Paragraph('You have no projects yet. You may either host your own projects or contribute to other projects by using their direct link.');
+
+        $contents[] = new UI_Heading('My account', true);
+        $form = new UI_Form('index.php', false);
+        $textRealName = new UI_Form_Text('Real name', 'myAccount[realName]', 'Jane Doe', false, 'Let others know who you are, so that they know who is contributing to their projects.');
+        $textRealName->setDefaultValue(Authentication::getUserRealName());
+        $form->addContent($textRealName);
+        $selectNativeLanguage = new UI_Form_Select('Native language', 'myAccount[nativeLanguage][]', 'Which language is your native language? You may select multiple entries here.', true);
+        $userNativeLanguages = Database::getNativeLanguages(Authentication::getUserID());
+        $languages = Language::getList();
+        foreach ($languages as $languageID) {
+            $selectNativeLanguage->addOption(Language::getLanguageNameFull($languageID), $languageID);
         }
+        foreach ($userNativeLanguages as $userNativeLanguage) {
+            $selectNativeLanguage->addDefaultOption($userNativeLanguage);
+        }
+        $form->addContent($selectNativeLanguage);
+        $form->addContent(new UI_Form_ButtonGroup(array(new UI_Form_Button('Save'))));
+        $contents[] = $form;
+
         $cell = new UI_Cell($contents);
         $row = new UI_Row(array($cell));
         $container = new UI_Container(array($row));
@@ -265,7 +285,7 @@ abstract class UI {
                 $selectDefaultLanguage->addOption($languageLabel, $language);
             }
             if (!empty($repositoryData)) {
-                $selectDefaultLanguage->setDefaultOption($repositoryData['defaultLanguage']);
+                $selectDefaultLanguage->addDefaultOption($repositoryData['defaultLanguage']);
             }
             $form->addContent($selectDefaultLanguage);
         }

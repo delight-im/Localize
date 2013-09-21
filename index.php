@@ -375,10 +375,10 @@ else {
         $data_username = isset($data['username']) ? trim($data['username']) : '';
         $data_password = isset($data['password']) ? trim($data['password']) : '';
 
-        $userData = Database::selectFirst("SELECT id, username, password, type, join_date FROM users WHERE username = ".Database::escape($data_username));
+        $userData = Database::selectFirst("SELECT id, username, password, real_name, type, join_date FROM users WHERE username = ".Database::escape($data_username));
         if (!empty($userData)) {
             if (isset($userData['password']) && password_verify($data_password, $userData['password'])) {
-                $userObject = new User($userData['id'], $userData['type'], $userData['username'], $userData['join_date']);
+                $userObject = new User($userData['id'], $userData['type'], $userData['username'], $userData['real_name'], $userData['join_date']);
                 Authentication::signIn($userObject);
                 Database::update("UPDATE users SET last_login = ".time()." WHERE id = ".intval($userData['id']));
                 $alert = new UI_Alert('<p>You have successfully been signed in!</p>', UI_Alert::TYPE_SUCCESS);
@@ -400,7 +400,25 @@ else {
     }
     else {
         if (Authentication::isSignedIn()) {
-            echo UI::getPage(UI::PAGE_DASHBOARD);
+            $alert = NULL;
+            if (UI::isAction('myAccount')) {
+                $data = UI::getDataPOST('myAccount');
+                $realName = isset($data['realName']) ? trim($data['realName']) : '';
+                $nativeLanguages = isset($data['nativeLanguage']) ? $data['nativeLanguage'] : array();
+                Database::updateAccountInfo(Authentication::getUserID(), $realName, $nativeLanguages);
+                $userObject = Authentication::getUser();
+                if (!empty($userObject)) {
+                    $userObject->setRealName($realName);
+                    Authentication::updateUserInfo($userObject);
+                }
+                $alert = new UI_Alert('<p>Your account has been updated.</p>', UI_Alert::TYPE_SUCCESS);
+            }
+            if (isset($alert)) {
+                echo UI::getPage(UI::PAGE_DASHBOARD, array($alert));
+            }
+            else {
+                echo UI::getPage(UI::PAGE_DASHBOARD);
+            }
         }
         else {
             echo UI::getPage(UI::PAGE_INDEX);
