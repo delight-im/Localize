@@ -41,6 +41,11 @@ class Database {
         return $result->fetch();
     }
 
+    public static function selectCount($sql_string) {
+        $result = self::selectFirst($sql_string);
+        return $result[0];
+    }
+
     public static function insert($sql_string) {
         self::$db->exec($sql_string);
     }
@@ -143,8 +148,8 @@ class Database {
         return $out;
     }
 
-    public static function updateAccountInfo($userID, $realName, $nativeLanguages) {
-        self::update("UPDATE users SET real_name = ".self::escape($realName)." WHERE id = ".intval($userID));
+    public static function updateSettings($userID, $realName, $nativeLanguages, $country, $timezone) {
+        self::update("UPDATE users SET real_name = ".self::escape($realName).", localeCountry = ".self::escape($country).", localeTimezone = ".self::escape($timezone)." WHERE id = ".intval($userID));
         self::delete("DELETE FROM native_languages WHERE userID = ".intval($userID));
         if (is_array($nativeLanguages) && count($nativeLanguages) > 0) {
             $values = "";
@@ -164,8 +169,52 @@ class Database {
         self::update("UPDATE users SET last_login = ".intval($loginTime)." WHERE id = ".intval($userID));
     }
 
+    public static function getPendingEdit($repositoryID, $languageID) {
+        return self::select("SELECT a.id, a.phraseSubKey, a.userID, a.suggestedValue, a.submit_time, b.username, b.real_name, c.phraseKey, c.payload FROM edits AS a JOIN users AS b ON a.userID = b.id JOIN phrases AS c ON a.referencedPhraseID = c.id WHERE a.repositoryID = ".intval($repositoryID)." AND a.languageID = ".intval($languageID)." ORDER BY a.submit_time ASC LIMIT 0, 1");
+    }
+
+    public static function getPendingEditsByRepository($repositoryID) {
+        return self::select("SELECT a.languageID, COUNT(*) FROM edits AS a JOIN users AS b ON a.userID = b.id JOIN phrases AS c ON a.referencedPhraseID = c.id WHERE a.repositoryID = ".intval($repositoryID)." GROUP BY a.languageID");
+    }
+
+    public static function getPendingEditsByRepositoryCount($repositoryID) {
+        return self::selectCount("SELECT COUNT(*) FROM edits AS a JOIN users AS b ON a.userID = b.id JOIN phrases AS c ON a.referencedPhraseID = c.id WHERE a.repositoryID = ".intval($repositoryID));
+    }
+
+    public static function getPendingEditsByRepositoryAndLanguageCount($repositoryID, $languageID) {
+        return self::selectCount("SELECT COUNT(*) FROM edits AS a JOIN users AS b ON a.userID = b.id JOIN phrases AS c ON a.referencedPhraseID = c.id WHERE a.repositoryID = ".intval($repositoryID)." AND a.languageID = ".intval($languageID));
+    }
+
     public static function getPendingEditsByUser($userID) {
         return self::select("SELECT repositoryID, languageID, referencedPhraseID, phraseSubKey, suggestedValue FROM edits WHERE userID = ".intval($userID));
+    }
+
+    public static function getPhrase($repositoryID, $languageID, $phraseKey) {
+        return self::selectFirst("SELECT payload FROM phrases WHERE repositoryID = ".intval($repositoryID)." AND languageID = ".intval($languageID)." AND phraseKey = ".self::escape($phraseKey));
+    }
+
+    public static function updatePhrase($repositoryID, $languageID, $phraseKey, $payload) {
+        self::insert("INSERT INTO phrases (repositoryID, languageID, phraseKey, payload) VALUES (".intval($repositoryID).", ".intval($languageID).", ".self::escape($phraseKey).", ".self::escape($payload).") ON DUPLICATE KEY UPDATE payload = ".self::escape($payload));
+    }
+
+    public static function updateContributor($repositoryID, $contributorID) {
+        self::insert("INSERT INTO contributions (userID, repositoryID) VALUES (".intval($contributorID).", ".intval($repositoryID).") ON DUPLICATE KEY UPDATE editCount = editCount+1");
+    }
+
+    public static function postponeEdit($editID) {
+        self::update("UPDATE edits SET submit_time = ".time()." WHERE id = ".intval($editID));
+    }
+
+    public static function deleteEdit($editID) {
+        self::delete("DELETE FROM edits WHERE id = ".intval($editID));
+    }
+
+    public static function deleteEditsByContributor($contributorID) {
+        self::delete("DELETE FROM edits WHERE userID = ".intval($contributorID));
+    }
+
+    public static function getRepositoriesByContribution($userID) {
+        return self::select("SELECT a.repositoryID, b.name FROM contributions AS a JOIN repositories AS b ON a.repositoryID = b.id WHERE a.userID = ".intval($userID));
     }
 
 }

@@ -63,9 +63,19 @@ abstract class Phrase {
     }
 
     /**
-     * @return array list of values for this phrase
+     * Returns the list of values for this phrase
+     *
+     * @return array list of values
      */
     abstract public function getPhraseValues();
+
+    /**
+     * Set the value at the given sub-key for this phrase
+     *
+     * @param string $subKey sub-key
+     * @param string $value the new value to set
+     */
+    abstract public function setPhraseValue($subKey, $value);
 
     public static function create($id, $phraseKey, $json, $enabled = true, $createKeysOnly = false) {
         $data = json_decode($json, true);

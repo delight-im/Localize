@@ -228,6 +228,16 @@ abstract class Language {
         unset($this->phrases[$phraseKey]);
     }
 
+    public function normalizePhrase($phraseKey, $referencePhrase) {
+        $phraseValues = $this->phrases[$phraseKey]->getPhraseValues();
+        $referenceValues = $referencePhrase->getPhraseValues();
+        foreach ($phraseValues as $subKey => $value) {
+            if ($value == '') {
+                $this->phrases[$phraseKey]->setPhraseValue($subKey, $referenceValues[$subKey]);
+            }
+        }
+    }
+
     public function getNameFull() {
         return self::getLanguageNameFull($this->id);
     }

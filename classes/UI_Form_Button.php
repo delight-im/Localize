@@ -14,11 +14,14 @@ class UI_Form_Button extends UI {
     const ACTION_CANCEL = 2;
 
     protected $label;
+    protected $key;
     protected $type;
     protected $action;
 
-    function __construct($label, $type = self::TYPE_SUCCESS, $action = self::ACTION_SUBMIT) {
+    function __construct($label, $type = self::TYPE_SUCCESS, $action = self::ACTION_SUBMIT, $key = '', $value = '') {
         $this->label = $label;
+        $this->key = $key;
+        $this->value = $value;
         $this->type = $type;
         $this->action = $action;
     }
@@ -31,7 +34,14 @@ class UI_Form_Button extends UI {
         else {
             $out .= ' type="submit"';
         }
-        $out .= ' class="btn'.self::getButtonClass($this->type).'">'.$this->label.'</button>';
+        $out .= ' class="btn'.self::getButtonClass($this->type).'"';
+        if (!empty($this->key)) {
+            $out .= ' name="'.htmlspecialchars($this->key).'"';
+            if (!empty($this->value)) {
+                $out .= ' value="'.htmlspecialchars($this->value).'"';
+            }
+        }
+        $out .= '>'.$this->label.'</button>';
         return $out;
     }
 

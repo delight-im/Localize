@@ -16,7 +16,7 @@ require_once(__DIR__.'/classes/Edit.php');
 require_once(__DIR__.'/libs/password_compat.php');
 
 Authentication::init();
-UI::init();
+UI::init(Authentication::getUserTimezone());
 Database::init();
 
 if (UI::isPage('sign_up')) {
@@ -65,6 +65,28 @@ if (UI::isPage('sign_up')) {
 }
 elseif (UI::isPage('contact')) {
     echo UI::getPage(UI::PAGE_CONTACT);
+}
+elseif (UI::isPage('settings')) {
+    if (UI::isAction('settings')) {
+        $data = UI::getDataPOST('settings');
+        $realName = isset($data['realName']) ? trim($data['realName']) : '';
+        $nativeLanguages = isset($data['nativeLanguage']) ? $data['nativeLanguage'] : array();
+        $localeCountry = isset($data['country']) ? trim($data['country']) : '';
+        $localeTimezone = isset($data['timezone'][$localeCountry]) ? trim($data['timezone'][$localeCountry]) : '';
+        Database::updateSettings(Authentication::getUserID(), $realName, $nativeLanguages, $localeCountry, $localeTimezone);
+        $userObject = Authentication::getUser();
+        if (!empty($userObject)) {
+            $userObject->setRealName($realName);
+            $userObject->setCountry($localeCountry);
+            $userObject->setTimezone($localeTimezone);
+            Authentication::updateUserInfo($userObject);
+        }
+        $alert = new UI_Alert('<p>Your settings have been updated.</p>', UI_Alert::TYPE_SUCCESS);
+        echo UI::getPage(UI::PAGE_SETTINGS, array($alert));
+    }
+    else {
+        echo UI::getPage(UI::PAGE_SETTINGS);
+    }
 }
 elseif (UI::isPage('sign_out')) {
     Authentication::signOut();
@@ -127,6 +149,52 @@ elseif (UI::isPage('language')) {
     else {
         echo UI::getPage(UI::PAGE_PROJECT, array($alert));
     }
+}
+elseif (UI::isPage('review')) {
+    if (UI::isAction('review')) {
+        $languageID = UI::validateID(UI::getDataGET('language'), true);
+        $repositoryID = UI::validateID(UI::getDataGET('project'), true);
+        $repositoryData = Database::getRepositoryData($repositoryID);
+        if (!empty($repositoryData)) {
+            $isAllowed = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_MODERATOR);
+            if ($isAllowed) {
+                $data = UI::getDataPOST('review');
+                $data_action = isset($data['action']) ? trim($data['action']) : '';
+                $data_editID = isset($data['editID']) ? UI::validateID($data['editID'], true) : '';
+                $data_phraseObject = isset($data['phraseObject']) ? unserialize(base64_decode($data['phraseObject'])) : NULL;
+                $data_phraseKey = isset($data['phraseKey']) ? trim($data['phraseKey']) : '';
+                $data_phraseSubKey = isset($data['phraseSubKey']) ? trim($data['phraseSubKey']) : '';
+                $data_contributorID = isset($data['contributorID']) ? UI::validateID($data['contributorID'], true) : '';
+                $data_newValue = isset($data['newValue']) ? trim($data['newValue']) : '';
+                if (!empty($data_phraseObject)) {
+                    switch ($data_action) {
+                        case 'approve';
+                            $data_phraseObject->setPhraseValue($data_phraseSubKey, $data_newValue);
+                            Database::updatePhrase($repositoryID, $languageID, $data_phraseKey, $data_phraseObject->getPayload());
+                            Database::updateContributor($repositoryID, $data_contributorID);
+                            Database::deleteEdit($data_editID);
+                            break;
+                        case 'reviewLater';
+                            Database::postponeEdit($data_editID);
+                            break;
+                        case 'reject';
+                            Database::deleteEdit($data_editID);
+                            break;
+                        case 'rejectAllFromThisContributor';
+                            Database::deleteEditsByContributor($data_contributorID);
+                            break;
+                    }
+                }
+            }
+            else {
+                $alert = new UI_Alert('<p>You are not allowed to review contributions for this project.</p>', UI_Alert::TYPE_WARNING);
+            }
+        }
+        else {
+            $alert = new UI_Alert('<p>The project could not be found.</p>', UI_Alert::TYPE_WARNING);
+        }
+    }
+    echo UI::getPage(UI::PAGE_REVIEW);
 }
 elseif (UI::isPage('export')) {
     $alert = NULL;
@@ -402,16 +470,29 @@ else {
 
         $data_username = isset($data['username']) ? trim($data['username']) : '';
         $data_password = isset($data['password']) ? trim($data['password']) : '';
+        $data_returnURL = '';
+        $data_returnURL_Base64 = isset($data['returnURL']) ? trim($data['returnURL']) : '';
+        if ($data_returnURL_Base64 != '') {
+            $temp = base64_decode($data_returnURL_Base64);
+            if ($temp !== false) {
+                $data_returnURL = $temp;
+            }
+        }
 
-        $userData = Database::selectFirst("SELECT id, username, password, real_name, type, join_date FROM users WHERE username = ".Database::escape($data_username));
+        $userData = Database::selectFirst("SELECT id, username, password, real_name, localeCountry, localeTimezone, type, join_date FROM users WHERE username = ".Database::escape($data_username));
         if (!empty($userData)) {
             if (isset($userData['password']) && password_verify($data_password, $userData['password'])) {
-                $userObject = new User($userData['id'], $userData['type'], $userData['username'], $userData['real_name'], $userData['join_date']);
+                $userObject = new User($userData['id'], $userData['type'], $userData['username'], $userData['real_name'], $userData['localeCountry'], $userData['localeTimezone'], $userData['join_date']);
                 Authentication::signIn($userObject);
                 $pendingEdits = Database::getPendingEditsByUser($userData['id']);
                 Authentication::restoreCachedEdits($pendingEdits);
                 Database::setLastLogin($userData['id'], time());
-                $alert = new UI_Alert('<p>You have successfully been signed in!</p>', UI_Alert::TYPE_SUCCESS);
+                if (empty($data_returnURL) || stripos($data_returnURL, '?p=') === false) {
+                    $alert = new UI_Alert('<p>You have successfully been signed in!</p>', UI_Alert::TYPE_SUCCESS);
+                }
+                else {
+                    UI::redirectToURL($data_returnURL);
+                }
             }
             else {
                 $alert = new UI_Alert('<p>Please check your password again!</p>', UI_Alert::TYPE_WARNING);
@@ -430,25 +511,7 @@ else {
     }
     else {
         if (Authentication::isSignedIn()) {
-            $alert = NULL;
-            if (UI::isAction('myAccount')) {
-                $data = UI::getDataPOST('myAccount');
-                $realName = isset($data['realName']) ? trim($data['realName']) : '';
-                $nativeLanguages = isset($data['nativeLanguage']) ? $data['nativeLanguage'] : array();
-                Database::updateAccountInfo(Authentication::getUserID(), $realName, $nativeLanguages);
-                $userObject = Authentication::getUser();
-                if (!empty($userObject)) {
-                    $userObject->setRealName($realName);
-                    Authentication::updateUserInfo($userObject);
-                }
-                $alert = new UI_Alert('<p>Your account has been updated.</p>', UI_Alert::TYPE_SUCCESS);
-            }
-            if (isset($alert)) {
-                echo UI::getPage(UI::PAGE_DASHBOARD, array($alert));
-            }
-            else {
-                echo UI::getPage(UI::PAGE_DASHBOARD);
-            }
+            echo UI::getPage(UI::PAGE_DASHBOARD);
         }
         else {
             echo UI::getPage(UI::PAGE_INDEX);

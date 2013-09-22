@@ -115,13 +115,6 @@ class Phrase_Android_Plurals extends Phrase_Android {
     }
 
     /**
-     * @return array list of values for this phrase
-     */
-    public function getPhraseValues() {
-        return $this->values;
-    }
-
-    /**
      * Sets the phrase's payload from the given JSON data
      *
      * @param string $json JSON data to get the payload from
@@ -138,6 +131,31 @@ class Phrase_Android_Plurals extends Phrase_Android {
             foreach ($keys as $key) {
                 $this->values[$key] = '';
             }
+        }
+    }
+
+    /**
+     * Returns the list of values for this phrase
+     *
+     * @return array list of values
+     */
+    public function getPhraseValues() {
+        return $this->values;
+    }
+
+    /**
+     * Set the value at the given sub-key for this phrase
+     *
+     * @param string $subKey sub-key
+     * @param string $value the new value to set
+     * @throws Exception if the sub-key could not be found
+     */
+    public function setPhraseValue($subKey, $value) {
+        if (isset($this->values[$subKey])) {
+            $this->values[$subKey] = $value;
+        }
+        else {
+            throw new Exception('Unknown sub-key '.$subKey);
         }
     }
 

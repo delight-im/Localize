@@ -64,13 +64,6 @@ class Phrase_Android_String extends Phrase_Android {
     }
 
     /**
-     * @return array list of values for this phrase
-     */
-    public function getPhraseValues() {
-        return array($this->value);
-    }
-
-    /**
      * Sets the phrase's payload from the given JSON data
      *
      * @param string $json JSON data to get the payload from
@@ -84,6 +77,25 @@ class Phrase_Android_String extends Phrase_Android {
         else {
             $this->value = '';
         }
+    }
+
+    /**
+     * Returns the list of values for this phrase
+     *
+     * @return array list of values
+     */
+    public function getPhraseValues() {
+        return array($this->value);
+    }
+
+    /**
+     * Set the value at the given sub-key for this phrase
+     *
+     * @param string $subKey sub-key
+     * @param string $value the new value to set
+     */
+    public function setPhraseValue($subKey, $value) {
+        $this->value = $value;
     }
 
 }

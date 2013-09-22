@@ -61,3 +61,16 @@ function toggleMoreRow(toggleButton, rowToToggle) {
         }
     }
 }
+function chooseTimezoneByCountry(countryCode) {
+    if (typeof(countryCode) !== 'undefined' && countryCode !== null) {
+        var timezoneSelects = document.getElementsByClassName('timezone-select');
+        for (var i = 0; i < timezoneSelects.length; i++) {
+            if (countryCode != '' && timezoneSelects[i].className.indexOf('timezone-select-'+countryCode) > -1) {
+                timezoneSelects[i].style.display = 'block';
+            }
+            else {
+                timezoneSelects[i].style.display = 'none';
+            }
+        }
+    }
+}

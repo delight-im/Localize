@@ -36,11 +36,18 @@ class UI_Table extends UI {
     public function getHTML() {
         $out = '<div class="table-responsive">';
         $out .= '<table class="table table-bordered">';
-        $out .= '<thead><tr>';
+        $headHTML = '<thead><tr>';
+        $hasHeaders = false;
         foreach ($this->headers as $header) {
-            $out .= '<th>'.$header.'</th>';
+            $headHTML .= '<th>'.$header.'</th>';
+            if ($header != '') {
+                $hasHeaders = true;
+            }
         }
-        $out .= '</tr></thead>';
+        $headHTML .= '</tr></thead>';
+        if ($hasHeaders) {
+            $out .= $headHTML;
+        }
         $out .= '<tbody>';
         foreach ($this->rows as $row) {
             $out .= '<tr';

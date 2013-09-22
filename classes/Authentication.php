@@ -49,6 +49,26 @@ class Authentication {
         }
     }
 
+    public static function getUserCountry() {
+        $userObject = self::getUser();
+        if (empty($userObject)) {
+            return '';
+        }
+        else {
+            return $userObject->getCountry();
+        }
+    }
+
+    public static function getUserTimezone() {
+        $userObject = self::getUser();
+        if (empty($userObject)) {
+            return '';
+        }
+        else {
+            return $userObject->getTimezone();
+        }
+    }
+
     public static function isUserDeveloper() {
         $userObject = self::getUser();
         if (empty($userObject)) {
@@ -107,6 +127,20 @@ class Authentication {
             $restoredEditsArray[$databaseResult['repositoryID']][$databaseResult['languageID']][Helper::encodeID($databaseResult['referencedPhraseID'])][$databaseResult['phraseSubKey']] = $databaseResult['suggestedValue'];
         }
         $_SESSION['edits'] = $restoredEditsArray;
+    }
+
+    public static function saveCachedRepository($id, $name) {
+        $_SESSION['recentlyVisited'][$id] = $name;
+    }
+
+    public static function getCachedRepositories() {
+        if (isset($_SESSION['recentlyVisited'])) {
+            asort($_SESSION['recentlyVisited']);
+            return $_SESSION['recentlyVisited'];
+        }
+        else {
+            return array();
+        }
     }
 
 }
