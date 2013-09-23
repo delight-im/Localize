@@ -727,7 +727,7 @@ abstract class UI {
                     $languageTable = new UI_Table(array('Language', 'Completion'));
                     $languageTable->setColumnPriorities(8, 4);
                     $languages = Language::getList($defaultLanguage->getID());
-                    $repository->loadLanguages();
+                    $repository->loadLanguages(false, Repository::SORT_NO_LANGUAGE);
                     foreach ($languages as $language) {
                         $linkURL = '?p=language&amp;language='.Helper::encodeID($language).'&amp;project='.Helper::encodeID($repositoryID);
                         $nameLink = new UI_Link(Language::getLanguageNameFull($language), $linkURL, UI_Link::TYPE_UNIMPORTANT);
@@ -780,11 +780,15 @@ abstract class UI {
 
                     $heading = new UI_Heading($languageData->getNameFull(), true);
 
-                    $repository->loadLanguages();
+                    $repository->loadLanguages(false, $languageID);
                     $languageLeft = $repository->getLanguage($repository->getDefaultLanguage());
                     $languageRight = $repository->getLanguage($language->getID());
 
                     $languageLeftPhrases = $languageLeft->getPhrases();
+                    $languageRightPhrases = $languageRight->getPhrases();
+                    if (count($languageLeftPhrases) != count($languageRightPhrases)) {
+                        throw new Exception('Count of left language\'s phrases does not match right language\'s count of phrases');
+                    }
                     if ($language->getID() == $defaultLanguage->getID()) { // viewing the default language itself
                         $phrasesTable = new UI_Table(array('Unique key', $language->getNameFull()));
                         $phrasesTable->setColumnPriorities(6, 6);
@@ -828,8 +832,8 @@ abstract class UI {
                             }
                         }
                         else { // viewing another language that will be compared to default language
-                            foreach ($languageLeftPhrases as $defaultPhrase) {
-                                $rightPhrase = $languageRight->getPhraseByKey($defaultPhrase->getPhraseKey());
+                            foreach ($languageRightPhrases as $rightPhrase) {
+                                $defaultPhrase = $languageLeft->getPhraseByKey($rightPhrase->getPhraseKey());
                                 $valuesLeft = $defaultPhrase->getPhraseValues();
                                 $valuesRight = $rightPhrase->getPhraseValues();
                                 foreach ($valuesLeft as $subKey => $valueLeft) {

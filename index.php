@@ -226,7 +226,7 @@ elseif (UI::isPage('export')) {
                 $filename = isset($data['filename']) ? trim($data['filename']) : '';
                 if (File_IO::isFilenameValid($filename)) {
                     $repository = new Repository($repositoryID, $repositoryData['name'], $repositoryData['visibility'], $repositoryData['defaultLanguage']);
-                    $repository->loadLanguages(true);
+                    $repository->loadLanguages(true, Repository::SORT_ALL_LANGUAGES);
                     File_IO::exportRepository($repository, $filename);
                     exit;
                 }

@@ -28,15 +28,6 @@ class Phrase_Android_String extends Phrase_Android {
     }
 
     /**
-     * Returns the percentage of completion for this phrase where 0.0 is empty and 1.0 is completed
-     *
-     * @return float the percentage of completion for this phrase
-     */
-    public function getCompleteness() {
-        return !empty($this->value);
-    }
-
-    /**
      * Gets the phrase's payload in form of JSON data
      *
      * @return string payload as JSON data
@@ -103,6 +94,16 @@ class Phrase_Android_String extends Phrase_Android {
      */
     public function addValue($value, $subKey = NULL) {
         $this->value = $value;
+    }
+
+    /**
+     * Returns the the number of complete values and total values for this phrase
+     *
+     * @return array the first entry contains the number of complete values in this phrase and the second the total number of values
+     */
+    public function getCompleteness() {
+        $complete = empty($this->value) ? 0 : 1;
+        return array($complete, 1);
     }
 
 }

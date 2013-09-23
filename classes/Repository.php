@@ -9,6 +9,8 @@ class Repository {
     const ROLE_DEVELOPER = 2;
     const ROLE_MODERATOR = 3;
     const ROLE_CONTRIBUTOR = 4;
+    const SORT_NO_LANGUAGE = -1;
+    const SORT_ALL_LANGUAGES = 0;
 
     protected $id;
     protected $name;
@@ -112,17 +114,17 @@ class Repository {
         $this->languages[$language]->normalizePhrase($phraseKey, $referencePhrase);
     }
 
-    public function loadLanguages($isExport = false) {
+    public function loadLanguages($isExport, $languagesToSort) {
         $phrases = Database::select("SELECT id, languageID, phraseKey, enabled, payload FROM phrases WHERE repositoryID = ".intval($this->id));
         if (!empty($phrases)) {
             foreach ($phrases as $phrase) {
                 $this->addPhrase($phrase['languageID'], $phrase['id'], $phrase['phraseKey'], $phrase['payload'], $phrase['enabled']);
             }
         }
-        $this->normalizeLanguages($isExport);
+        $this->normalizeLanguages($isExport, $languagesToSort);
     }
 
-    protected function normalizeLanguages($isExport) {
+    protected function normalizeLanguages($isExport, $languagesToSort) {
         $defLangObject = $this->languages[$this->defaultLanguage];
         $defLangPhrases = $defLangObject->getPhrases();
         foreach ($this->languages as $langID => $lang) {
@@ -144,11 +146,13 @@ class Repository {
                     }
                 }
             }
-            if ($isExport) {
-                $lang->sortUntranslatedFirst();
-            }
-            else {
-                $lang->sortKeysAlphabetically();
+            if ($languagesToSort == self::SORT_ALL_LANGUAGES || $languagesToSort == $langID) {
+                if ($isExport) {
+                    $lang->sortKeysAlphabetically();
+                }
+                else {
+                    $lang->sortUntranslatedFirst();
+                }
             }
         }
     }

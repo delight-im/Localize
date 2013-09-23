@@ -208,11 +208,12 @@ abstract class Language {
 
     public function getPhraseByKey($searchKey) {
         if (isset($this->phrases[$searchKey])) {
-            return $this->phrases[$searchKey];
+            $out = $this->phrases[$searchKey];
         }
         else {
-            return NULL;
+            $out = NULL;
         }
+        return $out;
     }
 
     public function addPhrase($phrase) {
@@ -620,19 +621,20 @@ abstract class Language {
     }
 
     /**
-     * Returns the percentage of completion for this phrase where 0.0 is empty and 1.0 is completed
+     * Returns the percentage of completion for this language where 0.0 is empty and 1.0 is completed
      *
-     * @return float the percentage of completion for this phrase
+     * @return float the percentage of completion for this language
      */
     public function getCompleteness() {
-        $sum = 0;
-        $count = 0;
+        $complete = 0;
+        $total = 0;
         foreach ($this->phrases as $phrase) {
-            $sum += $phrase->getCompleteness();
-            $count++;
+            $res = $phrase->getCompleteness();
+            $complete += $res[0];
+            $total += $res[1];
         }
-        if ($count > 0) {
-            return $sum/$count;
+        if ($total > 0) {
+            return $complete/$total;
         }
         else {
             return 1;
@@ -640,11 +642,26 @@ abstract class Language {
     }
 
     public function sortKeysAlphabetically() {
-        // XXX ksort($this->phrases);
+        uksort($this->phrases, 'strcasecmp');
     }
 
     public function sortUntranslatedFirst() {
-        // XXX krsort($this->phrases);
+        uasort($this->phrases, 'Language::sortUntranslatedFirstCompare');
+    }
+
+    public static function sortUntranslatedFirstCompare($a, $b) {
+        $aCompletenessData = $a->getCompleteness();
+        $aCompleteness = $aCompletenessData[0] / $aCompletenessData[1];
+        $bCompletenessData = $b->getCompleteness();
+        $bCompleteness = $bCompletenessData[0] / $bCompletenessData[1];
+        if ($aCompleteness == $bCompleteness) {
+            $res = 0;
+            return $res;
+        }
+        else {
+            $res = ($aCompleteness > $bCompleteness) ? 1 : -1;
+            return $res;
+        }
     }
 
 }

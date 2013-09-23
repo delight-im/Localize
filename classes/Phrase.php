@@ -16,9 +16,9 @@ abstract class Phrase {
     abstract public function output();
 
     /**
-     * Returns the percentage of completion for this phrase where 0.0 is empty and 1.0 is completed
+     * Returns the the number of complete values and total values for this phrase
      *
-     * @return float the percentage of completion for this phrase
+     * @return array the first entry contains the number of complete values in this phrase and the second the total number of values
      */
     abstract public function getCompleteness();
 
