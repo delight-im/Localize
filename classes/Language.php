@@ -639,4 +639,12 @@ abstract class Language {
         }
     }
 
+    public function sortKeysAlphabetically() {
+        // XXX ksort($this->phrases);
+    }
+
+    public function sortUntranslatedFirst() {
+        // XXX krsort($this->phrases);
+    }
+
 }

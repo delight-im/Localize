@@ -13,8 +13,11 @@ class UI_Form_Textarea extends UI {
     protected $rows;
     protected $isRTL;
     protected $onChangeJS;
+    protected $cssClasses;
+    protected $cssStyles;
+    protected $hasUniqueID;
 
-    function __construct($label, $key, $placeholder, $helpText = '', $isInline = false, $defaultText = '', $rows = 1, $isRTL = false, $onChangeJS = '') {
+    function __construct($label, $key, $placeholder, $helpText = '', $isInline = false, $defaultText = '', $rows = 1, $isRTL = false, $onChangeJS = '', $cssClasses = '', $cssStyles = '', $hasUniqueID = true) {
         $this->label = $label;
         $this->key = $key;
         $this->placeholder = $placeholder;
@@ -24,12 +27,28 @@ class UI_Form_Textarea extends UI {
         $this->rows = $rows;
         $this->isRTL = $isRTL;
         $this->onChangeJS = $onChangeJS;
+        $this->cssClasses = $cssClasses;
+        $this->cssStyles = $cssStyles;
+        $this->hasUniqueID = $hasUniqueID;
     }
 
     public function getHTML() {
         $out = '';
         if (!$this->isInline) {
-            $out .= '<div class="form-group"><label for="'.htmlspecialchars($this->key).'" class="col-lg-2 control-label">'.$this->label.'</label>';
+            $out .= '<div class="form-group';
+            if (!empty($this->cssClasses)) {
+                $out .= ' '.$this->cssClasses;
+            }
+            $out .= '"';
+            if (!empty($this->cssStyles)) {
+                $out .= ' style="'.$this->cssStyles.'"';
+            }
+            $out .= '>';
+            $out .= '<label';
+            if ($this->hasUniqueID) {
+                $out .= ' for="'.htmlspecialchars($this->key).'"';
+            }
+            $out .= ' class="col-lg-2 control-label">'.$this->label.'</label>';
             $out .= '<div class="col-lg-10">';
         }
         $out .= '<textarea class="form-control" rows="'.$this->rows.'" id="'.htmlspecialchars($this->key).'" name="'.htmlspecialchars($this->key).'" placeholder="'.htmlspecialchars($this->placeholder).'"';
@@ -62,7 +81,7 @@ class UI_Form_Textarea extends UI {
             $minRows = 2;
         }
 
-        $estimatedLines = floor(mb_strlen($text) / 24);
+        $estimatedLines = round(mb_strlen($text) / 36);
         if ($estimatedLines < $minRows) {
             return $minRows;
         }

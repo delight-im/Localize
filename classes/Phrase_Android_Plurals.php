@@ -34,29 +34,6 @@ class Phrase_Android_Plurals extends Phrase_Android {
     }
 
     /**
-     * Adds a new value for the given quantity
-     *
-     * @param int $quantityID the quantity ID to set the value for
-     * @param string $value the value to set
-     * @throws Exception if the quantity ID is unknown
-     */
-    public function addValue($quantityID, $value) {
-        if (isset($this->values[$quantityID])) {
-            $this->values[$quantityID] = $value;
-        }
-        else {
-            throw new Exception('Unknown quantity ID: '.$quantityID);
-        }
-    }
-
-    /**
-     * @return array the plurals' contents
-     */
-    public function getValues() {
-        return $this->values;
-    }
-
-    /**
      * Returns the output of this phrase for the specific platform and type of phrase
      *
      * @return string output of this phrase
@@ -156,6 +133,22 @@ class Phrase_Android_Plurals extends Phrase_Android {
         }
         else {
             throw new Exception('Unknown sub-key '.$subKey);
+        }
+    }
+
+    /**
+     * Adds a new value to the given phrase object, either with the given sub-key or with an auto-incrementing ID
+     *
+     * @param string $value the value (phrase content) to add
+     * @param string $subKey (optional) sub-key if no auto-incrementing ID can/should be used
+     * @throws Exception (optionally) if this phrase object does not support auto-incrementing IDs and the given sub-key is not allowed
+     */
+    public function addValue($value, $subKey = NULL) {
+        if (isset($this->values[$subKey])) {
+            $this->values[$subKey] = $value;
+        }
+        else {
+            throw new Exception('Unknown quantity ID: '.$subKey);
         }
     }
 

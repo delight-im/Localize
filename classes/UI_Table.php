@@ -7,6 +7,7 @@ class UI_Table extends UI {
     protected $columnCount;
     protected $headers;
     protected $rows;
+    protected $columnPriorities;
 
     function __construct($headers) {
         if (isset($headers) && is_array($headers) && !empty($headers)) {
@@ -17,6 +18,7 @@ class UI_Table extends UI {
             throw new Exception('Headers must be a non-empty array of strings');
         }
         $this->rows = array();
+        $this->columnPriorities = array();
     }
 
     public function addRow($columns, $id = '', $cssClasses = '', $cssStyle = '') {
@@ -38,11 +40,13 @@ class UI_Table extends UI {
         $out .= '<table class="table table-bordered">';
         $headHTML = '<thead><tr>';
         $hasHeaders = false;
+        $counter = 0;
         foreach ($this->headers as $header) {
-            $headHTML .= '<th>'.$header.'</th>';
+            $headHTML .= '<th'.(isset($this->columnPriorities[$counter]) ? ' class="col-lg-'.$this->columnPriorities[$counter].'"' : '').'>'.$header.'</th>';
             if ($header != '') {
                 $hasHeaders = true;
             }
+            $counter++;
         }
         $headHTML .= '</tr></thead>';
         if ($hasHeaders) {
@@ -61,8 +65,10 @@ class UI_Table extends UI {
                 $out .= ' style="'.$row[3].'"';
             }
             $out .= '>';
+            $counter = 0;
             foreach ($row[0] as $column) {
-                $out .= '<td>'.$column.'</td>';
+                $out .= '<td'.(isset($this->columnPriorities[$counter]) ? ' class="col-lg-'.$this->columnPriorities[$counter].'"' : '').'>'.$column.'</td>';
+                $counter++;
             }
             $out .= '</tr>';
         }
@@ -70,6 +76,11 @@ class UI_Table extends UI {
         $out .= '</table>';
         $out .= '</div>';
         return $out;
+    }
+
+    public function setColumnPriorities() {
+        $varargs = func_get_args();
+        $this->columnPriorities = $varargs;
     }
 
 }

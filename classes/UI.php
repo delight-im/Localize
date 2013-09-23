@@ -20,6 +20,7 @@ require_once('UI_Link.php');
 require_once('UI_Table.php');
 require_once('UI_Progress.php');
 require_once('Time.php');
+require_once(__DIR__.'/../libs/SimpleDiff.php');
 
 abstract class UI {
 
@@ -219,6 +220,7 @@ abstract class UI {
         if (Authentication::isUserDeveloper()) {
             if (count($projectList) > 0) {
                 $projectTable = new UI_Table(array('Project', 'Review', 'Default language', 'Visibility'));
+                $projectTable->setColumnPriorities(4, 2, 3, 3);
                 foreach ($projectList as $projectData) {
                     $linkedName = '<a href="?p=project&amp;project='.Helper::encodeID($projectData['repositoryID']).'">'.htmlspecialchars($projectData['name']).'</a>';
                     $languageName = Language::getLanguageNameFull($projectData['defaultLanguage']);
@@ -358,10 +360,16 @@ abstract class UI {
         self::addBreadcrumbItem('?p=sign_up', 'Create free account');
         $form = new UI_Form('?p=sign_up', false);
 
-        $radioType = new UI_Form_Radio('Account type', 'sign_up[type]');
-        $radioType->addOption('Translator (Supporter)', User::TYPE_TRANSLATOR);
-        $radioType->addOption('Developer (Project host)', User::TYPE_DEVELOPER);
-        $form->addContent($radioType);
+        if (Authentication::isAllowSignUpDevelopers()) {
+            $radioType = new UI_Form_Radio('Account type', 'sign_up[type]');
+            $radioType->addOption('Translator (Supporter)', User::TYPE_TRANSLATOR);
+            $radioType->addOption('Developer (Project host)', User::TYPE_DEVELOPER);
+            $form->addContent($radioType);
+        }
+        else {
+            $form->addContent(new UI_Form_Hidden('sign_up[type]', User::TYPE_TRANSLATOR));
+        }
+
 
         $textUsername = new UI_Form_Text('Username', 'sign_up[username]', 'Choose your username', false, 'You will need to enter your username when you want to sign in.');
         $form->addContent($textUsername);
@@ -417,9 +425,9 @@ abstract class UI {
                 $contents[] = new UI_Heading(htmlspecialchars($repositoryData['name']), true);
                 $contents[] = self::getLoginForm();
             }
-            elseif (!Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_DEVELOPER)) {
+            elseif (!Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_MODERATOR)) {
                 $contents[] = new UI_Heading(htmlspecialchars($repositoryData['name']), true);
-                $contents[] = new UI_Paragraph('Only administrators and developers of this project are allowed to review contributions.');
+                $contents[] = new UI_Paragraph('Only administrators, developers and moderators of this project are allowed to review contributions.');
             }
             else {
                 self::addBreadcrumbItem('?p=review&amp;project='.Helper::encodeID($repositoryID), 'Review');
@@ -427,6 +435,7 @@ abstract class UI {
                     $contents[] = new UI_Heading('Review contributions', true);
 
                     $table = new UI_Table(array('Language', 'Review'));
+                    $table->setColumnPriorities(9, 3);
                     $pendingLanguages = Database::getPendingEditsByRepository($repositoryID);
 
                     if (count($pendingLanguages) > 0) {
@@ -458,6 +467,7 @@ abstract class UI {
                     else { // edits available to review
                         $form = new UI_Form(htmlspecialchars($currentPageURL), false);
                         $table = new UI_Table(array('', ''));
+                        $table->setColumnPriorities(3, 9);
                         $contributorName = empty($editData[0]['real_name']) ? '<span class="text-muted">'.$editData[0]['username'].'</span>' : $editData[0]['real_name'].'<span class="text-muted"> ('.$editData[0]['username'].')</span>';
 
                         $buttonApprove = new UI_Form_Button('Approve', UI_Form_Button::TYPE_SUCCESS, UI_Form_Button::ACTION_SUBMIT, 'review[action]', 'approve');
@@ -469,7 +479,7 @@ abstract class UI {
                             $buttonReviewLater,
                             $buttonReject
                         ), true);
-                        $newValueEdit = new UI_Form_Textarea('', 'review[newValue]', $editData[0]['suggestedValue'], '', true, $editData[0]['suggestedValue'], 4, Language::isLanguageRTL($languageID));
+                        $newValueEdit = new UI_Form_Textarea('', 'review[newValue]', $editData[0]['suggestedValue'], '', true, htmlspecialchars($editData[0]['suggestedValue']), UI_Form_Textarea::getOptimalRowCount($editData[0]['suggestedValue'], 2), Language::isLanguageRTL($languageID));
 
                         $referencedPhrase = Phrase::create(0, $editData[0]['phraseKey'], $editData[0]['payload']);
 
@@ -486,17 +496,23 @@ abstract class UI {
                         $valuesPrevious = $previousPhrase->getPhraseValues();
                         $valuePrevious = isset($valuesPrevious[$editData[0]['phraseSubKey']]) ? trim($valuesPrevious[$editData[0]['phraseSubKey']]) : '';
 
+                        $placeholdersReference = Phrase_Android::getPlaceholders($valueReference);
+
                         $pendingEditsLeftCount = Database::getPendingEditsByRepositoryAndLanguageCount($repositoryID, $languageID);
                         $pendingEditsLeft = $pendingEditsLeftCount == 1 ? '1 other' : $pendingEditsLeftCount.' others';
 
-                        $table->addRow(array('<strong>'.Language::getLanguageNameFull($repositoryData['defaultLanguage']).'</strong>', $valueReference));
-                        $table->addRow(array('<strong>Old value</strong>', $valuePrevious));
+                        $phraseWithMarkedPlaceholders = Phrase::markPlaceholders(htmlspecialchars($valueReference), $placeholdersReference);
+
+                        $table->addRow(array('<strong>'.Language::getLanguageNameFull($repositoryData['defaultLanguage']).'</strong>', '<span dir="'.(Language::isLanguageRTL($repositoryData['defaultLanguage']) ? 'rtl' : 'ltr').'">'.nl2br($phraseWithMarkedPlaceholders).'</span>'));
+                        $table->addRow(array('<strong>Old value</strong>', '<span dir="'.(Language::isLanguageRTL($languageID) ? 'rtl' : 'ltr').'">'.nl2br(htmlspecialchars($valuePrevious)).'</span>'));
+                        $table->addRow(array('<strong>Applied changes</strong>', '<span dir="'.(Language::isLanguageRTL($languageID) ? 'rtl' : 'ltr').'">'.nl2br(htmlDiff(htmlspecialchars($valuePrevious), htmlspecialchars($editData[0]['suggestedValue']))).'</span>'));
                         $table->addRow(array('<strong>New value</strong>', $newValueEdit->getHTML()));
                         $table->addRow(array('<strong>Submit time</strong>', date('d.m.Y H:i', $editData[0]['submit_time'])));
                         $table->addRow(array('<strong>Contributor</strong>', $contributorName));
                         $table->addRow(array('<strong>Edits left</strong>', $pendingEditsLeft));
 
                         $form->addContent(new UI_Form_Hidden('review[editID]', Helper::encodeID($editData[0]['id'])));
+                        $form->addContent(new UI_Form_Hidden('review[referenceValue]', $valueReference));
                         $form->addContent(new UI_Form_Hidden('review[phraseObject]', base64_encode(serialize($previousPhrase))));
                         $form->addContent(new UI_Form_Hidden('review[phraseKey]', htmlspecialchars($editData[0]['phraseKey'])));
                         $form->addContent(new UI_Form_Hidden('review[phraseSubKey]', htmlspecialchars($editData[0]['phraseSubKey'])));
@@ -525,6 +541,7 @@ abstract class UI {
         $contents[] = new UI_Heading('Settings', true);
         $form = new UI_Form('?p=settings', false);
 
+        $form->addContent(new UI_Form_StaticText('Username', Authentication::getUserName()));
         $textRealName = new UI_Form_Text('Real name', 'settings[realName]', 'Enter your name here', false, 'Let others know who you are, so that they know who is contributing to their projects.');
         $textRealName->setDefaultValue(Authentication::getUserRealName());
         $form->addContent($textRealName);
@@ -625,15 +642,15 @@ abstract class UI {
                     $textUsername = new UI_Form_Text('Key', 'add_phrase[key]', 'Unique identifier', false, 'This is the short string that you\'ll identify the phrase(s) with later.');
                     $form->addContent($textUsername);
 
-                    $textUsername = new UI_Form_Text('String', 'add_phrase[string]', 'String for '.$defaultLanguage->getNameFull(), false, 'You can later translate this string to other languages.', 'addPhraseGroup_String');
+                    $textUsername = new UI_Form_Textarea('String', 'add_phrase[string]', 'String for '.$defaultLanguage->getNameFull(), 'You can later translate this string to other languages.', false, '', 2, $defaultLanguage->isRTL(), '', 'addPhraseGroup_String');
                     $form->addContent($textUsername);
 
-                    $textPassword1 = new UI_Form_Text('Item', 'add_phrase[string_array][]', 'Item for '.$defaultLanguage->getNameFull(), false, 'You can later translate this item to other languages.', 'addPhraseGroup_StringArray', 'display:none;', false);
+                    $textPassword1 = new UI_Form_Textarea('Item', 'add_phrase[string_array][]', 'Item for '.$defaultLanguage->getNameFull(), 'You can later translate this item to other languages.', false, '', 2, $defaultLanguage->isRTL(), '', 'addPhraseGroup_StringArray', 'display:none;', false);
                     $form->addContent($textPassword1);
 
                     $quantities = Phrase_Android_Plurals::getList();
                     foreach ($quantities as $quantity) {
-                        $textPassword2 = new UI_Form_Text($quantity, 'add_phrase[plurals]['.$quantity.']', 'Quantity for '.$defaultLanguage->getNameFull(), false, 'You can later translate this quantity to other languages.', 'addPhraseGroup_Plurals', 'display:none;');
+                        $textPassword2 = new UI_Form_Textarea($quantity, 'add_phrase[plurals]['.$quantity.']', 'Quantity for '.$defaultLanguage->getNameFull(), 'You can later translate this quantity to other languages.', false, '', 2, $defaultLanguage->isRTL(), '', 'addPhraseGroup_Plurals', 'display:none;');
                         $form->addContent($textPassword2);
                     }
 
@@ -708,6 +725,7 @@ abstract class UI {
                     $heading = new UI_Heading(htmlspecialchars($repositoryData['name']), true);
 
                     $languageTable = new UI_Table(array('Language', 'Completion'));
+                    $languageTable->setColumnPriorities(8, 4);
                     $languages = Language::getList($defaultLanguage->getID());
                     $repository->loadLanguages();
                     foreach ($languages as $language) {
@@ -728,11 +746,28 @@ abstract class UI {
                     $buttonImport = new UI_Link('Import XML', '?p=import&amp;project='.Helper::encodeID($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
                     $buttonEdit = new UI_Link('Edit project', '?p=create_project&amp;project='.Helper::encodeID($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
                     $actionsForm->addContent(new UI_Form_Hidden('exportXML', 1));
-                    $actionsForm->addContent(new UI_Form_ButtonGroup(array(
-                        $buttonExport,
-                        $buttonImport,
-                        $buttonEdit
-                    ), true));
+
+                    $isAdmin = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_ADMINISTRATOR);
+                    $isDev = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_DEVELOPER);
+                    if ($isAdmin) {
+                        $actionButtons = array(
+                            $buttonExport,
+                            $buttonImport,
+                            $buttonEdit
+                        );
+                    }
+                    elseif ($isDev) {
+                        $actionButtons = array(
+                            $buttonExport,
+                            $buttonImport
+                        );
+                    }
+                    else {
+                        $actionButtons = array();
+                    }
+                    if (!empty($actionButtons)) {
+                        $actionsForm->addContent(new UI_Form_ButtonGroup($actionButtons, true));
+                    }
 
                     $contents[] = $heading;
                     $contents[] = $actionsForm;
@@ -752,9 +787,11 @@ abstract class UI {
                     $languageLeftPhrases = $languageLeft->getPhrases();
                     if ($language->getID() == $defaultLanguage->getID()) { // viewing the default language itself
                         $phrasesTable = new UI_Table(array('Unique key', $language->getNameFull()));
+                        $phrasesTable->setColumnPriorities(6, 6);
                     }
                     else { // viewing another language that will be compared to default language
                         $phrasesTable = new UI_Table(array($defaultLanguage->getNameFull(), $language->getNameFull()));
+                        $phrasesTable->setColumnPriorities(6, 6);
                     }
                     if (count($languageLeftPhrases) <= 0) {
                         $phrasesTable->addRow(array(
@@ -767,16 +804,24 @@ abstract class UI {
                             foreach ($languageLeftPhrases as $defaultPhrase) {
                                 $values = $defaultPhrase->getPhraseValues();
                                 foreach ($values as $subKey => $value) {
-                                    $editLinkURL = '?p=edit_phrase&amp;project='.Helper::encodeID($repositoryID).'&amp;language='.Helper::encodeID($languageID).'&amp;phrase='.$defaultPhrase->getPhraseKey();
-                                    $editLink = new UI_Link('<span dir="ltr">'.htmlspecialchars($defaultPhrase->getPhraseKey()).'</span>', $editLinkURL);
-                                    $phraseKey = 'updatePhrases[edits]['.Helper::encodeID($defaultPhrase->getID()).']['.$subKey.']';
+                                    $phraseKey = $defaultPhrase->getPhraseKey();
+                                    $phraseKeyName = $phraseKey;
+                                    if ($defaultPhrase instanceof Phrase_Android_StringArray) {
+                                        $phraseKeyName .= ' » ['.$subKey.']';
+                                    }
+                                    elseif ($defaultPhrase instanceof Phrase_Android_Plurals) {
+                                        $phraseKeyName .= ' » '.$subKey;
+                                    }
+                                    $editLinkURL = '?p=edit_phrase&amp;project='.Helper::encodeID($repositoryID).'&amp;language='.Helper::encodeID($languageID).'&amp;phrase='.$phraseKey;
+                                    $editLink = new UI_Link('<span dir="ltr">'.htmlspecialchars($phraseKeyName).'</span>', $editLinkURL);
+                                    $phraseFormKey = 'updatePhrases[edits]['.Helper::encodeID($defaultPhrase->getID()).']['.$subKey.']';
                                     $value = Authentication::getCachedEdit($repositoryID, $languageID, Helper::encodeID($defaultPhrase->getID()), $subKey, $value);
 
-                                    $valuePrevious = new UI_Form_Hidden(str_replace('[edits]', '[previous]', $phraseKey), htmlspecialchars($value));
-                                    $valueEdit = new UI_Form_Textarea('', $phraseKey, htmlspecialchars($value), '', true, $value, UI_Form_Textarea::getOptimalRowCount($value, 2), $defaultLanguage->isRTL());
+                                    $valuePrevious = new UI_Form_Hidden(str_replace('[edits]', '[previous]', $phraseFormKey), $value);
+                                    $valueEdit = new UI_Form_Textarea('', $phraseFormKey, $value, '', true, htmlspecialchars($value), UI_Form_Textarea::getOptimalRowCount($value, 2), $defaultLanguage->isRTL());
 
                                     $phrasesTable->addRow(array(
-                                        ($mayMovePhrases ? $editLink->getHTML() : $defaultPhrase->getPhraseKey()),
+                                        ($mayMovePhrases ? $editLink->getHTML() : $phraseKeyName),
                                         $valuePrevious->getHTML().$valueEdit->getHTML()
                                     ));
                                 }
@@ -788,12 +833,12 @@ abstract class UI {
                                 $valuesLeft = $defaultPhrase->getPhraseValues();
                                 $valuesRight = $rightPhrase->getPhraseValues();
                                 foreach ($valuesLeft as $subKey => $valueLeft) {
-                                    $valueLeft = '<span dir="'.($defaultLanguage->isRTL() ? 'rtl' : 'ltr').'">'.htmlspecialchars($valueLeft).'</span>';
+                                    $valueLeft = '<span dir="'.($defaultLanguage->isRTL() ? 'rtl' : 'ltr').'">'.nl2br(htmlspecialchars($valueLeft)).'</span>';
                                     $phraseKey = 'updatePhrases[edits]['.Helper::encodeID($defaultPhrase->getID()).']['.$subKey.']';
                                     $valuesRight[$subKey] = Authentication::getCachedEdit($repositoryID, $languageID, Helper::encodeID($defaultPhrase->getID()), $subKey, $valuesRight[$subKey]);
 
-                                    $valuePrevious = new UI_Form_Hidden(str_replace('[edits]', '[previous]', $phraseKey), htmlspecialchars($valuesRight[$subKey]));
-                                    $valueEdit = new UI_Form_Textarea('', $phraseKey, htmlspecialchars($valuesRight[$subKey]), '', true, $valuesRight[$subKey], UI_Form_Textarea::getOptimalRowCount($valuesRight[$subKey]), $language->isRTL());
+                                    $valuePrevious = new UI_Form_Hidden(str_replace('[edits]', '[previous]', $phraseKey), $valuesRight[$subKey]);
+                                    $valueEdit = new UI_Form_Textarea('', $phraseKey, $valuesRight[$subKey], '', true, htmlspecialchars($valuesRight[$subKey]), UI_Form_Textarea::getOptimalRowCount($valuesRight[$subKey]), $language->isRTL());
 
                                     $phrasesTable->addRow(array(
                                         $valueLeft,

@@ -49,7 +49,7 @@ function diff($old, $new){
 
 function htmlDiff($old, $new){
     if ($old == $new) {
-        return '<span style="color:#999;">-- no changes --</span>';
+        return '<span style="color:#999;">&mdash; no changes &mdash;</span>';
     }
     $ret = '';
     $diff = diff(explode(' ', $old), explode(' ', $new));

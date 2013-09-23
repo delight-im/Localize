@@ -144,6 +144,12 @@ class Repository {
                     }
                 }
             }
+            if ($isExport) {
+                $lang->sortUntranslatedFirst();
+            }
+            else {
+                $lang->sortKeysAlphabetically();
+            }
         }
     }
 

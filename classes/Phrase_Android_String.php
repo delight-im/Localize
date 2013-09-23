@@ -10,10 +10,6 @@ class Phrase_Android_String extends Phrase_Android {
         parent::__construct($id, $phraseKey, $enabledForTranslation);
     }
 
-    public function setValue($value) {
-        $this->value = $value;
-    }
-
     /**
      * @return string the phrase's content
      */
@@ -95,6 +91,17 @@ class Phrase_Android_String extends Phrase_Android {
      * @param string $value the new value to set
      */
     public function setPhraseValue($subKey, $value) {
+        $this->value = $value;
+    }
+
+    /**
+     * Adds a new value to the given phrase object, either with the given sub-key or with an auto-incrementing ID
+     *
+     * @param string $value the value (phrase content) to add
+     * @param string $subKey (optional) sub-key if no auto-incrementing ID can/should be used
+     * @throws Exception (optionally) if this phrase object does not support auto-incrementing IDs and the given sub-key is not allowed
+     */
+    public function addValue($value, $subKey = NULL) {
         $this->value = $value;
     }
 

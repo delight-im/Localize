@@ -2,6 +2,8 @@
 
 abstract class Phrase {
 
+    const NEWLINE_REGEX = '/(\r\n|\r|\n)/';
+
     protected $id;
     protected $phraseKey;
     protected $enabledForTranslation;
@@ -56,6 +58,8 @@ abstract class Phrase {
     }
 
     /**
+     * Returns this phrase's key that identifies it within a repository's language
+     *
      * @return string the phrase's key
      */
     public function getPhraseKey() {
@@ -94,6 +98,54 @@ abstract class Phrase {
             throw new Exception('Could not decode phrase\'s payload from JSON');
         }
     }
+
+    /**
+     * Returns whether the two given lists of placeholders do match (except their order)
+     *
+     * @param array $placeholders1
+     * @param array $placeholders2
+     * @return bool
+     */
+    public static function arePlaceholdersMatching($placeholders1, $placeholders2) {
+        asort($placeholders1);
+        asort($placeholders2);
+        $count1 = count($placeholders1);
+        $count2 = count($placeholders2);
+        if ($count1 == $count2) {
+            for ($i = 0; $i < $count1; $i++) {
+                if (!isset($placeholders2[$i]) || $placeholders1[$i] !== $placeholders2[$i]) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    /**
+     * Mark the given placeholders in the given text and return the modified text
+     *
+     * @param string $text
+     * @param array $placeholders
+     * @return string modified text with marked placeholders
+     */
+    public static function markPlaceholders($text, $placeholders) {
+        foreach ($placeholders as $placeholder) {
+            $text = str_replace($placeholder, '<strong class="text-primary">'.$placeholder.'</strong>', $text);
+        }
+        return $text;
+    }
+
+    /**
+     * Adds a new value to the given phrase object, either with the given sub-key or with an auto-incrementing ID
+     *
+     * @param string $value the value (phrase content) to add
+     * @param string $subKey (optional) sub-key if no auto-incrementing ID can/should be used
+     * @throws Exception (optionally) if this phrase object does not support auto-incrementing IDs and the given sub-key is not allowed
+     */
+    abstract public function addValue($value, $subKey = NULL);
 
 }
 

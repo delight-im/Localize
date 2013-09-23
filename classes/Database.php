@@ -7,8 +7,7 @@ class Database {
     const DB_CONNECT_STRING = CONFIG_DB_CONNECT_STRING; // string from config.php in root directory
     const DB_USERNAME = CONFIG_DB_USERNAME; // string from config.php in root directory
     const DB_PASSWORD = CONFIG_DB_PASSWORD; // string from config.php in root directory
-    const TABLE_USERS_SEQUENCE = NULL; // needed on same DB systems (e.g. Postgres) for getLastInsertID()
-    const TABLE_REPOSITORIES_SEQUENCE = NULL; // needed on same DB systems (e.g. Postgres) for getLastInsertID()
+    const TABLE_REPOSITORIES_SEQUENCE = CONFIG_DB_REPOSITORIES_SEQUENCE; // string from config.php in root directory
 
     /**
      * PDO database object that is used internally to communicate with the DB

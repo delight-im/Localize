@@ -24,6 +24,9 @@ if (UI::isPage('sign_up')) {
         $data = UI::getDataPOST('sign_up');
 
         $data_type = isset($data['type']) ? intval($data['type']) : 0;
+        if (!Authentication::isAllowSignUpDevelopers()) {
+            $data_type = User::TYPE_TRANSLATOR;
+        }
         $data_username = isset($data['username']) ? trim($data['username']) : '';
         $data_password1 = isset($data['password1']) ? trim($data['password1']) : '';
         $data_password2 = isset($data['password2']) ? trim($data['password2']) : '';
@@ -151,6 +154,7 @@ elseif (UI::isPage('language')) {
     }
 }
 elseif (UI::isPage('review')) {
+    $alert = NULL;
     if (UI::isAction('review')) {
         $languageID = UI::validateID(UI::getDataGET('language'), true);
         $repositoryID = UI::validateID(UI::getDataGET('project'), true);
@@ -166,13 +170,21 @@ elseif (UI::isPage('review')) {
                 $data_phraseSubKey = isset($data['phraseSubKey']) ? trim($data['phraseSubKey']) : '';
                 $data_contributorID = isset($data['contributorID']) ? UI::validateID($data['contributorID'], true) : '';
                 $data_newValue = isset($data['newValue']) ? trim($data['newValue']) : '';
+                $data_referenceValue = isset($data['referenceValue']) ? trim($data['referenceValue']) : '';
                 if (!empty($data_phraseObject)) {
                     switch ($data_action) {
                         case 'approve';
-                            $data_phraseObject->setPhraseValue($data_phraseSubKey, $data_newValue);
-                            Database::updatePhrase($repositoryID, $languageID, $data_phraseKey, $data_phraseObject->getPayload());
-                            Database::updateContributor($repositoryID, $data_contributorID);
-                            Database::deleteEdit($data_editID);
+                            $placeholdersReference = Phrase_Android::getPlaceholders($data_referenceValue);
+                            $placeholdersNew = Phrase_Android::getPlaceholders($data_newValue);
+                            if (Phrase::arePlaceholdersMatching($placeholdersReference, $placeholdersNew) || $languageID == $repositoryData['defaultLanguage']) { // placeholders (except their order) may only be changed in default language
+                                $data_phraseObject->setPhraseValue($data_phraseSubKey, $data_newValue);
+                                Database::updatePhrase($repositoryID, $languageID, $data_phraseKey, $data_phraseObject->getPayload());
+                                Database::updateContributor($repositoryID, $data_contributorID);
+                                Database::deleteEdit($data_editID);
+                            }
+                            else {
+                                $alert = new UI_Alert('<p>The placeholders must match with those of the reference phrase.</p>', UI_Alert::TYPE_WARNING);
+                            }
                             break;
                         case 'reviewLater';
                             Database::postponeEdit($data_editID);
@@ -194,7 +206,12 @@ elseif (UI::isPage('review')) {
             $alert = new UI_Alert('<p>The project could not be found.</p>', UI_Alert::TYPE_WARNING);
         }
     }
-    echo UI::getPage(UI::PAGE_REVIEW);
+    if (empty($alert)) {
+        echo UI::getPage(UI::PAGE_REVIEW);
+    }
+    else {
+        echo UI::getPage(UI::PAGE_REVIEW, array($alert));
+    }
 }
 elseif (UI::isPage('export')) {
     $alert = NULL;
@@ -315,38 +332,11 @@ elseif (UI::isPage('add_phrase')) {
                 $data = UI::getDataPOST('add_phrase');
                 $phraseType = isset($data['type']) ? intval(trim($data['type'])) : 0;
                 $phraseKey = isset($data['key']) ? trim($data['key']) : '';
-                if ($phraseType == 1) { // string
-                    $phraseValue = isset($data['string']) ? trim($data['string']) : '';
-                    if (!empty($phraseValue)) {
-                        $phrasePayload = Phrase_Android_String::getPayloadFromValue($phraseValue);
-                        try {
-                            Database::addPhrase($repositoryID, $repositoryDefaultLanguage, $phraseKey, $phrasePayload);
-                            $alert = new UI_Alert('<p>The new phrase has successfully been added.</p>', UI_Alert::TYPE_SUCCESS);
-                        }
-                        catch (Exception $e) {
-                            $alert = new UI_Alert('<p>The new phrase could not be added.</p><p>It seems there is already a phrase with the same key.</p>', UI_Alert::TYPE_WARNING);
-                        }
-                    }
-                    else {
-                        $alert = new UI_Alert('<p>The phrase must not be empty.</p>', UI_Alert::TYPE_WARNING);
-                    }
-                }
-                elseif ($phraseType == 2) { // string-array
-                    if (isset($data['string_array']) && is_array($data['string_array']) && count($data['string_array']) > 0) {
-                        $phraseValues = array();
-                        $phraseValuesCandidates = $data['string_array'];
-                        $phraseValuesComplete = true;
-                        foreach ($phraseValuesCandidates as $phraseValuesCandidate) {
-                            $phraseValuesCandidate = trim($phraseValuesCandidate);
-                            if (!empty($phraseValuesCandidate)) {
-                                $phraseValues[] = $phraseValuesCandidate;
-                            }
-                            else {
-                                $phraseValuesComplete = false;
-                            }
-                        }
-                        if ($phraseValuesComplete) {
-                            $phrasePayload = Phrase_Android_StringArray::getPayloadFromValue($phraseValues);
+                if (Phrase_Android::isPhraseKeyValid($phraseKey)) {
+                    if ($phraseType == 1) { // string
+                        $phraseValue = isset($data['string']) ? trim($data['string']) : '';
+                        if (!empty($phraseValue)) {
+                            $phrasePayload = Phrase_Android_String::getPayloadFromValue($phraseValue);
                             try {
                                 Database::addPhrase($repositoryID, $repositoryDefaultLanguage, $phraseKey, $phrasePayload);
                                 $alert = new UI_Alert('<p>The new phrase has successfully been added.</p>', UI_Alert::TYPE_SUCCESS);
@@ -356,38 +346,70 @@ elseif (UI::isPage('add_phrase')) {
                             }
                         }
                         else {
-                            $alert = new UI_Alert('<p>New phrases must not be empty.</p>', UI_Alert::TYPE_WARNING);
+                            $alert = new UI_Alert('<p>The phrase must not be empty.</p>', UI_Alert::TYPE_WARNING);
+                        }
+                    }
+                    elseif ($phraseType == 2) { // string-array
+                        if (isset($data['string_array']) && is_array($data['string_array']) && count($data['string_array']) > 0) {
+                            $phraseValues = array();
+                            $phraseValuesCandidates = $data['string_array'];
+                            $phraseValuesComplete = true;
+                            foreach ($phraseValuesCandidates as $phraseValuesCandidate) {
+                                $phraseValuesCandidate = trim($phraseValuesCandidate);
+                                if (!empty($phraseValuesCandidate)) {
+                                    $phraseValues[] = $phraseValuesCandidate;
+                                }
+                                else {
+                                    $phraseValuesComplete = false;
+                                }
+                            }
+                            if ($phraseValuesComplete) {
+                                $phrasePayload = Phrase_Android_StringArray::getPayloadFromValue($phraseValues);
+                                try {
+                                    Database::addPhrase($repositoryID, $repositoryDefaultLanguage, $phraseKey, $phrasePayload);
+                                    $alert = new UI_Alert('<p>The new phrase has successfully been added.</p>', UI_Alert::TYPE_SUCCESS);
+                                }
+                                catch (Exception $e) {
+                                    $alert = new UI_Alert('<p>The new phrase could not be added.</p><p>It seems there is already a phrase with the same key.</p>', UI_Alert::TYPE_WARNING);
+                                }
+                            }
+                            else {
+                                $alert = new UI_Alert('<p>New phrases must not be empty.</p>', UI_Alert::TYPE_WARNING);
+                            }
+                        }
+                    }
+                    elseif ($phraseType == 3) { // plurals
+                        if (isset($data['plurals']) && is_array($data['plurals']) && count($data['plurals']) > 0) {
+                            $phraseValues = array();
+                            $phraseValuesCandidates = $data['plurals'];
+                            $phraseValuesComplete = true;
+                            foreach ($phraseValuesCandidates as $phraseValuesKey => $phraseValuesCandidate) {
+                                $phraseValuesCandidate = trim($phraseValuesCandidate);
+                                if (!empty($phraseValuesCandidate)) {
+                                    $phraseValues[$phraseValuesKey] = $phraseValuesCandidate;
+                                }
+                                else {
+                                    $phraseValuesComplete = false;
+                                }
+                            }
+                            if ($phraseValuesComplete) {
+                                $phrasePayload = Phrase_Android_Plurals::getPayloadFromValue($phraseValues);
+                                try {
+                                    Database::addPhrase($repositoryID, $repositoryDefaultLanguage, $phraseKey, $phrasePayload);
+                                    $alert = new UI_Alert('<p>The new phrase has successfully been added.</p>', UI_Alert::TYPE_SUCCESS);
+                                }
+                                catch (Exception $e) {
+                                    $alert = new UI_Alert('<p>The new phrase could not be added.</p><p>It seems there is already a phrase with the same key.</p>', UI_Alert::TYPE_WARNING);
+                                }
+                            }
+                            else {
+                                $alert = new UI_Alert('<p>New phrases must not be empty.</p>', UI_Alert::TYPE_WARNING);
+                            }
                         }
                     }
                 }
-                elseif ($phraseType == 3) { // plurals
-                    if (isset($data['plurals']) && is_array($data['plurals']) && count($data['plurals']) > 0) {
-                        $phraseValues = array();
-                        $phraseValuesCandidates = $data['plurals'];
-                        $phraseValuesComplete = true;
-                        foreach ($phraseValuesCandidates as $phraseValuesKey => $phraseValuesCandidate) {
-                            $phraseValuesCandidate = trim($phraseValuesCandidate);
-                            if (!empty($phraseValuesCandidate)) {
-                                $phraseValues[$phraseValuesKey] = $phraseValuesCandidate;
-                            }
-                            else {
-                                $phraseValuesComplete = false;
-                            }
-                        }
-                        if ($phraseValuesComplete) {
-                            $phrasePayload = Phrase_Android_Plurals::getPayloadFromValue($phraseValues);
-                            try {
-                                Database::addPhrase($repositoryID, $repositoryDefaultLanguage, $phraseKey, $phrasePayload);
-                                $alert = new UI_Alert('<p>The new phrase has successfully been added.</p>', UI_Alert::TYPE_SUCCESS);
-                            }
-                            catch (Exception $e) {
-                                $alert = new UI_Alert('<p>The new phrase could not be added.</p><p>It seems there is already a phrase with the same key.</p>', UI_Alert::TYPE_WARNING);
-                            }
-                        }
-                        else {
-                            $alert = new UI_Alert('<p>New phrases must not be empty.</p>', UI_Alert::TYPE_WARNING);
-                        }
-                    }
+                else {
+                    $alert = new UI_Alert('<p>Please enter a valid phrase key.</p>', UI_Alert::TYPE_WARNING);
                 }
             }
             else {

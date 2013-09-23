@@ -1,9 +1,12 @@
 <?php
 
+require_once(__DIR__.'/../config.php');
+
 class Authentication {
 
     const SESSION_HTTPS = false;
     const SESSION_HTTP_ONLY = true;
+    const ALLOW_SIGN_UP_DEVELOPERS = CONFIG_ALLOW_SIGN_UP_DEVELOPERS; // bool from config.php in root directory
 
     public static function init() {
         ini_set('session.use_only_cookies', 1); // use cookies only (no session IDs that are sent via GET)
@@ -14,6 +17,10 @@ class Authentication {
         session_set_cookie_params($cookieParams['lifetime'], $cookieParams['path'], $cookieParams['domain'], self::SESSION_HTTPS, self::SESSION_HTTP_ONLY);
 
         @session_start();
+    }
+
+    public static function isAllowSignUpDevelopers() {
+        return self::ALLOW_SIGN_UP_DEVELOPERS;
     }
 
     public static function isSignedIn() {
@@ -36,6 +43,16 @@ class Authentication {
         }
         else {
             return intval($userObject->getID());
+        }
+    }
+
+    public static function getUserName() {
+        $userObject = self::getUser();
+        if (empty($userObject)) {
+            return '';
+        }
+        else {
+            return $userObject->getUsername();
         }
     }
 

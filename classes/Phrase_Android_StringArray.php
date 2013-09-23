@@ -11,21 +11,6 @@ class Phrase_Android_StringArray extends Phrase_Android {
         $this->values = array();
     }
 
-    public function setValues($values) {
-        $this->values = $values;
-    }
-
-    public function addValue($value) {
-        $this->values[] = $value;
-    }
-
-    /**
-     * @return string the array's content
-     */
-    public function getValues() {
-        return $this->values;
-    }
-
     /**
      * Returns the output of this phrase for the specific platform and type of phrase
      *
@@ -123,6 +108,17 @@ class Phrase_Android_StringArray extends Phrase_Android {
         else {
             throw new Exception('Unknown sub-key '.$subKey);
         }
+    }
+
+    /**
+     * Adds a new value to the given phrase object, either with the given sub-key or with an auto-incrementing ID
+     *
+     * @param string $value the value (phrase content) to add
+     * @param string $subKey (optional) sub-key if no auto-incrementing ID can/should be used
+     * @throws Exception (optionally) if this phrase object does not support auto-incrementing IDs and the given sub-key is not allowed
+     */
+    public function addValue($value, $subKey = NULL) {
+        $this->values[] = $value;
     }
 
 }

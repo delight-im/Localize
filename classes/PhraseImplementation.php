@@ -18,4 +18,20 @@ interface PhraseImplementation {
      */
     public static function writeToRaw($text);
 
+    /**
+     * Returns whether the given phrase key is valid (true) or not (false)
+     *
+     * @param string $phraseKey phrase key to check
+     * @return bool whether the phrase key is valid
+     */
+    public static function isPhraseKeyValid($phraseKey);
+
+    /**
+     * Returns an array of placeholders that have been found in the given phrase text
+     *
+     * @param string $phraseText
+     * @return array list of placeholders
+     */
+    public static function getPlaceholders($phraseText);
+
 }

@@ -1,10 +1,12 @@
 <?php
 
+require_once(__DIR__.'/../config.php');
+
 class File_IO {
 
-    const TEMP_PATH = 'temp';
-    const UPLOAD_PATH = 'uploads';
-    const MAX_FILE_SIZE = 1572864; // 1024 * 1024 * 1.5
+    const TEMP_PATH = CONFIG_TEMP_PATH; // string from config.php in root directory
+    const UPLOAD_PATH = CONFIG_UPLOAD_PATH; // string from config.php in root directory
+    const MAX_FILE_SIZE = CONFIG_MAX_FILE_SIZE; // int from config.php in root directory
     const UPLOAD_ERROR_COULD_NOT_OPEN = 1;
     const UPLOAD_ERROR_COULD_NOT_PROCESS = 2;
     const UPLOAD_ERROR_TOO_LARGE = 3;
@@ -139,7 +141,7 @@ class File_IO {
                         foreach ($xml->{'entrySingle'} as $entrySingle) {
                             $entryAttributes = $entrySingle->attributes();
                             $importedPhrase = new Phrase_Android_String(0, trim($entryAttributes['name']), true);
-                            $importedPhrase->setValue(trim(Phrase_Android::readFromRaw($entrySingle[0])));
+                            $importedPhrase->addValue(trim(Phrase_Android::readFromRaw($entrySingle[0])));
                             $importedPhrases[] = $importedPhrase;
                         }
                         foreach ($xml->{'entryList'} as $entryList) {
@@ -155,7 +157,7 @@ class File_IO {
                             $importedPhrase = new Phrase_Android_Plurals(0, trim($pluralAttributes['name']), true);
                             foreach ($plural->{'item'} as $pluralItem) {
                                 $itemAttributes = $pluralItem->attributes();
-                                $importedPhrase->addValue(trim($itemAttributes['quantity']), trim(Phrase_Android::readFromRaw($pluralItem)));
+                                $importedPhrase->addValue(trim(Phrase_Android::readFromRaw($pluralItem)), trim($itemAttributes['quantity']));
                             }
                             $importedPhrases[] = $importedPhrase;
                         }
