@@ -19,7 +19,11 @@ Authentication::init();
 UI::init(Authentication::getUserTimezone());
 Database::init();
 
-if (UI::isPage('sign_up')) {
+if (isset($_GET['v'])) {
+    UI::redirectToURL('?p=project&project='.urlencode($_GET['v']));
+    exit;
+}
+elseif (UI::isPage('sign_up')) {
     if (UI::isAction('sign_up')) {
         $data = UI::getDataPOST('sign_up');
 
@@ -41,7 +45,7 @@ if (UI::isPage('sign_up')) {
                             $alert = new UI_Alert('<p>Your free account has been created!</p><p>Please sign in by entering your username and password in the top-right corner.</p>', UI_Alert::TYPE_SUCCESS);
                         }
                         catch (Exception $e) {
-                            $alert = new UI_Alert('<p>It seems this username has already been taken. Please try another one.</p>', UI_Alert::TYPE_WARNING);
+                            $alert = new UI_Alert('<p>It seems this username is already taken. Please try another one.</p>', UI_Alert::TYPE_WARNING);
                         }
                     }
                     else {
@@ -181,6 +185,7 @@ elseif (UI::isPage('review')) {
                                 Database::updatePhrase($repositoryID, $languageID, $data_phraseKey, $data_phraseObject->getPayload());
                                 Database::updateContributor($repositoryID, $data_contributorID);
                                 Database::deleteEdit($data_editID);
+                                Authentication::setCachedLanguageProgress($repositoryID, NULL); // unset cached version of this repository's progress
                             }
                             else {
                                 $alert = new UI_Alert('<p>The placeholders must match with those of the reference phrase.</p>', UI_Alert::TYPE_WARNING);
@@ -213,6 +218,37 @@ elseif (UI::isPage('review')) {
         echo UI::getPage(UI::PAGE_REVIEW, array($alert));
     }
 }
+elseif (UI::isPage('invitations')) {
+    $alert = NULL;
+    if (UI::isAction('invitations')) {
+        $repositoryID = UI::validateID(UI::getDataGET('project'), true);
+        $repositoryData = Database::getRepositoryData($repositoryID);
+        if (!empty($repositoryData)) {
+            $isAllowed = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_ADMINISTRATOR);
+            if ($isAllowed) {
+                $data = UI::getDataPOST('invitations');
+                $data_userID = UI::validateID($data['userID'], true);
+                $data_accept = isset($data['accept']) ? intval(trim($data['accept'])) : 0;
+                $data_role = isset($data['role']) ? intval(trim($data['role'])) : 0;
+                if ($data_userID > 0 && ($data_accept == 1 || $data_accept == -1) && $data_role > 0) {
+                    Database::reviewInvitation($repositoryID, $data_userID, $data_accept == 1, $data_role);
+                }
+            }
+            else {
+                $alert = new UI_Alert('<p>You are not allowed to review invitation requests for this project.</p>', UI_Alert::TYPE_WARNING);
+            }
+        }
+        else {
+            $alert = new UI_Alert('<p>The project could not be found.</p>', UI_Alert::TYPE_WARNING);
+        }
+    }
+    if (empty($alert)) {
+        echo UI::getPage(UI::PAGE_INVITATIONS);
+    }
+    else {
+        echo UI::getPage(UI::PAGE_INVITATIONS, array($alert));
+    }
+}
 elseif (UI::isPage('export')) {
     $alert = NULL;
     if (UI::isAction('export')) {
@@ -226,7 +262,7 @@ elseif (UI::isPage('export')) {
                 $filename = isset($data['filename']) ? trim($data['filename']) : '';
                 if (File_IO::isFilenameValid($filename)) {
                     $repository = new Repository($repositoryID, $repositoryData['name'], $repositoryData['visibility'], $repositoryData['defaultLanguage']);
-                    $repository->loadLanguages(true, Repository::SORT_ALL_LANGUAGES);
+                    $repository->loadLanguages(true, Repository::SORT_ALL_LANGUAGES, Repository::LOAD_ALL_LANGUAGES);
                     File_IO::exportRepository($repository, $filename);
                     exit;
                 }
@@ -269,6 +305,7 @@ elseif (UI::isPage('import')) {
                             $importResult = File_IO::importXML($repositoryID, $_FILES['importFileXML']);
                             if (isset($importResult) && is_array($importResult)) {
                                 Database::addPhrases($repositoryID, $languageID, $importResult, $overwriteMode == 1);
+                                Authentication::setCachedLanguageProgress($repositoryID, NULL); // unset cached version of this repository's progress
                                 $alert = new UI_Alert('<p>You have imported '.count($importResult).' phrases to '.$languageNameFull.'.</p>', UI_Alert::TYPE_SUCCESS);
                             }
                             else {
@@ -533,7 +570,27 @@ else {
     }
     else {
         if (Authentication::isSignedIn()) {
-            echo UI::getPage(UI::PAGE_DASHBOARD);
+            $alert = NULL;
+            if (UI::isAction('requestInvitation')) {
+                $data = UI::getDataPOST('requestInvitation');
+                $data_repositoryID = isset($data['repositoryID']) ? UI::validateID($data['repositoryID'], true) : 0;
+                $data_userID = Authentication::getUserID();
+                if ($data_repositoryID > 0 && $data_userID > 0) {
+                    try {
+                        Database::requestInvitation($data_repositoryID, $data_userID);
+                        $alert = new UI_Alert('<p>Your request for an invitation has been sent.</p>', UI_Alert::TYPE_SUCCESS);
+                    }
+                    catch (Exception $e) {
+                        $alert = new UI_Alert('<p>You have already requested an invitation. Please check the status on your dashboard.</p>', UI_Alert::TYPE_WARNING);
+                    }
+                }
+            }
+            if (empty($alert)) {
+                echo UI::getPage(UI::PAGE_DASHBOARD);
+            }
+            else {
+                echo UI::getPage(UI::PAGE_DASHBOARD, array($alert));
+            }
         }
         else {
             echo UI::getPage(UI::PAGE_INDEX);

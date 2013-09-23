@@ -216,4 +216,27 @@ class Database {
         return self::select("SELECT a.repositoryID, b.name FROM contributions AS a JOIN repositories AS b ON a.repositoryID = b.id WHERE a.userID = ".intval($userID));
     }
 
+    public static function requestInvitation($repositoryID, $userID) {
+        self::insert("INSERT INTO invitations (repositoryID, userID, request_time) VALUES (".intval($repositoryID).", ".intval($userID).", ".time().")");
+    }
+
+    public static function getInvitationsByUser($userID, $count = 10) {
+        return self::select("SELECT a.repositoryID, a.request_time, a.accepted, b.name FROM invitations AS a JOIN repositories AS b ON a.repositoryID = b.id WHERE a.userID = ".intval($userID)." ORDER BY a.request_time DESC LIMIT 0, ".intval($count));
+    }
+
+    public static function getInvitationByRepository($repositoryID) {
+        return self::select("SELECT a.userID, a.request_time, b.username, b.real_name, b.localeCountry, b.join_date, b.last_login FROM invitations AS a JOIN users AS b ON a.userID = b.id WHERE a.repositoryID = ".intval($repositoryID)." AND a.accepted = 0 LIMIT 0, 1");
+    }
+
+    public static function getInvitationsByRepositoryCount($repositoryID) {
+        return self::selectCount("SELECT COUNT(*) FROM invitations AS a JOIN users AS b ON a.userID = b.id WHERE a.repositoryID = ".intval($repositoryID)." AND a.accepted = 0");
+    }
+
+    public static function reviewInvitation($repositoryID, $userID, $accept, $assignedRole) {
+        if ($accept) {
+            self::insert("INSERT INTO roles (userID, repositoryID, role) VALUES (".intval($userID).", ".intval($repositoryID).", ".intval($assignedRole).")");
+        }
+        self::update("UPDATE invitations SET accepted = ".($accept ? 1 : -1)." WHERE repositoryID = ".intval($repositoryID)." AND userID = ".intval($userID));
+    }
+
 }

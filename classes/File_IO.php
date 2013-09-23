@@ -135,7 +135,7 @@ class File_IO {
                     $fileContent = str_replace('</string>', ']]></entrySingle>', $fileContent);
                     $fileContent = preg_replace('/<item([^>]*)>/i', '<item\1><![CDATA[', $fileContent);
                     $fileContent = str_replace('</item>', ']]></item>', $fileContent);
-                    $xml = simplexml_load_string($fileContent, 'SimpleXMLElement', LIBXML_NOCDATA);
+                    $xml = @simplexml_load_string($fileContent, 'SimpleXMLElement', LIBXML_NOCDATA);
                     if ($xml != false) {
                         $importedPhrases = array();
                         foreach ($xml->{'entrySingle'} as $entrySingle) {

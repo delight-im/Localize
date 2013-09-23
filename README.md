@@ -4,11 +4,11 @@
 
 A simple platform for collaborative translation of Android applications. It can be used in the web browser, where users may sign up as a translator or developer. Developers may host their own projects and let translators contribute.
 
+You can either use the tool on www.localize.li or download the source and use it as a self-hosted platform.
+
 Developers may review contributions and export a ZIP file containing all translations with just a few clicks. The translations are exported as Android XML resources so they are ready for deployment right away.
 
 Hopefully, this will speed-up the development and localization process for you, especially if you work for a small company or if you are a single developer.
-
-You can either use Localize on www.localize.li or download the source and use it as a self-hosted platform.
 
 **Live Demo:** www.localize.li
 

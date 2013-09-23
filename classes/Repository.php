@@ -1,5 +1,7 @@
 <?php
 
+require_once(__DIR__.'/../config.php');
+
 class Repository {
 
     const VISIBILITY_PUBLIC = 1;
@@ -11,6 +13,11 @@ class Repository {
     const ROLE_CONTRIBUTOR = 4;
     const SORT_NO_LANGUAGE = -1;
     const SORT_ALL_LANGUAGES = 0;
+    const LOAD_ALL_LANGUAGES = 0;
+    const INVITATION_DECLINED = -1;
+    const INVITATION_PENDING = 0;
+    const INVITATION_ACCEPTED = 1;
+    const ROOT_URL = CONFIG_ROOT_URL; // string from config.php in root directory
 
     protected $id;
     protected $name;
@@ -114,44 +121,64 @@ class Repository {
         $this->languages[$language]->normalizePhrase($phraseKey, $referencePhrase);
     }
 
-    public function loadLanguages($isExport, $languagesToSort) {
-        $phrases = Database::select("SELECT id, languageID, phraseKey, enabled, payload FROM phrases WHERE repositoryID = ".intval($this->id));
+    /**
+     * Loads the languages and all their phrases into this repository object
+     *
+     * @param bool $isExport whether this loading process is for an export (true) or not (false)
+     * @param int $languagesToSort ID of the language to sort or a constant defining other behaviour (e.g. sort none, sort all)
+     * @param int $languagesToLoad ID of the language to load (apart from the default language) or a constant defining other behaviour (e.g. load all languages)
+     */
+    public function loadLanguages($isExport, $languagesToSort, $languagesToLoad) {
+        if ($languagesToLoad == self::LOAD_ALL_LANGUAGES) {
+            $additionalWhere = "";
+        }
+        else {
+            if ($languagesToLoad == $this->defaultLanguage) {
+                $additionalWhere = " AND languageID = ".intval($languagesToLoad);
+            }
+            else {
+                $additionalWhere = " AND languageID IN (".intval($this->defaultLanguage).", ".intval($languagesToLoad).")";
+            }
+        }
+        $phrases = Database::select("SELECT id, languageID, phraseKey, enabled, payload FROM phrases WHERE repositoryID = ".intval($this->id).$additionalWhere);
         if (!empty($phrases)) {
             foreach ($phrases as $phrase) {
                 $this->addPhrase($phrase['languageID'], $phrase['id'], $phrase['phraseKey'], $phrase['payload'], $phrase['enabled']);
             }
         }
-        $this->normalizeLanguages($isExport, $languagesToSort);
+        $this->normalizeLanguages($isExport, $languagesToSort, $languagesToLoad);
     }
 
-    protected function normalizeLanguages($isExport, $languagesToSort) {
+    protected function normalizeLanguages($isExport, $languagesToSort, $languagesToLoad) {
         $defLangObject = $this->languages[$this->defaultLanguage];
         $defLangPhrases = $defLangObject->getPhrases();
         foreach ($this->languages as $langID => $lang) {
-            if ($lang != $this->defaultLanguage) {
-                $currentPhrases = $lang->getPhrases();
-                foreach ($currentPhrases as $currentPhrase) { // loop through phrases of all non-default languages
-                    $originalPhrase = $defLangObject->getPhraseByKey($currentPhrase->getPhraseKey());
-                    if (!isset($originalPhrase)) { // if phrase does not exist in default language
-                        $this->removePhrase($langID, $currentPhrase->getPhraseKey()); // remove from this language as well
+            if ($languagesToLoad == self::LOAD_ALL_LANGUAGES || $langID == $this->defaultLanguage || $langID == $languagesToLoad) {
+                if ($lang != $this->defaultLanguage) {
+                    $currentPhrases = $lang->getPhrases();
+                    foreach ($currentPhrases as $currentPhrase) { // loop through phrases of all non-default languages
+                        $originalPhrase = $defLangObject->getPhraseByKey($currentPhrase->getPhraseKey());
+                        if (!isset($originalPhrase)) { // if phrase does not exist in default language
+                            $this->removePhrase($langID, $currentPhrase->getPhraseKey()); // remove from this language as well
+                        }
+                        elseif ($isExport) { // if phrase does exist in default language as well and this is an export
+                            $this->normalizePhrase($langID, $currentPhrase->getPhraseKey(), $originalPhrase); // normalize phrase with default language data
+                        }
                     }
-                    elseif ($isExport) { // if phrase does exist in default language as well and this is an export
-                        $this->normalizePhrase($langID, $currentPhrase->getPhraseKey(), $originalPhrase); // normalize phrase with default language data
+                    foreach ($defLangPhrases as $defLangPhrase) { // loop through phrases of default language
+                        $currentPhrase = $lang->getPhraseByKey($defLangPhrase->getPhraseKey());
+                        if (!isset($currentPhrase)) { // if phrase does not exist in this language yet
+                            $this->addPhrase($langID, $defLangPhrase->getID(), $defLangPhrase->getPhraseKey(), $defLangPhrase->getPayload(), $defLangPhrase->isEnabledForTranslation(), !$isExport); // add phrase from default language
+                        }
                     }
                 }
-                foreach ($defLangPhrases as $defLangPhrase) { // loop through phrases of default language
-                    $currentPhrase = $lang->getPhraseByKey($defLangPhrase->getPhraseKey());
-                    if (!isset($currentPhrase)) { // if phrase does not exist in this language yet
-                        $this->addPhrase($langID, $defLangPhrase->getID(), $defLangPhrase->getPhraseKey(), $defLangPhrase->getPayload(), $defLangPhrase->isEnabledForTranslation(), !$isExport); // add phrase from default language
+                if ($languagesToSort == self::SORT_ALL_LANGUAGES || $languagesToSort == $langID) {
+                    if ($isExport) {
+                        $lang->sortKeysAlphabetically();
                     }
-                }
-            }
-            if ($languagesToSort == self::SORT_ALL_LANGUAGES || $languagesToSort == $langID) {
-                if ($isExport) {
-                    $lang->sortKeysAlphabetically();
-                }
-                else {
-                    $lang->sortUntranslatedFirst();
+                    else {
+                        $lang->sortUntranslatedFirst();
+                    }
                 }
             }
         }
@@ -192,6 +219,42 @@ class Repository {
         else {
             return false;
         }
+    }
+
+    public static function getInvitationStatus($statusCode) {
+        switch ($statusCode) {
+            case self::INVITATION_ACCEPTED:
+                return 'Accepted';
+            case self::INVITATION_PENDING:
+                return 'Pending';
+            case self::INVITATION_DECLINED:
+                return 'Declined';
+            default:
+                throw new Exception('Unknown invitation status code '.$statusCode);
+        }
+    }
+
+    public static function getRoleName($roleID) {
+        switch ($roleID) {
+            case self::ROLE_ADMINISTRATOR:
+                return 'Administrator';
+            case self::ROLE_DEVELOPER:
+                return 'Developer';
+            case self::ROLE_MODERATOR:
+                return 'Moderator';
+            case self::ROLE_CONTRIBUTOR:
+                return 'Contributor';
+            default:
+                throw new Exception('Unknown role ID '.$roleID);
+        }
+    }
+
+    public function getShareURL() {
+        return self::getRepositoryShareURL($this->id);
+    }
+
+    public static function getRepositoryShareURL($repositoryID) {
+        return self::ROOT_URL.'?v='.Helper::encodeID($repositoryID);
     }
 
 }

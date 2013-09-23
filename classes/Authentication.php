@@ -4,7 +4,7 @@ require_once(__DIR__.'/../config.php');
 
 class Authentication {
 
-    const SESSION_HTTPS = false;
+    const SESSION_HTTPS = CONFIG_SESSION_HTTPS; // bool from config.php in root directory
     const SESSION_HTTP_ONLY = true;
     const ALLOW_SIGN_UP_DEVELOPERS = CONFIG_ALLOW_SIGN_UP_DEVELOPERS; // bool from config.php in root directory
 
@@ -158,6 +158,19 @@ class Authentication {
         else {
             return array();
         }
+    }
+
+    public static function getCachedLanguageProgress($repositoryID) {
+        if (isset($_SESSION['cachedLanguageProgress'][$repositoryID])) {
+            return $_SESSION['cachedLanguageProgress'][$repositoryID];
+        }
+        else {
+            return array();
+        }
+    }
+
+    public static function setCachedLanguageProgress($repositoryID, $data) {
+        $_SESSION['cachedLanguageProgress'][$repositoryID] = $data;
     }
 
 }

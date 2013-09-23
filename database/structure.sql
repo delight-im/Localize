@@ -35,7 +35,9 @@ CREATE TABLE IF NOT EXISTS `invitations` (
   `userID` int(10) unsigned NOT NULL,
   `request_time` int(10) unsigned NOT NULL,
   `accepted` tinyint(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`repositoryID`,`userID`)
+  PRIMARY KEY (`repositoryID`,`userID`),
+  KEY `selection` (`userID`,`request_time`),
+  KEY `reviewing` (`repositoryID`,`accepted`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `native_languages` (

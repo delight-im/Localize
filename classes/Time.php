@@ -261,6 +261,15 @@ class Time {
         return self::$countries;
     }
 
+    public static function getCountryName($countryCode, $defaultValue = '') {
+        if (isset(self::$countries[$countryCode])) {
+            return self::$countries[$countryCode];
+        }
+        else {
+            return $defaultValue;
+        }
+    }
+
     public static function getTimezones($country) {
         return DateTimeZone::listIdentifiers(DateTimeZone::PER_COUNTRY, $country);
     }

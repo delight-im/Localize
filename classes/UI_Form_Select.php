@@ -13,8 +13,9 @@ class UI_Form_Select extends UI {
     protected $jsEvents;
     protected $options;
     protected $defaultOptionKeys;
+    protected $isInline;
 
-    public function __construct($label, $key, $helpText = '', $allowMultiple = false, $cssClasses = '', $cssStyles = '', $jsEvents = '') {
+    public function __construct($label, $key, $helpText = '', $allowMultiple = false, $cssClasses = '', $cssStyles = '', $jsEvents = '', $isInline = false) {
         $this->label = $label;
         $this->key = $key;
         $this->helpText = $helpText;
@@ -24,6 +25,7 @@ class UI_Form_Select extends UI {
         $this->jsEvents = $jsEvents;
         $this->options = array();
         $this->defaultOptionKeys = NULL;
+        $this->isInline = $isInline;
     }
 
     public function addOption($label, $value) {
@@ -35,17 +37,20 @@ class UI_Form_Select extends UI {
     }
 
     public function getHTML() {
-        $out = '<div class="form-group';
-        if (!empty($this->cssClasses)) {
-            $out .= ' '.htmlspecialchars($this->cssClasses);
+        $out = '';
+        if (!$this->isInline) {
+            $out .= '<div class="form-group';
+            if (!empty($this->cssClasses)) {
+                $out .= ' '.htmlspecialchars($this->cssClasses);
+            }
+            $out .= '"';
+            if (!empty($this->cssStyles)) {
+                $out .= ' style="'.htmlspecialchars($this->cssStyles).'"';
+            }
+            $out .= '>';
+            $out .= '<label class="col-lg-2 control-label">'.$this->label.'</label>';
+            $out .= '<div class="col-lg-10">';
         }
-        $out .= '"';
-        if (!empty($this->cssStyles)) {
-            $out .= ' style="'.htmlspecialchars($this->cssStyles).'"';
-        }
-        $out .= '>';
-        $out .= '<label class="col-lg-2 control-label">'.$this->label.'</label>';
-        $out .= '<div class="col-lg-10">';
         $out .= '<select';
         if ($this->allowMultiple) {
             $out .= ' multiple="multiple"';
@@ -63,11 +68,13 @@ class UI_Form_Select extends UI {
             $out .= '>'.htmlspecialchars($option[0]).'</option>';
         }
         $out .= '</select>';
-        if ($this->helpText != '') {
-            $out .= '<span class="help-block">'.$this->helpText.'</span>';
+        if (!$this->isInline) {
+            if ($this->helpText != '') {
+                $out .= '<span class="help-block">'.$this->helpText.'</span>';
+            }
+            $out .= '</div>';
+            $out .= '</div>';
         }
-        $out .= '</div>';
-        $out .= '</div>';
         return $out;
     }
 
