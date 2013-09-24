@@ -20,6 +20,7 @@ require_once('UI_Link.php');
 require_once('UI_Table.php');
 require_once('UI_Progress.php');
 require_once('Time.php');
+require_once('URL.php');
 require_once(__DIR__.'/../libs/SimpleDiff.php');
 require_once(__DIR__.'/../config.php');
 
@@ -106,11 +107,25 @@ abstract class UI {
     }
 
     protected static function getHeader($isSignedIn) {
-        return file_get_contents($isSignedIn ? 'templates/header_signed_in.html' : 'templates/header_signed_out.html');
+        $headerHTML = file_get_contents($isSignedIn ? 'templates/header_signed_in.html' : 'templates/header_signed_out.html');
+        return sprintf(
+            $headerHTML,
+            URL::toResource('css/'),
+            URL::toResource('js/'),
+            URL::toResource('img/'),
+            URL::toDashboard(),
+            URL::toPage('settings'),
+            URL::toPage('sign_out')
+        );
     }
 
     protected static function getFooter() {
-        return file_get_contents('templates/footer.html');
+        $footerHTML = file_get_contents('templates/footer.html');
+        return sprintf(
+            $footerHTML,
+            URL::toPage('contact'),
+            URL::toResource('js/')
+        );
     }
 
     protected static function showBreadcrumb() {
@@ -123,7 +138,7 @@ abstract class UI {
                 $out .= '<li class="active">Dashboard</li>';
             }
             else {
-                $out .= '<li><a href="index.php">Dashboard</a></li>';
+                $out .= '<li><a href="'.URL::toDashboard().'">Dashboard</a></li>';
                 for ($b = 0; $b < $breadcrumbCount; $b++) {
                     $out .= ' <li';
                     if (($b+1) == $breadcrumbCount) {
@@ -141,7 +156,7 @@ abstract class UI {
     }
 
     public static function getPage($pageID, $contents = array(), $containers = array()) {
-        $out = UI::getHeader(Authentication::isSignedIn());
+        $out = self::getHeader(Authentication::isSignedIn());
         $content = self::findPage($pageID, $contents, $containers);
         $out .= self::showBreadcrumb(); // place after invocation of findPage() so that the breadcrumb navigation can be built there
         if ($content instanceof UI) {
@@ -150,7 +165,7 @@ abstract class UI {
         else {
             throw new Exception('Result of getPageContent() must be an instance of class UI');
         }
-        $out .= UI::getFooter();
+        $out .= self::getFooter();
         return $out;
     }
 
@@ -186,7 +201,7 @@ abstract class UI {
         $contents[] = new UI_Paragraph('Optimized for collaborative work &mdash; invite users to help you and manage contributions conveniently.');
         $contents[] = new UI_Paragraph('While Localize takes care of all the background work, you can concentrate on great apps and perfect translations.');
         $contents[] = new UI_Paragraph('Completely free, simple and open-source.');
-        $contents[] = new UI_Paragraph('<a class="btn btn-success btn-lg" href="?p=sign_up">Create free account &raquo;</a>');
+        $contents[] = new UI_Paragraph('<a class="btn btn-success btn-lg" href="'.URL::toPage('sign_up').'">Create free account &raquo;</a>');
         $landingView = new UI_Container($contents, true);
 
         $featureColumn1 = new UI_Cell(array(
@@ -216,7 +231,7 @@ abstract class UI {
     }
 
     public static function getPage_Dashboard($contents, $containers) {
-        $createProjectButton = new UI_Link('Create new project', '?p=create_project', UI_Link::TYPE_SUCCESS);
+        $createProjectButton = new UI_Link('Create new project', URL::toPage('create_project'), UI_Link::TYPE_SUCCESS);
 
         $projectList = Database::select("SELECT a.repositoryID, a.role, b.name, b.visibility, b.defaultLanguage FROM roles AS a JOIN repositories AS b ON a.repositoryID = b.id WHERE a.userID = ".intval(Authentication::getUserID())." ORDER BY b.name ASC");
 
@@ -226,14 +241,14 @@ abstract class UI {
                 $projectTable = new UI_Table(array('Project', 'Review', 'Default language', 'Visibility'));
                 $projectTable->setColumnPriorities(4, 3, 3, 2);
                 foreach ($projectList as $projectData) {
-                    $linkedName = new UI_Link(htmlspecialchars($projectData['name']), '?p=project&amp;project='.Helper::encodeID($projectData['repositoryID']), UI_Link::TYPE_UNIMPORTANT);
+                    $linkedName = new UI_Link(htmlspecialchars($projectData['name']), URL::toProject($projectData['repositoryID']), UI_Link::TYPE_UNIMPORTANT);
                     $languageName = Language::getLanguageNameFull($projectData['defaultLanguage']);
 
-                    $pendingEditsURL = '?p=review&amp;project='.Helper::encodeID($projectData['repositoryID']);
+                    $pendingEditsURL = URL::toReview($projectData['repositoryID']);
                     $pendingEdits = Database::getPendingEditsByRepositoryCount($projectData['repositoryID']);
                     $pendingEditsButton = $pendingEdits > 0 ? (new UI_Link($pendingEdits, $pendingEditsURL, UI_Link::TYPE_INFO)) : (new UI_Link($pendingEdits, $pendingEditsURL, UI_Link::TYPE_UNIMPORTANT, '', '', 'return false;'));
 
-                    $pendingInvitationsURL = '?p=invitations&amp;project='.Helper::encodeID($projectData['repositoryID']);
+                    $pendingInvitationsURL = URL::toInvitations($projectData['repositoryID']);
                     $pendingInvitations = Database::getInvitationsByRepositoryCount($projectData['repositoryID']);
                     $pendingInvitationsButton = $pendingInvitations > 0 ? (new UI_Link($pendingInvitations, $pendingInvitationsURL, UI_Link::TYPE_INFO)) : (new UI_Link($pendingInvitations, $pendingInvitationsURL, UI_Link::TYPE_UNIMPORTANT, '', '', 'return false;'));
 
@@ -270,7 +285,7 @@ abstract class UI {
             else {
                 $listRecentlyVisited = new UI_List();
                 foreach ($recentRepositories as $recentRepositoryID => $recentRepositoryName) {
-                    $listRecentlyVisited->addItem(new UI_Link($recentRepositoryName, '?p=project&amp;project='.Helper::encodeID($recentRepositoryID)));
+                    $listRecentlyVisited->addItem(new UI_Link($recentRepositoryName, URL::toProject($recentRepositoryID)));
                 }
                 $contents[] = $listRecentlyVisited;
             }
@@ -288,7 +303,7 @@ abstract class UI {
             else {
                 $listRecentlyVisited = new UI_List();
                 foreach ($contributedRepositories as $contributedRepository) {
-                    $listRecentlyVisited->addItem(new UI_Link($contributedRepository['name'], '?p=project&amp;project='.Helper::encodeID($contributedRepository['repositoryID'])));
+                    $listRecentlyVisited->addItem(new UI_Link($contributedRepository['name'], URL::toProject($contributedRepository['repositoryID'])));
                 }
                 $contents[] = $listRecentlyVisited;
             }
@@ -306,7 +321,7 @@ abstract class UI {
             else {
                 $listInvitationRequests = new UI_List();
                 foreach ($invitationRequests as $invitationRequest) {
-                    $projectLink = new UI_Link($invitationRequest['name'], '?p=project&amp;project='.Helper::encodeID($invitationRequest['repositoryID']));
+                    $projectLink = new UI_Link($invitationRequest['name'], URL::toProject($invitationRequest['repositoryID']));
                     $listInvitationRequests->addItem($projectLink->getHTML().' ('.date('d.m.Y H:i', $invitationRequest['request_time']).') &raquo; <strong>'.Repository::getInvitationStatus($invitationRequest['accepted']).'</strong>');
                 }
                 $contents[] = $listInvitationRequests;
@@ -325,18 +340,19 @@ abstract class UI {
     }
 
     public static function getPage_CreateProject($contents, $containers) {
-        $form = new UI_Form('?p=create_project', false);
+        $currentPageURL = URL::toPage('create_project');
+        $form = new UI_Form($currentPageURL, false);
 
         $repositoryID = self::validateID(self::getDataGET('project'), true);
         $repositoryData = Database::getRepositoryData($repositoryID);
         if (!empty($repositoryData)) {
-            self::addBreadcrumbItem('?p=project&amp;project='.Helper::encodeID($repositoryID), htmlspecialchars($repositoryData['name']));
+            self::addBreadcrumbItem(URL::toProject($repositoryID), htmlspecialchars($repositoryData['name']));
             $isAllowed = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_ADMINISTRATOR);
             if (!$isAllowed) {
                 $repositoryData = NULL;
             }
         }
-        self::addBreadcrumbItem('?p=create_project', 'Create project');
+        self::addBreadcrumbItem($currentPageURL, 'Create project');
 
         if (!empty($repositoryData)) {
             $form->addContent(new UI_Form_StaticText('Public URL', Repository::getRepositoryShareURL($repositoryID), 'Share this URL with other people to let them contribute to your project.'));
@@ -375,9 +391,9 @@ abstract class UI {
         }
 
         $buttonSubmit = new UI_Form_Button((empty($repositoryData) ? 'Create project' : 'Edit project'), UI_Form_Button::TYPE_SUCCESS);
-        $buttonCancel = new UI_Link('Cancel', (empty($repositoryData) ? 'index.php' : '?p=project&amp;project='.Helper::encodeID($repositoryID)), UI_Form_Button::TYPE_UNIMPORTANT);
+        $buttonCancel = new UI_Link('Cancel', (empty($repositoryData) ? URL::toDashboard() : URL::toProject($repositoryID)), UI_Form_Button::TYPE_UNIMPORTANT);
         if (!empty($repositoryData)) {
-            $form->addContent(new UI_Form_Hidden('create_project[editRepositoryID]', Helper::encodeID($repositoryID)));
+            $form->addContent(new UI_Form_Hidden('create_project[editRepositoryID]', URL::encodeID($repositoryID)));
         }
         $form->addContent(new UI_Form_ButtonGroup(array($buttonSubmit, $buttonCancel)));
 
@@ -391,8 +407,9 @@ abstract class UI {
     }
 
     public static function getPage_SignUp($contents, $containers) {
-        self::addBreadcrumbItem('?p=sign_up', 'Create free account');
-        $form = new UI_Form('?p=sign_up', false);
+        $currentPageURL = URL::toPage('sign_up');
+        self::addBreadcrumbItem($currentPageURL, 'Create free account');
+        $form = new UI_Form($currentPageURL, false);
 
         if (Authentication::isAllowSignUpDevelopers()) {
             $radioType = new UI_Form_Radio('Account type', 'sign_up[type]');
@@ -415,7 +432,7 @@ abstract class UI {
         $form->addContent($textPassword2);
 
         $buttonSubmit = new UI_Form_Button('Sign up', UI_Form_Button::TYPE_SUCCESS);
-        $buttonCancel = new UI_Link('Cancel', 'index.php', UI_Link::TYPE_UNIMPORTANT);
+        $buttonCancel = new UI_Link('Cancel', URL::toDashboard(), UI_Link::TYPE_UNIMPORTANT);
         $form->addContent(new UI_Form_ButtonGroup(array(
             $buttonSubmit,
             $buttonCancel
@@ -431,9 +448,9 @@ abstract class UI {
     }
 
     public static function getPage_Contact($contents, $containers) {
-        self::addBreadcrumbItem('?p=contact', 'Contact');
+        self::addBreadcrumbItem(URL::toPage('contact'), 'Contact');
         $contents[] = new UI_Heading('Contact', true);
-        $contents[] = new UI_Paragraph('<img src="contact.php" alt="Contact" width="300">');
+        $contents[] = new UI_Paragraph('<img src="'.URL::toResource('img/contact.php').'" alt="Contact" width="300">');
         $cell = new UI_Cell($contents);
         $row = new UI_Row(array($cell));
 
@@ -449,7 +466,7 @@ abstract class UI {
         $languageData = Database::getLanguageData($languageID);
 
         if (empty($repositoryData)) {
-            self::addBreadcrumbItem('?p=project&amp;project='.Helper::encodeID($repositoryID), 'Project not found');
+            self::addBreadcrumbItem(URL::toProject($repositoryID), 'Project not found');
             $contents[] = new UI_Heading('Project not found', true);
             $contents[] = new UI_Paragraph('We\'re sorry, but we could not find the project that you requested.');
             $contents[] = new UI_Paragraph('Please check if you have made any typing errors.');
@@ -464,7 +481,7 @@ abstract class UI {
                 $contents[] = new UI_Paragraph('Only administrators, developers and moderators of this project are allowed to review contributions.');
             }
             else {
-                self::addBreadcrumbItem('?p=review&amp;project='.Helper::encodeID($repositoryID), 'Review');
+                self::addBreadcrumbItem(URL::toReview($repositoryID), 'Review');
                 if (empty($languageData)) { // review index page for this repository
                     $contents[] = new UI_Heading('Review contributions', true);
 
@@ -474,7 +491,7 @@ abstract class UI {
 
                     if (count($pendingLanguages) > 0) {
                         foreach ($pendingLanguages as $pendingLanguage) {
-                            $reviewURL = '?p=review&amp;project='.Helper::encodeID($repositoryID).'&amp;language='.Helper::encodeID($pendingLanguage['languageID']);
+                            $reviewURL = URL::toReviewLanguage($repositoryID, $pendingLanguage['languageID']);
                             $linkedName = new UI_Link(Language::getLanguageNameFull($pendingLanguage['languageID']), $reviewURL, UI_Link::TYPE_UNIMPORTANT);
                             $pendingCount = new UI_Link($pendingLanguage['COUNT(*)'], $reviewURL, UI_Link::TYPE_INFO);
                             $table->addRow(array(
@@ -490,13 +507,13 @@ abstract class UI {
                     $contents[] = $table;
                 }
                 else { // single-language review details page for this repository
-                    $currentPageURL = '?p=review&project='.Helper::encodeID($repositoryID).'&language='.Helper::encodeID($languageID);
+                    $currentPageURL = URL::toReviewLanguage($repositoryID, $languageID);
                     self::addBreadcrumbItem(htmlspecialchars($currentPageURL), Language::getLanguageNameFull($languageID));
                     $contents[] = new UI_Heading($languageData->getNameFull(), true);
 
                     $editData = Database::getPendingEdit($repositoryID, $languageID);
                     if (empty($editData)) { // no edits available for review (anymore)
-                        UI::redirectToURL('?p=review&project='.Helper::encodeID($repositoryID));
+                        UI::redirectToURL(URL::toReview($repositoryID));
                     }
                     else { // edits available to review
                         $form = new UI_Form(htmlspecialchars($currentPageURL), false);
@@ -545,12 +562,12 @@ abstract class UI {
                         $table->addRow(array('<strong>Contributor</strong>', $contributorName));
                         $table->addRow(array('<strong>Edits left</strong>', $pendingEditsLeft));
 
-                        $form->addContent(new UI_Form_Hidden('review[editID]', Helper::encodeID($editData[0]['id'])));
+                        $form->addContent(new UI_Form_Hidden('review[editID]', URL::encodeID($editData[0]['id'])));
                         $form->addContent(new UI_Form_Hidden('review[referenceValue]', $valueReference));
                         $form->addContent(new UI_Form_Hidden('review[phraseObject]', base64_encode(serialize($previousPhrase))));
                         $form->addContent(new UI_Form_Hidden('review[phraseKey]', htmlspecialchars($editData[0]['phraseKey'])));
                         $form->addContent(new UI_Form_Hidden('review[phraseSubKey]', htmlspecialchars($editData[0]['phraseSubKey'])));
-                        $form->addContent(new UI_Form_Hidden('review[contributorID]', Helper::encodeID($editData[0]['userID'])));
+                        $form->addContent(new UI_Form_Hidden('review[contributorID]', URL::encodeID($editData[0]['userID'])));
 
                         $form->addContent($actionButtons);
                         $form->addContent($table);
@@ -575,7 +592,7 @@ abstract class UI {
         $repositoryData = Database::getRepositoryData($repositoryID);
 
         if (empty($repositoryData)) {
-            self::addBreadcrumbItem('?p=project&amp;project='.Helper::encodeID($repositoryID), 'Project not found');
+            self::addBreadcrumbItem(URL::toProject($repositoryID), 'Project not found');
             $contents[] = new UI_Heading('Project not found', true);
             $contents[] = new UI_Paragraph('We\'re sorry, but we could not find the project that you requested.');
             $contents[] = new UI_Paragraph('Please check if you have made any typing errors.');
@@ -590,13 +607,13 @@ abstract class UI {
                 $contents[] = new UI_Paragraph('Only administrators of this project are allowed to review invitation requests.');
             }
             else {
-                self::addBreadcrumbItem('?p=invitations&amp;project='.Helper::encodeID($repositoryID), 'Invitations');
-                $currentPageURL = '?p=invitations&project='.Helper::encodeID($repositoryID);
+                self::addBreadcrumbItem(URL::toInvitations($repositoryID), 'Invitations');
+                $currentPageURL = URL::toInvitations($repositoryID);
                 $contents[] = new UI_Heading('Invitations', true);
 
                 $invitationData = Database::getInvitationByRepository($repositoryID);
                 if (empty($invitationData)) { // no invitations available for review (anymore)
-                    UI::redirectToURL('index.php');
+                    UI::redirectToURL(URL::toDashboard());
                 }
                 else { // edits available to review
                     Time::init();
@@ -626,7 +643,7 @@ abstract class UI {
                     $table->addRow(array('<strong>Sign-up date</strong>', date('d.m.Y H:i', $invitationData[0]['join_date'])));
                     $table->addRow(array('<strong>Last sign-in</strong>', date('d.m.Y H:i', $invitationData[0]['last_login'])));
 
-                    $form->addContent(new UI_Form_Hidden('invitations[userID]', Helper::encodeID($invitationData[0]['userID'])));
+                    $form->addContent(new UI_Form_Hidden('invitations[userID]', URL::encodeID($invitationData[0]['userID'])));
 
                     $form->addContent($actionButtons);
                     $form->addContent($table);
@@ -645,9 +662,10 @@ abstract class UI {
     }
 
     public static function getPage_Settings($contents, $containers) {
-        UI::addBreadcrumbItem('?p=settings', 'Settings');
+        $currentPageURL = URL::toPage('settings');
+        UI::addBreadcrumbItem($currentPageURL, 'Settings');
         $contents[] = new UI_Heading('Settings', true);
-        $form = new UI_Form('?p=settings', false);
+        $form = new UI_Form($currentPageURL, false);
 
         $form->addContent(new UI_Form_StaticText('Username', Authentication::getUserName()));
         $textRealName = new UI_Form_Text('Real name', 'settings[realName]', 'Enter your name here', false, 'Let others know who you are, so that they know who is contributing to their projects.');
@@ -690,7 +708,7 @@ abstract class UI {
         }
         $form->addContent(new UI_Form_ButtonGroup(array(
             new UI_Form_Button('Save'),
-            new UI_Link('Cancel', 'index.php', UI_Form_Button::TYPE_UNIMPORTANT)
+            new UI_Link('Cancel', URL::toDashboard(), UI_Form_Button::TYPE_UNIMPORTANT)
         )));
         $contents[] = $form;
 
@@ -713,13 +731,13 @@ abstract class UI {
         $languageData = Database::getLanguageData($languageID);
 
         if (empty($repositoryData)) {
-            self::addBreadcrumbItem('?p=project&amp;project='.Helper::encodeID($repositoryID), 'Project not found');
+            self::addBreadcrumbItem(URL::toProject($repositoryID), 'Project not found');
             $contents[] = new UI_Heading('Project not found', true);
             $contents[] = new UI_Paragraph('We\'re sorry, but we could not find the project that you requested.');
             $contents[] = new UI_Paragraph('Please check if you have made any typing errors.');
         }
         else {
-            self::addBreadcrumbItem('?p=project&amp;project='.Helper::encodeID($repositoryID), htmlspecialchars($repositoryData['name']));
+            self::addBreadcrumbItem(URL::toProject($repositoryID), htmlspecialchars($repositoryData['name']));
             Authentication::saveCachedRepository($repositoryID, $repositoryData['name']);
 
             $repository = new Repository($repositoryID, $repositoryData['name'], $repositoryData['visibility'], $repositoryData['defaultLanguage']);
@@ -737,7 +755,7 @@ abstract class UI {
             else {
                 $defaultLanguage = new Language_Android($repository->getDefaultLanguage());
                 if ($isAddingMode) {
-                    $formTargetURL = '?p=add_phrase&amp;language='.Helper::encodeID($languageID).'&amp;project='.Helper::encodeID($repositoryID);
+                    $formTargetURL = URL::toAddPhrase($repositoryID, $languageID);
                     self::addBreadcrumbItem($formTargetURL, 'Add phrase');
 
                     $form = new UI_Form($formTargetURL, false);
@@ -765,7 +783,7 @@ abstract class UI {
 
                     $buttonSubmit = new UI_Form_Button('Save phrase(s)', UI_Form_Button::TYPE_SUCCESS);
                     $buttonAddItem = new UI_Link('Add item', '#', UI_Form_Button::TYPE_INFO, 'addPhraseGroup_StringArray', 'display:none;', 'addPhraseAddItem(\'add_phrase[string_array][]\'); return false;');
-                    $buttonCancel = new UI_Link('Cancel', '?p=language&amp;language='.Helper::encodeID($languageID).'&amp;project='.Helper::encodeID($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
+                    $buttonCancel = new UI_Link('Cancel', URL::toLanguage($repositoryID, $languageID), UI_Form_Button::TYPE_UNIMPORTANT);
                     $form->addContent(new UI_Form_ButtonGroup(array(
                         $buttonSubmit,
                         $buttonAddItem,
@@ -776,7 +794,7 @@ abstract class UI {
                     $contents[] = $form;
                 }
                 elseif ($isExportMode) {
-                    $formTargetURL = '?p=export&amp;project='.Helper::encodeID($repositoryID);
+                    $formTargetURL = URL::toExport($repositoryID);
                     self::addBreadcrumbItem($formTargetURL, 'Export XML');
 
                     $form = new UI_Form($formTargetURL, false);
@@ -786,7 +804,7 @@ abstract class UI {
                     $form->addContent($textFilename);
 
                     $buttonSubmit = new UI_Form_Button('Export XML', UI_Form_Button::TYPE_SUCCESS);
-                    $buttonCancel = new UI_Link('Cancel', '?p=project&amp;project='.Helper::encodeID($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
+                    $buttonCancel = new UI_Link('Cancel', URL::toProject($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
                     $form->addContent(new UI_Form_ButtonGroup(array(
                         $buttonSubmit,
                         $buttonCancel
@@ -796,7 +814,7 @@ abstract class UI {
                     $contents[] = $form;
                 }
                 elseif ($isImportMode) {
-                    $formTargetURL = '?p=import&amp;project='.Helper::encodeID($repositoryID);
+                    $formTargetURL = URL::toImport($repositoryID);
                     self::addBreadcrumbItem($formTargetURL, 'Import XML');
 
                     $form = new UI_Form($formTargetURL, false, true);
@@ -821,7 +839,7 @@ abstract class UI {
                     $form->addContent($fileXML);
 
                     $buttonSubmit = new UI_Form_Button('Import XML', UI_Form_Button::TYPE_SUCCESS);
-                    $buttonCancel = new UI_Link('Cancel', '?p=project&amp;project='.Helper::encodeID($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
+                    $buttonCancel = new UI_Link('Cancel', URL::toProject($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
                     $form->addContent(new UI_Form_ButtonGroup(array(
                         $buttonSubmit,
                         $buttonCancel
@@ -843,31 +861,31 @@ abstract class UI {
                         $repository->loadLanguages(false, Repository::SORT_NO_LANGUAGE, Repository::LOAD_ALL_LANGUAGES);
                     }
 
-                    foreach ($languages as $language) {
-                        $linkURL = '?p=language&amp;language='.Helper::encodeID($language).'&amp;project='.Helper::encodeID($repositoryID);
-                        $nameLink = new UI_Link(Language::getLanguageNameFull($language), $linkURL, UI_Link::TYPE_UNIMPORTANT);
+                    foreach ($languages as $languageID) {
+                        $linkURL = URL::toLanguage($repositoryID, $languageID);
+                        $nameLink = new UI_Link(Language::getLanguageNameFull($languageID), $linkURL, UI_Link::TYPE_UNIMPORTANT);
                         if (empty($cachedLanguageProgress)) {
-                            $languageObject = $repository->getLanguage($language);
+                            $languageObject = $repository->getLanguage($languageID);
                             $completeness = intval($languageObject->getCompleteness()*100);
                         }
                         else {
-                            $completeness = intval($cachedLanguageProgress[$language]);
+                            $completeness = intval($cachedLanguageProgress[$languageID]);
                         }
                         $progressBar = new UI_Progress($completeness);
-                        $rowClass = ($language == $defaultLanguage->getID() ? 'active' : '');
+                        $rowClass = ($languageID == $defaultLanguage->getID() ? 'active' : '');
                         $languageTable->addRow(array(
                             $nameLink->getHTML(),
                             $progressBar->getHTML()
                         ), '', $rowClass);
-                        $newCachedLanguageProgress[$language] = $completeness;
+                        $newCachedLanguageProgress[$languageID] = $completeness;
                     }
 
                     Authentication::setCachedLanguageProgress($repositoryID, $newCachedLanguageProgress);
 
-                    $actionsForm = new UI_Form('?p=project&amp;project='.Helper::encodeID($repositoryID), false);
-                    $buttonExport = new UI_Link('Export XML', '?p=export&amp;project='.Helper::encodeID($repositoryID), UI_Form_Button::TYPE_SUCCESS);
-                    $buttonImport = new UI_Link('Import XML', '?p=import&amp;project='.Helper::encodeID($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
-                    $buttonEdit = new UI_Link('Edit project', '?p=create_project&amp;project='.Helper::encodeID($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
+                    $actionsForm = new UI_Form(URL::toProject($repositoryID), false);
+                    $buttonExport = new UI_Link('Export XML', URL::toExport($repositoryID), UI_Form_Button::TYPE_SUCCESS);
+                    $buttonImport = new UI_Link('Import XML', URL::toImport($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
+                    $buttonEdit = new UI_Link('Edit project', URL::toEditProject($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
                     $actionsForm->addContent(new UI_Form_Hidden('exportXML', 1));
 
                     $isAdmin = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_ADMINISTRATOR);
@@ -899,7 +917,7 @@ abstract class UI {
                 else {
                     $mayMovePhrases = Repository::isRoleAllowedToMovePhrases($role);
                     $language = new Language_Android($languageID);
-                    self::addBreadcrumbItem('?p=project&amp;project='.Helper::encodeID($repositoryID).'&amp;language='.Helper::encodeID($languageID), $language->getNameFull());
+                    self::addBreadcrumbItem(URL::toLanguage($repositoryID, $languageID), $language->getNameFull());
 
                     $heading = new UI_Heading($languageData->getNameFull(), true);
 
@@ -940,16 +958,15 @@ abstract class UI {
                                     elseif ($defaultPhrase instanceof Phrase_Android_Plurals) {
                                         $phraseKeyName .= ' » '.$subKey;
                                     }
-                                    $editLinkURL = '?p=edit_phrase&amp;project='.Helper::encodeID($repositoryID).'&amp;language='.Helper::encodeID($languageID).'&amp;phrase='.$phraseKey;
-                                    $editLink = new UI_Link('<span dir="ltr">'.htmlspecialchars($phraseKeyName).'</span>', $editLinkURL);
-                                    $phraseFormKey = 'updatePhrases[edits]['.Helper::encodeID($defaultPhrase->getID()).']['.$subKey.']';
-                                    $value = Authentication::getCachedEdit($repositoryID, $languageID, Helper::encodeID($defaultPhrase->getID()), $subKey, $value);
+
+                                    $phraseFormKey = 'updatePhrases[edits]['.URL::encodeID($defaultPhrase->getID()).']['.$subKey.']';
+                                    $value = Authentication::getCachedEdit($repositoryID, $languageID, URL::encodeID($defaultPhrase->getID()), $subKey, $value);
 
                                     $valuePrevious = new UI_Form_Hidden(str_replace('[edits]', '[previous]', $phraseFormKey), $value);
                                     $valueEdit = new UI_Form_Textarea('', $phraseFormKey, $value, '', true, htmlspecialchars($value), UI_Form_Textarea::getOptimalRowCount($value, 2), $defaultLanguage->isRTL());
 
                                     $phrasesTable->addRow(array(
-                                        ($mayMovePhrases ? $editLink->getHTML() : $phraseKeyName),
+                                        $phraseKeyName,
                                         $valuePrevious->getHTML().$valueEdit->getHTML()
                                     ));
                                 }
@@ -963,8 +980,8 @@ abstract class UI {
                                 $valuesRight = $rightPhrase->getPhraseValues();
                                 foreach ($valuesLeft as $subKey => $valueLeft) {
                                     $valueLeft = '<span dir="'.($defaultLanguage->isRTL() ? 'rtl' : 'ltr').'">'.nl2br(htmlspecialchars($valueLeft)).'</span>';
-                                    $phraseKey = 'updatePhrases[edits]['.Helper::encodeID($defaultPhrase->getID()).']['.$subKey.']';
-                                    $valuesRight[$subKey] = Authentication::getCachedEdit($repositoryID, $languageID, Helper::encodeID($defaultPhrase->getID()), $subKey, $valuesRight[$subKey]);
+                                    $phraseKey = 'updatePhrases[edits]['.URL::encodeID($defaultPhrase->getID()).']['.$subKey.']';
+                                    $valuesRight[$subKey] = Authentication::getCachedEdit($repositoryID, $languageID, URL::encodeID($defaultPhrase->getID()), $subKey, $valuesRight[$subKey]);
 
                                     $valuePrevious = new UI_Form_Hidden(str_replace('[edits]', '[previous]', $phraseKey), $valuesRight[$subKey]);
                                     $valueEdit = new UI_Form_Textarea('', $phraseKey, $valuesRight[$subKey], '', true, htmlspecialchars($valuesRight[$subKey]), UI_Form_Textarea::getOptimalRowCount($valuesRight[$subKey]), $language->isRTL());
@@ -978,8 +995,8 @@ abstract class UI {
                         }
                     }
 
-                    $formTargetURL = '?p=language&amp;language='.Helper::encodeID($languageID).'&amp;project='.Helper::encodeID($repositoryID);
-                    $addPhraseURL = '?p=add_phrase&amp;language='.Helper::encodeID($languageID).'&amp;project='.Helper::encodeID($repositoryID);
+                    $formTargetURL = URL::toLanguage($repositoryID, $languageID);
+                    $addPhraseURL = URL::toAddPhrase($repositoryID, $languageID);
                     if ($mayMovePhrases) {
                         $formButtonList = array(
                             new UI_Form_Button('Save changes'),
@@ -1017,7 +1034,7 @@ abstract class UI {
         }
         else {
             if ($isEncoded) {
-                return intval(Helper::decodeID(trim($idString)));
+                return intval(URL::decodeID(trim($idString)));
             }
             else {
                 return intval(trim($idString));
@@ -1026,9 +1043,9 @@ abstract class UI {
     }
 
     public static function getLoginForm() {
-        $form = new UI_Form('index.php', false);
+        $form = new UI_Form(URL::toDashboard(), false);
 
-        $form->addContent(new UI_Form_StaticText('', 'Please sign in below to access this project. Don\'t have an account yet? <a href="?p=sign_up">Sign up in 60 seconds!</a>'));
+        $form->addContent(new UI_Form_StaticText('', 'Please sign in below to access this project. Don\'t have an account yet? <a href="'.URL::toPage('sign_up').'">Sign up in 60 seconds!</a>'));
         $form->addContent(new UI_Form_Text('Username', 'sign_in[username]', 'Enter your username', false));
         $form->addContent(new UI_Form_Text('Password', 'sign_in[password]', 'Type your password', true));
         $form->addContent(new UI_Form_Hidden('sign_in[returnURL]', base64_encode($_SERVER['REQUEST_URI'])));
@@ -1042,17 +1059,17 @@ abstract class UI {
     }
 
     public static function getInvitationForm($repositoryID) {
-        $form = new UI_Form('index.php', false);
+        $form = new UI_Form(URL::toDashboard(), false);
 
         $form->addContent(new UI_Form_StaticText('', 'This project is private &mdash; only people who have been invited by the project owners are allowed contribute.'));
         $form->addContent(new UI_Form_StaticText('', 'Just click the button below to request an invitation for this project.'));
         $form->addContent(new UI_Form_StaticText('', 'You will be able to check the current state of your request on your dashboard anytime.'));
         $form->addContent(new UI_Form_StaticText('', 'As soon as the project owners accept your request, you will be able to submit translations to this project.'));
 
-        $form->addContent(new UI_Form_Hidden('requestInvitation[repositoryID]', Helper::encodeID($repositoryID)));
+        $form->addContent(new UI_Form_Hidden('requestInvitation[repositoryID]', URL::encodeID($repositoryID)));
 
         $buttonSubmit = new UI_Form_Button('Request an invitation', UI_Form_Button::TYPE_SUCCESS);
-        $buttonCancel = new UI_Link('Cancel', 'index.php', UI_Link::TYPE_UNIMPORTANT);
+        $buttonCancel = new UI_Link('Cancel', URL::toDashboard(), UI_Link::TYPE_UNIMPORTANT);
         $buttons = new UI_Form_ButtonGroup(array(
             $buttonSubmit,
             $buttonCancel

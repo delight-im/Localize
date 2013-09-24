@@ -21,7 +21,7 @@ class UI_Table extends UI {
      *
      * The second level contains the columns for each row
      *
-     * @var array
+     * @var array|UI_Table_Row[]
      */
     protected $rows;
     /**
@@ -81,7 +81,6 @@ class UI_Table extends UI {
         $rowCount = count($this->rows);
         $rowsPerPage = self::getOptimalRowsPerPageCount($rowCount);
         foreach ($this->rows as $rowID => $row) {
-            /** @var UI_Table_Row $row */
             $page = (int) ($rowID / $rowsPerPage);
             if (!isset($pages[$page])) {
                 $pages[$page] = '';

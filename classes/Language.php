@@ -210,7 +210,7 @@ abstract class Language {
     }
 
     /**
-     * @return array list of Phrase instances that are part of this language for the given project
+     * @return array|Phrase[] list of Phrase instances that are part of this language for the given project
      */
     public function getPhrases() {
         return $this->phrases;

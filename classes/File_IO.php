@@ -4,8 +4,6 @@ require_once(__DIR__.'/../config.php');
 
 class File_IO {
 
-    const TEMP_PATH = CONFIG_TEMP_PATH; // string from config.php in root directory
-    const UPLOAD_PATH = CONFIG_UPLOAD_PATH; // string from config.php in root directory
     const MAX_FILE_SIZE = CONFIG_MAX_FILE_SIZE; // int from config.php in root directory
     const UPLOAD_ERROR_COULD_NOT_OPEN = 1;
     const UPLOAD_ERROR_COULD_NOT_PROCESS = 2;
@@ -82,7 +80,7 @@ class File_IO {
         if (self::isFilenameValid($filename)) {
             if ($repository instanceof Repository) {
                 $export_success = true;
-                $savePath = self::TEMP_PATH.'/'.Helper::encodeID($repository->getID());
+                $savePath = URL::toTempFolder().URL::encodeID($repository->getID());
                 self::deleteDirectoryRecursively($savePath); // delete all old output files from output directory first
                 $savePath .= '/'.mt_rand(1000000, 9999999); // navigate to random directory inside output folder
                 if (mkdir($savePath, 0755, true)) { // if output folder could be created
@@ -125,7 +123,7 @@ class File_IO {
 
     public static function importXML($repositoryID, $fileArrayValue) {
         if ($fileArrayValue['size'] < self::getMaxFileSize()) {
-            $newFileName = self::UPLOAD_PATH.'/'.$repositoryID.'_'.mt_rand(1000000, 9999999).'.xml';
+            $newFileName = URL::toUploadFolder().$repositoryID.'_'.mt_rand(1000000, 9999999).'.xml';
             if (move_uploaded_file($fileArrayValue['tmp_name'], $newFileName)) {
                 $fileContent = file_get_contents($newFileName);
                 if ($fileContent !== false) {

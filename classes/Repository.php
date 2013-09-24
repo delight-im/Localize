@@ -1,6 +1,6 @@
 <?php
 
-require_once(__DIR__.'/../config.php');
+require_once('URL.php');
 
 class Repository {
 
@@ -17,7 +17,6 @@ class Repository {
     const INVITATION_DECLINED = -1;
     const INVITATION_PENDING = 0;
     const INVITATION_ACCEPTED = 1;
-    const ROOT_URL = CONFIG_ROOT_URL; // string from config.php in root directory
 
     protected $id;
     protected $name;
@@ -150,16 +149,13 @@ class Repository {
     }
 
     protected function normalizeLanguages($isExport, $languagesToSort, $languagesToLoad) {
-        /** @var Language $defLangObject */
         $defLangObject = $this->languages[$this->defaultLanguage];
         $defLangPhrases = $defLangObject->getPhrases();
         foreach ($this->languages as $langID => $lang) {
-            /** @var Language $lang */
             if ($languagesToLoad == self::LOAD_ALL_LANGUAGES || $langID == $this->defaultLanguage || $langID == $languagesToLoad) {
                 if ($lang != $this->defaultLanguage) {
                     $currentPhrases = $lang->getPhrases();
                     foreach ($currentPhrases as $currentPhrase) { // loop through phrases of all non-default languages
-                        /** @var Phrase $currentPhrase */
                         $originalPhrase = $defLangObject->getPhraseByKey($currentPhrase->getPhraseKey());
                         if (!isset($originalPhrase)) { // if phrase does not exist in default language
                             $this->removePhrase($langID, $currentPhrase->getPhraseKey()); // remove from this language as well
@@ -169,7 +165,6 @@ class Repository {
                         }
                     }
                     foreach ($defLangPhrases as $defLangPhrase) { // loop through phrases of default language
-                        /** @var Phrase $defLangPhrase */
                         $currentPhrase = $lang->getPhraseByKey($defLangPhrase->getPhraseKey());
                         if (!isset($currentPhrase)) { // if phrase does not exist in this language yet
                             $this->addPhrase($langID, $defLangPhrase->getID(), $defLangPhrase->getPhraseKey(), $defLangPhrase->getPayload(), $defLangPhrase->isEnabledForTranslation(), !$isExport); // add phrase from default language
@@ -258,7 +253,7 @@ class Repository {
     }
 
     public static function getRepositoryShareURL($repositoryID) {
-        return self::ROOT_URL.'?v='.Helper::encodeID($repositoryID);
+        return URL::toProjectShort($repositoryID);
     }
 
 }

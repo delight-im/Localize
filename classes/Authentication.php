@@ -141,7 +141,7 @@ class Authentication {
     public static function restoreCachedEdits($databaseResults) {
         $restoredEditsArray = array();
         foreach ($databaseResults as $databaseResult) {
-            $restoredEditsArray[$databaseResult['repositoryID']][$databaseResult['languageID']][Helper::encodeID($databaseResult['referencedPhraseID'])][$databaseResult['phraseSubKey']] = $databaseResult['suggestedValue'];
+            $restoredEditsArray[$databaseResult['repositoryID']][$databaseResult['languageID']][URL::encodeID($databaseResult['referencedPhraseID'])][$databaseResult['phraseSubKey']] = $databaseResult['suggestedValue'];
         }
         $_SESSION['edits'] = $restoredEditsArray;
     }

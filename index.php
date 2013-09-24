@@ -2,7 +2,7 @@
 
 require_once(__DIR__.'/classes/Authentication.php');
 require_once(__DIR__.'/classes/File_IO.php');
-require_once(__DIR__.'/classes/Helper.php');
+require_once(__DIR__.'/classes/URL.php');
 require_once(__DIR__.'/classes/Language_Android.php');
 require_once(__DIR__.'/classes/Phrase_Android_Plurals.php');
 require_once(__DIR__.'/classes/Phrase_Android_String.php');
@@ -20,7 +20,7 @@ UI::init(Authentication::getUserTimezone());
 Database::init();
 
 if (isset($_GET['v'])) {
-    UI::redirectToURL('?p=project&project='.urlencode($_GET['v']));
+    UI::redirectToURL(URL::toProject(UI::validateID($_GET['v'], true)));
     exit;
 }
 elseif (UI::isPage('sign_up')) {
@@ -125,7 +125,7 @@ elseif (UI::isPage('language')) {
                             $previousValue = isset($data['previous'][$phraseID][$phraseSubKey]) ? trim($data['previous'][$phraseID][$phraseSubKey]) : '';
                             $phraseSuggestedValue = trim($phraseSuggestedValue);
                             if ($phraseSuggestedValue != '' && $phraseSuggestedValue != $previousValue) {
-                                $editData[] = new Edit(Helper::decodeID($phraseID), $phraseSubKey, $phraseSuggestedValue);
+                                $editData[] = new Edit(URL::decodeID($phraseID), $phraseSubKey, $phraseSuggestedValue);
                                 $counter++;
                             }
                         }
@@ -487,14 +487,14 @@ elseif (UI::isPage('create_project') && Authentication::isSignedIn()) {
                     if ($data_editRepositoryID <= 0 || $isAllowed) {
                         if ($data_editRepositoryID > 0) { // edit project
                             Database::update("UPDATE repositories SET name = ".Database::escape($data_name).", visibility = ".intval($data_visibility).", defaultLanguage = ".intval($data_defaultLanguage)." WHERE id = ".intval($data_editRepositoryID));
-                            header('Location: index.php?p=project&project='.Helper::encodeID($data_editRepositoryID));
+                            header('Location: '.URL::toProject($data_editRepositoryID));
                         }
                         else { // create project
                             Database::insert("INSERT INTO repositories (name, visibility, defaultLanguage, creation_date) VALUES (".Database::escape($data_name).", ".intval($data_visibility).", ".intval($data_defaultLanguage).", ".time().")");
                             $newProjectID = Database::getLastInsertID(Database::TABLE_REPOSITORIES_SEQUENCE);
                             if ($newProjectID > 0) {
                                 Database::insert("INSERT INTO roles (userID, repositoryID, role) VALUES (".intval(Authentication::getUser()->getID()).", ".intval($newProjectID).", ".Repository::ROLE_ADMINISTRATOR.")");
-                                header('Location: index.php?p=project&project='.Helper::encodeID($newProjectID));
+                                header('Location: '.URL::toProject($newProjectID));
                             }
                             else {
                                 throw new Exception('Project could not be created');
@@ -546,7 +546,7 @@ else {
                 $pendingEdits = Database::getPendingEditsByUser($userData['id']);
                 Authentication::restoreCachedEdits($pendingEdits);
                 Database::setLastLogin($userData['id'], time());
-                if (empty($data_returnURL) || stripos($data_returnURL, '?p=') === false) {
+                if (empty($data_returnURL) || !URL::isProject($data_returnURL)) {
                     $alert = new UI_Alert('<p>You have successfully been signed in!</p>', UI_Alert::TYPE_SUCCESS);
                 }
                 else {
