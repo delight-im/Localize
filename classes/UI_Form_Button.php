@@ -71,7 +71,7 @@ class UI_Form_ButtonGroup extends UI {
     /**
      * List of all buttons and links that will be rendered in this button group
      *
-     * @var array(UI_Form_Button|UI_Link]
+     * @var array|UI_Form_Button[]|UI_Link[]
      */
     private $buttons;
     private $isInline;

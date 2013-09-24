@@ -226,7 +226,7 @@ abstract class UI {
                 $projectTable = new UI_Table(array('Project', 'Review', 'Default language', 'Visibility'));
                 $projectTable->setColumnPriorities(4, 3, 3, 2);
                 foreach ($projectList as $projectData) {
-                    $linkedName = '<a href="?p=project&amp;project='.Helper::encodeID($projectData['repositoryID']).'">'.htmlspecialchars($projectData['name']).'</a>';
+                    $linkedName = new UI_Link(htmlspecialchars($projectData['name']), '?p=project&amp;project='.Helper::encodeID($projectData['repositoryID']), UI_Link::TYPE_UNIMPORTANT);
                     $languageName = Language::getLanguageNameFull($projectData['defaultLanguage']);
 
                     $pendingEditsURL = '?p=review&amp;project='.Helper::encodeID($projectData['repositoryID']);
@@ -237,14 +237,14 @@ abstract class UI {
                     $pendingInvitations = Database::getInvitationsByRepositoryCount($projectData['repositoryID']);
                     $pendingInvitationsButton = $pendingInvitations > 0 ? (new UI_Link($pendingInvitations, $pendingInvitationsURL, UI_Link::TYPE_INFO)) : (new UI_Link($pendingInvitations, $pendingInvitationsURL, UI_Link::TYPE_UNIMPORTANT, '', '', 'return false;'));
 
-                    $projectTable->addRow(array($linkedName, $pendingEditsButton->getHTML().' '.$pendingInvitationsButton->getHTML(), $languageName, Repository::getRepositoryVisibilityTag($projectData['visibility'])));
+                    $projectTable->addRow(array($linkedName->getHTML(), $pendingEditsButton->getHTML().' '.$pendingInvitationsButton->getHTML(), $languageName, Repository::getRepositoryVisibilityTag($projectData['visibility'])));
                 }
                 $contents[] = new UI_Paragraph($createProjectButton);
                 $contents[] = $projectTable;
             }
             else {
                 $contents[] = new UI_Paragraph($createProjectButton);
-                $contents[] = new UI_Paragraph('You have no projects yet. You may either host your own projects or contribute to other projects by using their direct link.');
+                $contents[] = new UI_Paragraph('You have no projects yet. You may either host your own projects or contribute to other projects that have been shared with you.');
             }
 
             $cell = new UI_Cell($contents);
@@ -532,8 +532,8 @@ abstract class UI {
 
                         $placeholdersReference = Phrase_Android::getPlaceholders($valueReference);
 
-                        $pendingEditsLeftCount = Database::getPendingEditsByRepositoryAndLanguageCount($repositoryID, $languageID);
-                        $pendingEditsLeft = $pendingEditsLeftCount == 1 ? '1 other' : $pendingEditsLeftCount.' others';
+                        $pendingEditsLeftCount = Database::getPendingEditsByRepositoryAndLanguageCount($repositoryID, $languageID) - 1;
+                        $pendingEditsLeft = $pendingEditsLeftCount == 0 ? 'none' : ($pendingEditsLeftCount == 1 ? '1 other' : $pendingEditsLeftCount.' others');
 
                         $phraseWithMarkedPlaceholders = Phrase::markPlaceholders(htmlspecialchars($valueReference), $placeholdersReference);
 
@@ -663,6 +663,7 @@ abstract class UI {
             $selectNativeLanguage->addDefaultOption($userNativeLanguage);
         }
         Time::init();
+        /** @var array|UI_Form_Select[] $selectTimezones */
         $selectTimezones = array();
         $selectCountry = new UI_Form_Select('Country', 'settings[country]', 'Choose your country of residence to control the timezone selection below.', false, '', '', 'chooseTimezoneByCountry(this.value);');
         $selectCountry->addOption('- Please choose -', '');
@@ -927,6 +928,7 @@ abstract class UI {
                     }
                     else {
                         if ($language->getID() == $defaultLanguage->getID()) { // viewing the default language itself
+                            /** @var Phrase $defaultPhrase */
                             foreach ($languageLeftPhrases as $defaultPhrase) {
                                 $values = $defaultPhrase->getPhraseValues();
                                 foreach ($values as $subKey => $value) {
@@ -955,6 +957,7 @@ abstract class UI {
                         }
                         else { // viewing another language that will be compared to default language
                             foreach ($languageRightPhrases as $rightPhrase) {
+                                /** @var Phrase $rightPhrase */
                                 $defaultPhrase = $languageLeft->getPhraseByKey($rightPhrase->getPhraseKey());
                                 $valuesLeft = $defaultPhrase->getPhraseValues();
                                 $valuesRight = $rightPhrase->getPhraseValues();

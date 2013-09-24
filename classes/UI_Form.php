@@ -6,6 +6,11 @@ class UI_Form extends UI {
 
     protected $targetURL;
     protected $isGET;
+    /**
+     * List of UI instances to render in this form
+     *
+     * @var array|UI[]
+     */
     protected $contents;
     protected $hasFileUpload;
 

@@ -12,6 +12,7 @@ class Language_Android extends Language {
         $out = '<?xml version="1.0" encoding="utf-8"?>'."\n";
         $out .= '<resources>'."\n";
         foreach ($this->phrases as $phrase) {
+            /** @var Phrase $phrase */
             $out .= $phrase->output();
         }
         $out .= '</resources>';

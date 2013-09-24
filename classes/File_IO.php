@@ -61,10 +61,10 @@ class File_IO {
      *
      * @param string $dir directory to delete recursively
      */
-    public static function rrmdir($dir) {
+    public static function deleteDirectoryRecursively($dir) {
         foreach(glob($dir.'/*') as $file) { // loop through child elements
             if (is_dir($file)) {
-                self::rrmdir($file); // delete directories in this directory
+                self::deleteDirectoryRecursively($file); // delete directories in this directory
             }
             else {
                 unlink($file); // delete files in this directory
@@ -83,7 +83,7 @@ class File_IO {
             if ($repository instanceof Repository) {
                 $export_success = true;
                 $savePath = self::TEMP_PATH.'/'.Helper::encodeID($repository->getID());
-                self::rrmdir($savePath); // delete all old output files from output directory first
+                self::deleteDirectoryRecursively($savePath); // delete all old output files from output directory first
                 $savePath .= '/'.mt_rand(1000000, 9999999); // navigate to random directory inside output folder
                 if (mkdir($savePath, 0755, true)) { // if output folder could be created
                     $languages = Language::getList();

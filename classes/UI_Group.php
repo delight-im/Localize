@@ -4,6 +4,11 @@ require_once('UI.php');
 
 class UI_Group extends UI {
 
+    /**
+     * List of UI instances to render in this group
+     *
+     * @var array|UI[]
+     */
     protected $contents;
 
     function __construct($contents) {

@@ -8,6 +8,11 @@ class UI_Cell extends UI {
     const SIZE_MAX = 12;
 
     protected $size;
+    /**
+     * List of UI instances to render in this cell
+     *
+     * @var array|UI[]
+     */
     protected $contents;
 
     function __construct($contents, $size = self::SIZE_MAX) {

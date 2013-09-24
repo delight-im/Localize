@@ -74,3 +74,48 @@ function chooseTimezoneByCountry(countryCode) {
         }
     }
 }
+function openTablePage(tableID, pageToOpen) {
+    if (typeof(tableID) !== 'undefined' && tableID !== null) {
+        if (typeof(pageToOpen) !== 'undefined' && pageToOpen !== null) {
+            var table = document.getElementById(tableID); // get the actual table DOM element
+            var pagination = document.getElementById('pagination-'+tableID); // get the pagination bar DOM element
+            if (typeof(table) !== 'undefined' && table !== null) { // make sure the actual table exists
+                if (typeof(table) !== 'undefined' && table !== null) { // make sure the pagination bar exists
+                    // show the requested page of the table
+                    var pages = table.getElementsByClassName('table-page');
+                    var pageToOpenClass = 'table-page table-page-'+pageToOpen;
+                    for (var i = 0; i < pages.length; i++) {
+                        if (pages[i].className == pageToOpenClass) {
+                            pages[i].style.display = 'table-row-group';
+                        }
+                        else {
+                            pages[i].style.display = 'none';
+                        }
+                    }
+
+                    // mark the correct page in the pagination bar
+                    var counter = 0;
+                    for (var c = 0; c < pagination.childNodes.length; c++) {
+                        if (pagination.childNodes[c].tagName == 'LI') {
+                            if (counter == pageToOpen) {
+                                pagination.childNodes[c].className = 'active';
+                            }
+                            else {
+                                pagination.childNodes[c].className = '';
+                            }
+                            counter++;
+                        }
+                    }
+
+                    // scroll back to the top of the page
+                    try {
+                        $('html, body').animate({ scrollTop: 0 }, 'slow');
+                    }
+                    catch (e) {
+                        window.scrollTo(0, 0);
+                    }
+                }
+            }
+        }
+    }
+}

@@ -173,7 +173,17 @@ abstract class Language {
         self::LANGUAGE_WESTERN_FRISIAN,
         self::LANGUAGE_YORUBA
     );
+    /**
+     * ID of this language
+     *
+     * @var int
+     */
     protected $id;
+    /**
+     * List of phrases for this language
+     *
+     * @var array|Phrase[]
+     */
     protected $phrases;
 
     /**
@@ -229,6 +239,12 @@ abstract class Language {
         unset($this->phrases[$phraseKey]);
     }
 
+    /**
+     * Normalizes the phrase with the given phrase key by comparing it to the given reference phrase
+     *
+     * @param string $phraseKey
+     * @param Phrase $referencePhrase
+     */
     public function normalizePhrase($phraseKey, $referencePhrase) {
         $phraseValues = $this->phrases[$phraseKey]->getPhraseValues();
         $referenceValues = $referencePhrase->getPhraseValues();
@@ -629,6 +645,7 @@ abstract class Language {
         $complete = 0;
         $total = 0;
         foreach ($this->phrases as $phrase) {
+            /** @var Phrase $phrase */
             $res = $phrase->getCompleteness();
             $complete += $res[0];
             $total += $res[1];
@@ -649,6 +666,13 @@ abstract class Language {
         uasort($this->phrases, 'Language::sortUntranslatedFirstCompare');
     }
 
+    /**
+     * Comparator for phrases so that empty phrases are shown first
+     *
+     * @param Phrase $a
+     * @param Phrase $b
+     * @return int 1 if $a is less complete then $b, 0 if both are equally complete, and -1 otherwise
+     */
     public static function sortUntranslatedFirstCompare($a, $b) {
         $aCompletenessData = $a->getCompleteness();
         $aCompleteness = $aCompletenessData[0] / $aCompletenessData[1];

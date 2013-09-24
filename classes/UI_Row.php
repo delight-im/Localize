@@ -4,6 +4,11 @@ require_once('UI.php');
 
 class UI_Row extends UI {
 
+    /**
+     * List of UI instances to render in this row
+     *
+     * @var array|UI[]
+     */
     protected $contents;
 
     function __construct($contents) {

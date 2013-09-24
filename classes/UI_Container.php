@@ -4,6 +4,11 @@ require_once('UI.php');
 
 class UI_Container extends UI {
 
+    /**
+     * List of UI instances to render in this container
+     *
+     * @var array|UI[]
+     */
     protected $contents;
     protected $isLandingPage;
 

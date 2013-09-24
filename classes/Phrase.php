@@ -86,6 +86,7 @@ abstract class Phrase {
         if (!empty($data)) {
             if (isset($data['class'])) {
                 $className = $data['class'];
+                /** @var Phrase $phraseObject */
                 $phraseObject = new $className($id, $phraseKey, $enabled);
                 $phraseObject->setPayload($json, $createKeysOnly);
                 return $phraseObject;
