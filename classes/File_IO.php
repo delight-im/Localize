@@ -80,9 +80,10 @@ class File_IO {
         if (self::isFilenameValid($filename)) {
             if ($repository instanceof Repository) {
                 $export_success = true;
-                $savePath = URL::toTempFolder().URL::encodeID($repository->getID());
+                $randomDir = mt_rand(1000000, 9999999);
+                $savePath = URL::getTempPath(false).URL::encodeID($repository->getID());
                 self::deleteDirectoryRecursively($savePath); // delete all old output files from output directory first
-                $savePath .= '/'.mt_rand(1000000, 9999999); // navigate to random directory inside output folder
+                $savePath .= '/'.$randomDir; // navigate to random directory inside output folder
                 if (mkdir($savePath, 0755, true)) { // if output folder could be created
                     $languages = Language::getList();
                     foreach ($languages as $language) {
@@ -105,9 +106,9 @@ class File_IO {
                     $export_success = false;
                 }
                 if ($export_success) {
-                    $outputPath = $savePath.'/Export.zip';
-                    if (self::zipFolder($savePath, $outputPath)) {
-                        header('Location: '.$outputPath);
+                    $outputPath = URL::getTempPath(true).URL::encodeID($repository->getID()).'/'.$randomDir;
+                    if (self::zipFolder($savePath, $savePath.'/Export.zip')) {
+                        header('Location: '.$outputPath.'/Export.zip');
                         exit;
                     }
                 }
@@ -123,7 +124,7 @@ class File_IO {
 
     public static function importXML($repositoryID, $fileArrayValue) {
         if ($fileArrayValue['size'] < self::getMaxFileSize()) {
-            $newFileName = URL::toUploadFolder().$repositoryID.'_'.mt_rand(1000000, 9999999).'.xml';
+            $newFileName = URL::getUploadPath(false).$repositoryID.'_'.mt_rand(1000000, 9999999).'.xml';
             if (move_uploaded_file($fileArrayValue['tmp_name'], $newFileName)) {
                 $fileContent = file_get_contents($newFileName);
                 if ($fileContent !== false) {

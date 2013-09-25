@@ -550,7 +550,7 @@ abstract class UI {
                         $placeholdersReference = Phrase_Android::getPlaceholders($valueReference);
 
                         $pendingEditsLeftCount = Database::getPendingEditsByRepositoryAndLanguageCount($repositoryID, $languageID) - 1;
-                        $pendingEditsLeft = $pendingEditsLeftCount == 0 ? 'none' : ($pendingEditsLeftCount == 1 ? '1 other' : $pendingEditsLeftCount.' others');
+                        $pendingEditsLeft = $pendingEditsLeftCount == 0 ? 'only this one' : ($pendingEditsLeftCount == 1 ? '1 other' : $pendingEditsLeftCount.' others');
 
                         $phraseWithMarkedPlaceholders = Phrase::markPlaceholders(htmlspecialchars($valueReference), $placeholdersReference);
 
@@ -607,8 +607,8 @@ abstract class UI {
                 $contents[] = new UI_Paragraph('Only administrators of this project are allowed to review invitation requests.');
             }
             else {
-                self::addBreadcrumbItem(URL::toInvitations($repositoryID), 'Invitations');
                 $currentPageURL = URL::toInvitations($repositoryID);
+                self::addBreadcrumbItem($currentPageURL, 'Invitations');
                 $contents[] = new UI_Heading('Invitations', true);
 
                 $invitationData = Database::getInvitationByRepository($repositoryID);

@@ -4,10 +4,11 @@ require_once(__DIR__.'/../config.php');
 
 class URL {
 
-    const URL_REWRITE = CONFIG_URL_REWRITE; // bool from config.php in root directory
     const ROOT_URL = CONFIG_ROOT_URL; // string from config.php in root directory
-    const TEMP_FOLDER = CONFIG_TEMP_FOLDER; // string from config.php in root directory
-    const UPLOAD_FOLDER = CONFIG_UPLOAD_FOLDER; // string from config.php in root directory
+    const URL_REWRITE = CONFIG_URL_REWRITE; // bool from config.php in root directory
+    const BASE_PATH = CONFIG_BASE_PATH; // string from config.php in root directory
+    const TEMP_PATH = CONFIG_TEMP_PATH; // string from config.php in root directory
+    const UPLOAD_PATH = CONFIG_UPLOAD_PATH; // string from config.php in root directory
     const ALPHABET_ID_ENCODE = '23456789bcdfghjklmnpqrstvwxyzBCDFGHJKLMNPQRSTVWXYZ'; // avoid 0, 1, a, e, i, o, u in alphabet to avoid offensive words (which need vowels)
 
     public static function toPage($pageName) {
@@ -121,12 +122,22 @@ class URL {
         return stripos($url, '?p=') !== false || stripos($url, 'projects/') !== false;
     }
 
-    public static function toTempFolder() {
-        return self::ROOT_URL.self::TEMP_FOLDER;
+    public static function getTempPath($isPublic) {
+        if ($isPublic) {
+            return self::ROOT_URL.self::TEMP_PATH;
+        }
+        else {
+            return self::BASE_PATH.self::TEMP_PATH;
+        }
     }
 
-    public static function toUploadFolder() {
-        return self::ROOT_URL.self::UPLOAD_FOLDER;
+    public static function getUploadPath($isPublic) {
+        if ($isPublic) {
+            return self::ROOT_URL.self::UPLOAD_PATH;
+        }
+        else {
+            return self::BASE_PATH.self::UPLOAD_PATH;
+        }
     }
 
     public static function encodeID($value) {

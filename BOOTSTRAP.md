@@ -1,4 +1,4 @@
-# Bootstrap Customization
+# Bootstrap Configuration
 
 ## LESS files
 
