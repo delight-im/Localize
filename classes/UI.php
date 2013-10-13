@@ -984,7 +984,7 @@ abstract class UI {
                                     $valuesRight[$subKey] = Authentication::getCachedEdit($repositoryID, $languageID, URL::encodeID($defaultPhrase->getID()), $subKey, $valuesRight[$subKey]);
 
                                     $valuePrevious = new UI_Form_Hidden(str_replace('[edits]', '[previous]', $phraseKey), $valuesRight[$subKey]);
-                                    $valueEdit = new UI_Form_Textarea('', $phraseKey, $valuesRight[$subKey], '', true, htmlspecialchars($valuesRight[$subKey]), UI_Form_Textarea::getOptimalRowCount($valuesRight[$subKey]), $language->isRTL());
+                                    $valueEdit = new UI_Form_Textarea('', $phraseKey, $valuesRight[$subKey], '', true, htmlspecialchars($valuesRight[$subKey]), UI_Form_Textarea::getOptimalRowCount($valueLeft), $language->isRTL());
 
                                     $phrasesTable->addRow(array(
                                         $valueLeft,
