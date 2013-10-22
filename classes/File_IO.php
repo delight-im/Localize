@@ -128,6 +128,8 @@ class File_IO {
             if (move_uploaded_file($fileArrayValue['tmp_name'], $newFileName)) {
                 $fileContent = file_get_contents($newFileName);
                 if ($fileContent !== false) {
+                    $fileContent = str_replace('<![CDATA[', '', $fileContent);
+                    $fileContent = str_replace(']]>', '', $fileContent);
                     $fileContent = preg_replace('/<string-array([^>]*)>/i', '<entryList\1>', $fileContent);
                     $fileContent = str_replace('</string-array>', '</entryList>', $fileContent);
                     $fileContent = preg_replace('/<string([^>]*)>/i', '<entrySingle\1><![CDATA[', $fileContent);
