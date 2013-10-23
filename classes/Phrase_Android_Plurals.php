@@ -36,12 +36,13 @@ class Phrase_Android_Plurals extends Phrase_Android {
     /**
      * Returns the output of this phrase for the specific platform and type of phrase
      *
+	 * @param bool $escapeHTML whether to escape HTML or not
      * @return string output of this phrase
      */
-    public function output() {
+    public function output($escapeHTML) {
         $out = "\t".'<plurals name="'.$this->phraseKey.'">'."\n";
         foreach ($this->values as $quantity => $value) {
-            $out .= "\t\t".'<item quantity="'.$quantity.'">'.self::writeToRaw($value).'</item>'."\n";
+            $out .= "\t\t".'<item quantity="'.$quantity.'">'.self::writeToRaw($value, $escapeHTML).'</item>'."\n";
         }
         $out .= "\t".'</plurals>'."\n";
         return $out;

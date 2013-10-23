@@ -11,9 +11,10 @@ abstract class Phrase {
     /**
      * Returns the output of this phrase for the specific platform and type of phrase
      *
+	 * @param bool $escapeHTML whether to escape HTML or not
      * @return string output of this phrase
      */
-    abstract public function output();
+    abstract public function output($escapeHTML);
 
     /**
      * Returns the the number of complete values and total values for this phrase

@@ -1,5 +1,6 @@
 <?php
 
+require_once('File_IO.php');
 require_once('UI_Group.php');
 require_once('UI_Container.php');
 require_once('UI_Row.php');
@@ -36,6 +37,7 @@ abstract class UI {
     const PAGE_REVIEW = 7;
     const PAGE_SETTINGS = 8;
     const PAGE_INVITATIONS = 9;
+	const PAGE_HELP = 10;
 
     private static $page;
     private static $actionPOST;
@@ -123,7 +125,8 @@ abstract class UI {
         $footerHTML = file_get_contents('templates/footer.html');
         return sprintf(
             $footerHTML,
-            URL::toPage('contact'),
+            URL::toPage('help'),
+			URL::toPage('contact'),
             URL::toResource('js/')
         );
     }
@@ -189,6 +192,8 @@ abstract class UI {
                 return self::getPage_Settings($contents, $containers);
             case self::PAGE_INVITATIONS:
                 return self::getPage_Invitations($contents, $containers);
+			case self::PAGE_HELP:
+				return self::getPage_Help($contents, $containers);
             default:
                 throw new Exception('Unknown page ID '.$pageID);
         }
@@ -451,6 +456,26 @@ abstract class UI {
         self::addBreadcrumbItem(URL::toPage('contact'), 'Contact');
         $contents[] = new UI_Heading('Contact', true);
         $contents[] = new UI_Paragraph('<img src="'.URL::toResource('img/contact.php').'" alt="Contact" width="300">');
+        $cell = new UI_Cell($contents);
+        $row = new UI_Row(array($cell));
+
+        $containers[] = new UI_Container(array($row));
+        return new UI_Group($containers);
+    }
+
+    public static function getPage_Help($contents, $containers) {
+        self::addBreadcrumbItem(URL::toPage('help'), 'Help');
+        $contents[] = new UI_Heading('Help with Localization for Android', true);
+
+		$contents[] = new UI_Heading('Embedding HTML in String resources and using it from Java', true, 3);
+		$contents[] = new UI_Paragraph('<strong>How does escaping HTML for XML work?</strong><br />There are five special characters in XML which you have to escape if you do not want their special function. These are:<br /><code>\'</code> single quote<br /><code>&quot;</code> double quote<br /><code>&lt;</code> less-than<br /><code>&gt;</code> greater-than<br /><code>&amp;</code> ampersand<br />You can escape them either by wrapping them inside <code>&lt;![CDATA[...]]&gt;</code> or by replacing them with their respective XML entities.');
+		$contents[] = new UI_Paragraph('<strong>Do I always have to escape my HTML inside XML?</strong><br />If you want to preserve the HTML, for example if you want to show the HTML code on screen, yes.<br />If you want to use HTML in order to style your text for use in TextViews, it depends, as there are two ways to do this:');
+		$contents[] = new UI_Paragraph('<strong>Approach A: Leave HTML unescaped and call getText(...)</strong><br />You can embed your HTML code in XML without escaping it, but then you must call <code>getText(...)</code> instead of <code>getString(...)</code> from Java. The advantage is that this approach is very easy, you do not need any escaping and you can just as well reference the HTML strings from XML layout files without losing the text styling.');
+		$contents[] = new UI_Paragraph('<strong>Approach B: Escape HTML and call Html.fromHtml(getText(...))</strong><br />If you escape your HTML by using CDATA sections or by escaping the single characters, you have to call <code>Html.fromHtml(getText(...))</code> from Java if you want to get the styled text.');
+		$contents[] = new UI_Paragraph('<strong>Which HTML tags can I use?</strong><br />You can only be sure about <code>&lt;b&gt;</code>, <code>&lt;i&gt;</code> and <code>&lt;u&gt;</code>. These will (almost) always work. Others may work on some devices, but usually they do not.');
+		$contents[] = new UI_Paragraph('<strong>What does that mean for me?</strong><br />Localize takes care of all the text processing and escaping for you. When exporting your translations to XML files, you can choose between approaches A (<code>getText(...)</code>) and B (<code>Html.fromHtml(getString(...))</code>) for your project.');
+		$contents[] = new UI_Paragraph('<img src="'.URL::toResource('img/android/html_in_resources.png').'" alt="Embedding HTML in Android String resources and using it from Java" title="Embedding HTML in Android String resources and using it from Java" width="666">');
+
         $cell = new UI_Cell($contents);
         $row = new UI_Row(array($cell));
 
@@ -802,6 +827,13 @@ abstract class UI {
                     $textFilename = new UI_Form_Text('Filename', 'export[filename]', 'strings.xml', false, 'Please choose a name for the XML files that will be exported inside each language folder.');
                     $textFilename->setDefaultValue('strings.xml');
                     $form->addContent($textFilename);
+					
+                    $selectHtmlEscaping = new UI_Form_Select('HTML Escaping', 'export[htmlEscaping]', 'Which Java method do you want to use to get HTML-styled strings from your translations? (<a href="'.URL::toPage('help').'">Help</a>)');
+                    $selectHtmlEscaping->addOption('- Please choose -', File_IO::HTML_ESCAPING_NONE);
+					$selectHtmlEscaping->addOption('getText(...)', File_IO::HTML_ESCAPING_GETTEXT);
+					$selectHtmlEscaping->addOption('Html.fromHtml(getString(...))', File_IO::HTML_ESCAPING_HTML_FROMHTML);
+					$selectHtmlEscaping->addOption('I don\'t care', File_IO::HTML_ESCAPING_GETTEXT);
+                    $form->addContent($selectHtmlEscaping);
 
                     $buttonSubmit = new UI_Form_Button('Export XML', UI_Form_Button::TYPE_SUCCESS);
                     $buttonCancel = new UI_Link('Cancel', URL::toProject($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);

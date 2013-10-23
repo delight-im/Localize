@@ -189,9 +189,10 @@ abstract class Language {
     /**
      * Returns the platform-specific output for this language
      *
+	 * @param bool $escapeHTML whether to escape HTML or not
      * @return string output for this language
      */
-    abstract public function output();
+    abstract public function output($escapeHTML);
 
     /**
      * Returns the platform-specific key (string) for this language

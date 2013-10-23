@@ -8,11 +8,11 @@ class Language_Android extends Language {
         parent::__construct($id);
     }
 
-    public function output() {
+    public function output($escapeHTML) {
         $out = '<?xml version="1.0" encoding="utf-8"?>'."\n";
         $out .= '<resources>'."\n";
         foreach ($this->phrases as $phrase) {
-            $out .= $phrase->output();
+            $out .= $phrase->output($escapeHTML);
         }
         $out .= '</resources>';
         return $out;

@@ -20,10 +20,11 @@ class Phrase_Android_String extends Phrase_Android {
     /**
      * Returns the output of this phrase for the specific platform and type of phrase
      *
+	 * @param bool $escapeHTML whether to escape HTML or not
      * @return string output of this phrase
      */
-    public function output() {
-        $out = "\t".'<string name="'.$this->phraseKey.'">'.self::writeToRaw($this->value).'</string>'."\n";
+    public function output($escapeHTML) {
+        $out = "\t".'<string name="'.$this->phraseKey.'">'.self::writeToRaw($this->value, $escapeHTML).'</string>'."\n";
         return $out;
     }
 

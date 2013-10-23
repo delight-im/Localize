@@ -11,6 +11,9 @@ class File_IO {
     const UPLOAD_ERROR_XML_INVALID = 4;
     const UPLOAD_ERROR_NO_TRANSLATIONS_FOUND = 5;
     const FILENAME_REGEX = '/^[a-z]+[a-z0-9_.]*$/';
+	const HTML_ESCAPING_NONE = 0;
+	const HTML_ESCAPING_GETTEXT = 1;
+	const HTML_ESCAPING_HTML_FROMHTML = 2;
 
     public static function getMaxFileSize() {
         return self::MAX_FILE_SIZE;
@@ -75,7 +78,7 @@ class File_IO {
         return isset($filename) && preg_match(self::FILENAME_REGEX, $filename);
     }
 
-    public static function exportRepository($repository, $filename) {
+    public static function exportRepository($repository, $filename, $escapeHTML = FALSE) {
         $filename = str_replace('.xml', '', $filename); // drop file extension (will be appended automatically)
         if (self::isFilenameValid($filename)) {
             if ($repository instanceof Repository) {
@@ -90,7 +93,7 @@ class File_IO {
                         $languageObject = $repository->getLanguage($language);
                         $languageKey = $languageObject->getKey();
                         if (mkdir($savePath.'/'.$languageKey.'/', 0755, true)) {
-                            if (file_put_contents($savePath.'/'.$languageKey.'/'.$filename.'.xml', $languageObject->output())) {
+                            if (file_put_contents($savePath.'/'.$languageKey.'/'.$filename.'.xml', $languageObject->output($escapeHTML))) {
                                 $export_success = true;
                             }
                             else { // output file could not be written

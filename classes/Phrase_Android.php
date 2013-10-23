@@ -18,12 +18,15 @@ abstract class Phrase_Android extends Phrase implements PhraseImplementation {
     public static function readFromRaw($text) {
         $text = preg_replace(self::NEWLINE_REGEX, '', $text); // remove real line breaks as only the control characters for line breaks may be taken into account and we do not want double-newlines
 
-        $text = str_replace('\n', "\n", $text); // replace literal with control character
-        $text = str_replace('\\\'', '\'', $text);
-        $text = str_replace('\\"', '"', $text);
+        $text = str_replace('\n', "\n", $text); // replace <newline literal> with <newline control character>
+        $text = str_replace('\\\'', '\'', $text); // replace <escaped single quote> with <single quote>
+        $text = str_replace('\\"', '"', $text); // replace <escaped double quote> with <double quote>
 
-        $text = str_replace('&#8230;', '...', $text);
-        $text = str_replace('&#38;', '&', $text); // do ampersand last in this group so that it will not be double-decoded
+		// convert ampersand as the last item in the following group because it is still a special entity for the other three conversions
+        $text = str_replace('&#60;', '<', $text); // replace <less-than entity> with <less-than>
+		$text = str_replace('&#62;', '>', $text); // replace <greater-than entity> with <greater-than>
+		$text = str_replace('&#8230;', '...', $text); // replace <ellipsis entity> with <three dots> that people can edit more easily
+        $text = str_replace('&#38;', '&', $text); // replace <ampersand entity> with <ampersand>
 
         return $text;
     }
@@ -32,17 +35,23 @@ abstract class Phrase_Android extends Phrase implements PhraseImplementation {
      * Encodes the content of a translation from internal text representation to raw output
      *
      * @param string $text the internal text representation to encode
+	 * @param bool $escapeHTML whether to escape HTML or not
      * @return string the raw output
      */
-    public static function writeToRaw($text) {
+    public static function writeToRaw($text, $escapeHTML) {
         $text = preg_replace(self::NEWLINE_REGEX, "\n", $text); // replace all newline control characters to the same representation
 
-        $text = str_replace("\n", '\n', $text); // replace control character with literal
-        $text = str_replace('\'', '\\\'', $text);
-        $text = str_replace('"', '\\"', $text);
+        $text = str_replace("\n", '\n', $text); // replace <newline control character> with <newline literal>
+        $text = str_replace('\'', '\\\'', $text); // replace <single quote> with <escaped single quote>
+        $text = str_replace('"', '\\"', $text); // replace <double quote> with <escaped double quote>
 
-        $text = str_replace('&', '&#38;', $text); // do ampersand first in this group so that it will not be double-encoded
-        $text = str_replace('...', '&#8230;', $text);
+        // convert ampersand as the first item in the following group because it must not be treated as a special entity for the other three conversions
+		$text = str_replace('&', '&#38;', $text); // replace <ampersand> with <ampersand entity>
+		if ($escapeHTML) {
+			$text = str_replace('<', '&#60;', $text); // replace <less-than> with <less-than entity>
+			$text = str_replace('>', '&#62;', $text); // replace <greater-than> with <greater-than entity>
+		}
+        $text = str_replace('...', '&#8230;', $text); // replace <three dots> that people can edit more easily with <ellipsis entity>
 
         return $text;
     }

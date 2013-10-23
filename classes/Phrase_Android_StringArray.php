@@ -14,12 +14,13 @@ class Phrase_Android_StringArray extends Phrase_Android {
     /**
      * Returns the output of this phrase for the specific platform and type of phrase
      *
+	 * @param bool $escapeHTML whether to escape HTML or not
      * @return string output of this phrase
      */
-    public function output() {
+    public function output($escapeHTML) {
         $out = "\t".'<string-array name="'.$this->phraseKey.'">'."\n";
         foreach ($this->values as $value) {
-            $out .= "\t\t".'<item>'.self::writeToRaw($value).'</item>'."\n";
+            $out .= "\t\t".'<item>'.self::writeToRaw($value, $escapeHTML).'</item>'."\n";
         }
         $out .= "\t".'</string-array>'."\n";
         return $out;

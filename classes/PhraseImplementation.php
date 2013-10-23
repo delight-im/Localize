@@ -14,9 +14,10 @@ interface PhraseImplementation {
      * Encodes the content of a translation from internal text representation to raw output
      *
      * @param string $text the internal text representation to encode
+	 * @param bool $escapeHTML whether to escape HTML or not
      * @return string the raw output
      */
-    public static function writeToRaw($text);
+    public static function writeToRaw($text, $escapeHTML);
 
     /**
      * Returns whether the given phrase key is valid (true) or not (false)

@@ -73,6 +73,9 @@ elseif (UI::isPage('sign_up')) {
 elseif (UI::isPage('contact')) {
     echo UI::getPage(UI::PAGE_CONTACT);
 }
+elseif (UI::isPage('help')) {
+    echo UI::getPage(UI::PAGE_HELP);
+}
 elseif (UI::isPage('settings')) {
     if (UI::isAction('settings')) {
         $data = UI::getDataPOST('settings');
@@ -261,10 +264,28 @@ elseif (UI::isPage('export')) {
                 $data = UI::getDataPOST('export');
                 $filename = isset($data['filename']) ? trim($data['filename']) : '';
                 if (File_IO::isFilenameValid($filename)) {
-                    $repository = new Repository($repositoryID, $repositoryData['name'], $repositoryData['visibility'], $repositoryData['defaultLanguage']);
-                    $repository->loadLanguages(true, Repository::SORT_ALL_LANGUAGES, Repository::LOAD_ALL_LANGUAGES);
-                    File_IO::exportRepository($repository, $filename);
-                    exit;
+					$htmlEscaping = intval(trim($data['htmlEscaping']));
+					$htmlEscapingEnabled = FALSE;
+					if ($htmlEscaping == File_IO::HTML_ESCAPING_GETTEXT) {
+						$htmlEscapingEnabled = FALSE;
+						$htmlEscapingValid = TRUE;
+					}
+					elseif ($htmlEscaping == File_IO::HTML_ESCAPING_HTML_FROMHTML) {
+						$htmlEscapingEnabled = TRUE;
+						$htmlEscapingValid = TRUE;
+					}
+					else {
+						$htmlEscapingValid = FALSE;
+					}
+					if ($htmlEscapingValid) {
+						$repository = new Repository($repositoryID, $repositoryData['name'], $repositoryData['visibility'], $repositoryData['defaultLanguage']);
+						$repository->loadLanguages(true, Repository::SORT_ALL_LANGUAGES, Repository::LOAD_ALL_LANGUAGES);
+						File_IO::exportRepository($repository, $filename, $htmlEscapingEnabled);
+						exit;
+					}
+					else {
+						$alert = new UI_Alert('<p>Please choose your preferred way of HTML escaping.</p>', UI_Alert::TYPE_WARNING);
+					}
                 }
                 else {
                     $alert = new UI_Alert('<p>Please enter a valid filename.</p>', UI_Alert::TYPE_WARNING);
