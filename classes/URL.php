@@ -46,6 +46,15 @@ class URL {
         }
     }
 
+    public static function toPhraseDetails($repositoryID, $languageID, $phraseID) {
+        if (self::URL_REWRITE) {
+            return self::ROOT_URL.'phrases/'.self::encodeID($repositoryID).'/'.self::encodeID($languageID).'/'.self::encodeID($phraseID);
+        }
+        else {
+            return self::ROOT_URL.'?p=phrase&project='.self::encodeID($repositoryID).'&language='.self::encodeID($languageID).'&phrase='.self::encodeID($phraseID);
+        }
+    }
+
     public static function toLanguage($repositoryID, $languageID) {
         if (self::URL_REWRITE) {
             return self::ROOT_URL.'projects/'.self::encodeID($repositoryID).'/languages/'.self::encodeID($languageID);

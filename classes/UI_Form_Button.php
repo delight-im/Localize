@@ -17,13 +17,15 @@ class UI_Form_Button extends UI {
     protected $key;
     protected $type;
     protected $action;
+    protected $jsEvents;
 
-    function __construct($label, $type = self::TYPE_SUCCESS, $action = self::ACTION_SUBMIT, $key = '', $value = '') {
+    function __construct($label, $type = self::TYPE_SUCCESS, $action = self::ACTION_SUBMIT, $key = '', $value = '', $jsEvents = '') {
         $this->label = $label;
         $this->key = $key;
         $this->value = $value;
         $this->type = $type;
         $this->action = $action;
+        $this->jsEvents = $jsEvents;
     }
 
     public function getHTML() {
@@ -40,6 +42,9 @@ class UI_Form_Button extends UI {
             if (!empty($this->value)) {
                 $out .= ' value="'.htmlspecialchars($this->value).'"';
             }
+        }
+        if (!empty($this->jsEvents)) {
+            $out .= ' onclick="'.$this->jsEvents.'"';
         }
         $out .= '>'.$this->label.'</button>';
         return $out;

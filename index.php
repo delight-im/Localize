@@ -544,6 +544,41 @@ elseif (UI::isPage('create_project') && Authentication::isSignedIn()) {
         echo UI::getPage(UI::PAGE_CREATE_PROJECT);
     }
 }
+elseif (UI::isPage('phrase')) {
+    $alert = NULL;
+    if (UI::isAction('phraseChange')) {
+        $repositoryID = UI::validateID(UI::getDataGET('project'), true);
+        $repositoryData = Database::getRepositoryData($repositoryID);
+        if (!empty($repositoryData)) {
+            $isAllowed = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_DEVELOPER);
+            if ($isAllowed) {
+                $data = UI::getDataPOST('phraseChange');
+                if (isset($data['phraseKey']) && isset($data['action'])) {
+                    if ($data['action'] == 'untranslate') {
+                        Database::phraseUntranslate($repositoryID, $data['phraseKey'], $repositoryData['defaultLanguage']);
+                        $alert = new UI_Alert('<p>You have successfully removed all translations for this phrase!</p>', UI_Alert::TYPE_SUCCESS);
+                    }
+                    elseif ($data['action'] == 'delete') {
+                        Database::phraseDelete($repositoryID, $data['phraseKey']);
+                        $alert = new UI_Alert('<p>You have successfully deleted the phrase from the project completely!</p>', UI_Alert::TYPE_SUCCESS);
+                    }
+                }
+            }
+            else {
+                $alert = new UI_Alert('<p>You are not allowed to edit phrases for this project.</p>', UI_Alert::TYPE_WARNING);
+            }
+        }
+        else {
+            $alert = new UI_Alert('<p>The project could not be found.</p>', UI_Alert::TYPE_WARNING);
+        }
+    }
+    if (empty($alert)) {
+        echo UI::getPage(UI::PAGE_PHRASE);
+    }
+    else {
+        echo UI::getPage(UI::PAGE_PHRASE, array($alert));
+    }
+}
 else {
     if (UI::isAction('sign_in')) {
         $data = UI::getDataPOST('sign_in');

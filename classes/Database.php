@@ -79,6 +79,15 @@ class Database {
         }
     }
 
+    public static function getPhraseData($repositoryID, $id) {
+        if ($id > 0) {
+            return Database::selectFirst("SELECT phraseKey, payload FROM phrases WHERE id = ".intval($id)." AND repositoryID = ".intval($repositoryID));
+        }
+        else {
+            return NULL;
+        }
+    }
+
     public static function getRepositoryRole($userID, $repositoryID) {
         $role = Database::selectFirst("SELECT role FROM roles WHERE userID = ".intval($userID)." AND repositoryID = ".intval($repositoryID));
         if (empty($role)) {
@@ -237,6 +246,14 @@ class Database {
             self::insert("INSERT INTO roles (userID, repositoryID, role) VALUES (".intval($userID).", ".intval($repositoryID).", ".intval($assignedRole).")");
         }
         self::update("UPDATE invitations SET accepted = ".($accept ? 1 : -1)." WHERE repositoryID = ".intval($repositoryID)." AND userID = ".intval($userID));
+    }
+
+    public static function phraseUntranslate($repositoryID, $phraseKey, $defaultLanguageID) {
+        self::delete("DELETE FROM phrases WHERE repositoryID = ".intval($repositoryID)." AND languageID != ".intval($defaultLanguageID)." AND phraseKey = ".self::escape($phraseKey));
+    }
+
+    public static function phraseDelete($repositoryID, $phraseKey) {
+        self::delete("DELETE FROM phrases WHERE repositoryID = ".intval($repositoryID)." AND phraseKey = ".self::escape($phraseKey));
     }
 
 }

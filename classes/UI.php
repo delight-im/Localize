@@ -38,6 +38,7 @@ abstract class UI {
     const PAGE_SETTINGS = 8;
     const PAGE_INVITATIONS = 9;
 	const PAGE_HELP = 10;
+    const PAGE_PHRASE = 11;
 
     private static $page;
     private static $actionPOST;
@@ -194,6 +195,8 @@ abstract class UI {
                 return self::getPage_Invitations($contents, $containers);
 			case self::PAGE_HELP:
 				return self::getPage_Help($contents, $containers);
+            case self::PAGE_PHRASE:
+                return self::getPage_Phrase($contents, $containers);
             default:
                 throw new Exception('Unknown page ID '.$pageID);
         }
@@ -744,6 +747,81 @@ abstract class UI {
         return new UI_Group($containers);
     }
 
+    public static function getPage_Phrase($contents, $containers) {
+        $repositoryID = self::validateID(self::getDataGET('project'), true);
+        $languageID = self::validateID(self::getDataGET('language'), true);
+        $phraseID = self::validateID(self::getDataGET('phrase'), true);
+
+        $repositoryData = Database::getRepositoryData($repositoryID);
+        $phraseData = Database::getPhraseData($repositoryID, $phraseID);
+
+        if (empty($repositoryData) || empty($phraseData)) {
+            self::addBreadcrumbItem(URL::toProject($repositoryID), 'Phrase not found');
+            $contents[] = new UI_Heading('Phrase not found', true);
+            $contents[] = new UI_Paragraph('We\'re sorry, but we could not find the phrase that you requested.');
+            $contents[] = new UI_Paragraph('Please check if you have made any typing errors.');
+        }
+        else {
+            self::addBreadcrumbItem(URL::toProject($repositoryID), htmlspecialchars($repositoryData['name']));
+            self::addBreadcrumbItem(URL::toLanguage($repositoryID, $languageID), Language::getLanguageNameFull($languageID));
+            Authentication::saveCachedRepository($repositoryID, $repositoryData['name']);
+
+            $repository = new Repository($repositoryID, $repositoryData['name'], $repositoryData['visibility'], $repositoryData['defaultLanguage']);
+            $role = Database::getRepositoryRole(Authentication::getUserID(), $repositoryID);
+            $permissions = $repository->getPermissions(Authentication::getUserID(), $role);
+
+            if (Authentication::getUserID() <= 0) {
+                $contents[] = new UI_Heading(htmlspecialchars($repositoryData['name']), true);
+                $contents[] = self::getLoginForm();
+            }
+            elseif ($permissions->isInvitationMissing()) {
+                $contents[] = new UI_Heading(htmlspecialchars($repositoryData['name']), true);
+                $contents[] = self::getInvitationForm($repositoryID);
+            }
+            else {
+                $mayMovePhrases = Repository::isRoleAllowedToMovePhrases($role);
+                $currentPageURL = URL::toPhraseDetails($repositoryID, $languageID, $phraseID);
+                self::addBreadcrumbItem($currentPageURL, $phraseData['phraseKey']);
+
+                $heading = new UI_Heading('Phrase: '.$phraseData['phraseKey'], true);
+
+                $phraseObject = Phrase::create($phraseID, $phraseData['phraseKey'], $phraseData['payload']);
+                $phraseObjectEntries = $phraseObject->getPhraseValues();
+                $phraseEntries = new UI_List();
+                foreach ($phraseObjectEntries as $phraseObjectEntry) {
+                    $phraseEntries->addItem(htmlspecialchars($phraseObjectEntry));
+                }
+
+                if ($mayMovePhrases) {
+                    $formButtonList = array(
+                        new UI_Form_Button('Remove translations', UI_Form_Button::TYPE_WARNING, UI_Form_Button::ACTION_SUBMIT, 'phraseChange[action]', 'untranslate', 'return confirm(\'Are you sure you want to remove all translations for this phrase and keep the default language entry?\');'),
+                        new UI_Form_Button('Delete phrase', UI_Form_Button::TYPE_DANGER, UI_Form_Button::ACTION_SUBMIT, 'phraseChange[action]', 'delete', 'return confirm(\'Are you sure you want to delete the phrase from your project completely?\');'),
+                        new UI_Link('Cancel', URL::toLanguage($repositoryID, $languageID), UI_Link::TYPE_UNIMPORTANT)
+                    );
+                }
+                else {
+                    $formButtonList = NULL;
+                }
+
+                $form = new UI_Form($currentPageURL, false);
+                $form->addContent(new UI_Form_Hidden('phraseChange[phraseKey]', $phraseData['phraseKey']));
+                if (isset($formButtonList)) {
+                    $form->addContent(new UI_Form_ButtonGroup($formButtonList, true));
+                }
+
+                $contents[] = $heading;
+                $contents[] = $phraseEntries;
+                $contents[] = $form;
+            }
+        }
+
+        $cell = new UI_Cell($contents);
+        $row = new UI_Row(array($cell));
+
+        $containers[] = new UI_Container(array($row));
+        return new UI_Group($containers);
+    }
+
     public static function getPage_Project($contents, $containers) {
         $page = self::getDataGET('p');
         $repositoryID = self::validateID(self::getDataGET('project'), true);
@@ -997,8 +1075,10 @@ abstract class UI {
                                     $valuePrevious = new UI_Form_Hidden(str_replace('[edits]', '[previous]', $phraseFormKey), $value);
                                     $valueEdit = new UI_Form_Textarea('', $phraseFormKey, $value, '', true, htmlspecialchars($value), UI_Form_Textarea::getOptimalRowCount($value, 2), $defaultLanguage->isRTL());
 
+                                    $phraseKeyLink = new UI_Link($phraseKeyName, URL::toPhraseDetails($repositoryID, $languageID, $defaultPhrase->getID()));
+
                                     $phrasesTable->addRow(array(
-                                        $phraseKeyName,
+                                        $phraseKeyLink->getHTML(),
                                         $valuePrevious->getHTML().$valueEdit->getHTML()
                                     ));
                                 }
