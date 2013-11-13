@@ -10,4 +10,4 @@ RewriteRule ^export/([a-zA-Z0-9_-]+)$ index.php?p=export&project=$1
 RewriteRule ^invitations/([a-zA-Z0-9_-]+)$ index.php?p=invitations&project=$1
 RewriteRule ^add_phrase/([a-zA-Z0-9_-]+)/languages/([a-zA-Z0-9_-]+)$ index.php?p=add_phrase&project=$1&language=$2
 RewriteRule ^phrases/([a-zA-Z0-9_-]+)/([a-zA-Z0-9_-]+)/([a-zA-Z0-9_-]+)$ index.php?p=phrase&project=$1&language=$2&phrase=$3
-RewriteRule ^v/([a-zA-Z0-9_-]+)$ projects/$1 [L,R=301]
+RewriteRule ^v/([a-zA-Z0-9_-]+)$ /projects/$1 [L,R=301]
