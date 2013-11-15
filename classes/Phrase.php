@@ -109,8 +109,8 @@ abstract class Phrase {
      * @return bool
      */
     public static function arePlaceholdersMatching($placeholders1, $placeholders2) {
-        asort($placeholders1);
-        asort($placeholders2);
+        sort($placeholders1);
+        sort($placeholders2);
         $count1 = count($placeholders1);
         $count2 = count($placeholders2);
         if ($count1 == $count2) {
