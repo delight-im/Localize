@@ -552,7 +552,9 @@ abstract class UI {
                         $buttonApprove = new UI_Form_Button('Approve', UI_Form_Button::TYPE_SUCCESS, UI_Form_Button::ACTION_SUBMIT, 'review[action]', 'approve');
                         $buttonReviewLater = new UI_Form_Button('Review later', UI_Form_Button::TYPE_UNIMPORTANT, UI_Form_Button::ACTION_SUBMIT, 'review[action]', 'reviewLater');
                         $buttonReject = new UI_Form_Button('Reject', UI_Form_Button::TYPE_WARNING, UI_Form_Button::ACTION_SUBMIT, 'review[action]', 'reject');
-                        $buttonRejectAllByContributor = new UI_Form_Button('Reject all from this contributor', UI_Form_Button::TYPE_DANGER, UI_Form_Button::ACTION_SUBMIT, 'review[action]', 'rejectAllFromThisContributor');
+                        $buttonApproveAllByContributor = new UI_Form_Button('Approve all from this contributor', UI_Form_Button::TYPE_SUCCESS, UI_Form_Button::ACTION_SUBMIT, 'review[action]', 'approveAllFromThisContributor', 'return confirm(\'Are you sure you want to execute this batch operation?\');');
+						$buttonRejectAllByContributor = new UI_Form_Button('Reject all from this contributor', UI_Form_Button::TYPE_DANGER, UI_Form_Button::ACTION_SUBMIT, 'review[action]', 'rejectAllFromThisContributor', 'return confirm(\'Are you sure you want to execute this batch operation?\');');
+
                         $actionButtons = new UI_Form_ButtonGroup(array(
                             $buttonApprove,
                             $buttonReviewLater,
@@ -600,7 +602,7 @@ abstract class UI {
                         $form->addContent($actionButtons);
                         $form->addContent($table);
                         $form->addContent($actionButtons);
-                        $form->addContent(new UI_Form_ButtonGroup(array($buttonRejectAllByContributor), true));
+                        $form->addContent(new UI_Form_ButtonGroup(array($buttonApproveAllByContributor, $buttonRejectAllByContributor), true));
 
                         $contents[] = $form;
                     }

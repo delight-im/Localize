@@ -180,7 +180,7 @@ elseif (UI::isPage('review')) {
                 $data_referenceValue = isset($data['referenceValue']) ? trim($data['referenceValue']) : '';
                 if (!empty($data_phraseObject)) {
                     switch ($data_action) {
-                        case 'approve';
+                        case 'approve':
                             $placeholdersReference = Phrase_Android::getPlaceholders($data_referenceValue);
                             $placeholdersNew = Phrase_Android::getPlaceholders($data_newValue);
                             if (Phrase::arePlaceholdersMatching($placeholdersReference, $placeholdersNew) || $languageID == $repositoryData['defaultLanguage']) { // placeholders (except their order) may only be changed in default language
@@ -194,13 +194,16 @@ elseif (UI::isPage('review')) {
                                 $alert = new UI_Alert('<p>The placeholders must match with those of the reference phrase.</p>', UI_Alert::TYPE_WARNING);
                             }
                             break;
-                        case 'reviewLater';
+                        case 'reviewLater':
                             Database::postponeEdit($data_editID);
                             break;
-                        case 'reject';
+                        case 'reject':
                             Database::deleteEdit($data_editID);
                             break;
-                        case 'rejectAllFromThisContributor';
+						case 'approveAllFromThisContributor':
+							Database::approveEditsByContributor($repositoryID, $languageID, $data_contributorID);
+							break;
+                        case 'rejectAllFromThisContributor':
                             Database::deleteEditsByContributor($data_contributorID);
                             break;
                     }

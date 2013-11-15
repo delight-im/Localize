@@ -181,6 +181,10 @@ class Database {
         return self::select("SELECT a.id, a.phraseSubKey, a.userID, a.suggestedValue, a.submit_time, b.username, b.real_name, c.phraseKey, c.payload FROM edits AS a JOIN users AS b ON a.userID = b.id JOIN phrases AS c ON a.referencedPhraseID = c.id WHERE a.repositoryID = ".intval($repositoryID)." AND a.languageID = ".intval($languageID)." ORDER BY a.submit_time ASC LIMIT 0, 1");
     }
 
+    public static function getPendingEditsByRepositoryLanguageAndUser($repositoryID, $languageID, $contributorID) {
+        return self::select("SELECT a.id, a.phraseSubKey, a.userID, a.suggestedValue, a.submit_time, b.username, b.real_name, c.phraseKey, c.payload FROM edits AS a JOIN users AS b ON a.userID = b.id JOIN phrases AS c ON a.referencedPhraseID = c.id WHERE a.repositoryID = ".intval($repositoryID)." AND a.languageID = ".intval($languageID)." AND a.userID = ".intval($contributorID));
+    }
+
     public static function getPendingEditsByRepository($repositoryID) {
         return self::select("SELECT a.languageID, COUNT(*) FROM edits AS a JOIN users AS b ON a.userID = b.id JOIN phrases AS c ON a.referencedPhraseID = c.id WHERE a.repositoryID = ".intval($repositoryID)." GROUP BY a.languageID");
     }
@@ -215,6 +219,25 @@ class Database {
 
     public static function deleteEdit($editID) {
         self::delete("DELETE FROM edits WHERE id = ".intval($editID));
+    }
+
+    public static function approveEditsByContributor($repositoryID, $languageID, $contributorID) {
+		$edits = self::getPendingEditsByRepositoryLanguageAndUser($repositoryID, $languageID, $contributorID);
+		foreach ($edits as $edit) {
+			$previousPhraseData = Database::getPhrase($repositoryID, $languageID, $edit['phraseKey']);
+			if (empty($previousPhraseData)) {
+				$phraseObject = Phrase::create(0, $edit['phraseKey'], $edit['payload'], true, true);
+			}
+			else {
+				$phraseObject = Phrase::create(0, $edit['phraseKey'], $previousPhraseData['payload']);
+			}
+			$phraseObject->setPhraseValue($edit['phraseSubKey'], $edit['suggestedValue']);
+
+			self::updatePhrase($repositoryID, $languageID, $edit['phraseKey'], $phraseObject->getPayload());
+			self::updateContributor($repositoryID, $edit['userID']);
+			self::deleteEdit($edit['id']);
+		}
+		Authentication::setCachedLanguageProgress($repositoryID, NULL); // unset cached version of this repository's progress
     }
 
     public static function deleteEditsByContributor($contributorID) {
