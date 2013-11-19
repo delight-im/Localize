@@ -49,7 +49,7 @@ if (!defined('PASSWORD_DEFAULT')) {
                 $raw_salt_len = 16;
                 // The length required in the final serialization
                 $required_salt_len = 22;
-                $hash_format = sprintf("$2y$%02d$", $cost);
+                $hash_format = sprintf("$2a$%02d$", $cost);
                 break;
             default:
                 trigger_error(sprintf("password_hash(): Unknown password hashing algorithm: %s", $algo), E_USER_WARNING);
@@ -155,10 +155,10 @@ if (!defined('PASSWORD_DEFAULT')) {
             'algoName' => 'unknown',
             'options' => array(),
         );
-        if (substr($hash, 0, 4) == '$2y$' && strlen($hash) == 60) {
+        if (substr($hash, 0, 4) == '$2a$' && strlen($hash) == 60) {
             $return['algo'] = PASSWORD_BCRYPT;
             $return['algoName'] = 'bcrypt';
-            list($cost) = sscanf($hash, "$2y$%d$");
+            list($cost) = sscanf($hash, "$2a$%d$");
             $return['options']['cost'] = $cost;
         }
         return $return;
