@@ -78,7 +78,16 @@ class File_IO {
         return isset($filename) && preg_match(self::FILENAME_REGEX, $filename);
     }
 
-    public static function exportRepository($repository, $filename, $escapeHTML = FALSE) {
+    /**
+     * Exports the given repository and creates a ZIP file containing XML output files
+     *
+     * @param Repository $repository the Repository instance to export
+     * @param string $filename the output file name inside each language folder
+     * @param int $groupID the group to get the output for (or Phrase::GROUP_ALL)
+     * @param bool $escapeHTML whether to escape HTML tags inside the content or not
+     * @throws Exception if the repository could not be exported
+     */
+    public static function exportRepository($repository, $filename, $groupID, $escapeHTML = FALSE) {
         $filename = str_replace('.xml', '', $filename); // drop file extension (will be appended automatically)
         if (self::isFilenameValid($filename)) {
             if ($repository instanceof Repository) {
@@ -93,7 +102,8 @@ class File_IO {
                         $languageObject = $repository->getLanguage($language);
                         $languageKey = $languageObject->getKey();
                         if (mkdir($savePath.'/'.$languageKey.'/', 0755, true)) {
-                            if (file_put_contents($savePath.'/'.$languageKey.'/'.$filename.'.xml', $languageObject->output($escapeHTML))) {
+                            $xmlOutput = $languageObject->output($escapeHTML, $groupID);
+                            if (file_put_contents($savePath.'/'.$languageKey.'/'.$filename.'.xml', $xmlOutput)) {
                                 $export_success = true;
                             }
                             else { // output file could not be written

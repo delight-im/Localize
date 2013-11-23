@@ -108,8 +108,8 @@ class Repository {
         return new RepositoryPermissions($userID, $this->visibility, $role);
     }
 
-    public function addPhrase($language, $id, $phraseKey, $payload, $enabled = true, $createKeysOnly = false) {
-        $this->languages[$language]->addPhrase(Phrase::create($id, $phraseKey, $payload, $enabled, $createKeysOnly));
+    public function addPhrase($language, $id, $phraseKey, $payload, $groupID, $enabled = true, $createKeysOnly = false) {
+        $this->languages[$language]->addPhrase(Phrase::create($id, $phraseKey, $payload, $groupID, $enabled, $createKeysOnly));
     }
 
     public function removePhrase($language, $phraseKey) {
@@ -139,10 +139,10 @@ class Repository {
                 $additionalWhere = " AND languageID IN (".intval($this->defaultLanguage).", ".intval($languagesToLoad).")";
             }
         }
-        $phrases = Database::select("SELECT id, languageID, phraseKey, enabled, payload FROM phrases WHERE repositoryID = ".intval($this->id).$additionalWhere);
+        $phrases = Database::select("SELECT id, languageID, phraseKey, groupID, enabled, payload FROM phrases WHERE repositoryID = ".intval($this->id).$additionalWhere);
         if (!empty($phrases)) {
             foreach ($phrases as $phrase) {
-                $this->addPhrase($phrase['languageID'], $phrase['id'], $phrase['phraseKey'], $phrase['payload'], $phrase['enabled']);
+                $this->addPhrase($phrase['languageID'], $phrase['id'], $phrase['phraseKey'], $phrase['payload'], $phrase['groupID'], $phrase['enabled']);
             }
         }
         $this->normalizeLanguages($isExport, $languagesToSort, $languagesToLoad);
@@ -167,7 +167,7 @@ class Repository {
                     foreach ($defLangPhrases as $defLangPhrase) { // loop through phrases of default language
                         $currentPhrase = $lang->getPhraseByKey($defLangPhrase->getPhraseKey());
                         if (!isset($currentPhrase)) { // if phrase does not exist in this language yet
-                            $this->addPhrase($langID, $defLangPhrase->getID(), $defLangPhrase->getPhraseKey(), $defLangPhrase->getPayload(), $defLangPhrase->isEnabledForTranslation(), !$isExport); // add phrase from default language
+                            $this->addPhrase($langID, $defLangPhrase->getID(), $defLangPhrase->getPhraseKey(), $defLangPhrase->getPayload(), $defLangPhrase->getGroupID(), $defLangPhrase->isEnabledForTranslation(), !$isExport); // add phrase from default language
                         }
                     }
                 }

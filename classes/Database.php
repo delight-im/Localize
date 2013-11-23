@@ -102,7 +102,17 @@ class Database {
         self::insert("INSERT INTO phrases (repositoryID, languageID, phraseKey, enabled, payload) VALUES (".intval($repositoryID).", ".intval($languageID).", ".self::escape($phraseKey).", 1, ".self::escape($payload).")");
     }
 
-    public static function addPhrases($repositoryID, $languageID, $phraseObjects, $doOverwrite) {
+    /**
+     * Add the given list of phrase objects to the database
+     *
+     * @param int $repositoryID the repository to associate the phrases with
+     * @param int $languageID the language to add the phrases to
+     * @param Phrase[] $phraseObjects the list of phrase objects to add
+     * @param int $groupID the group ID to associate the phrases with (or Phrase::GROUP_NONE)
+     * @param bool $doOverwrite whether to overwrite existing phrases or not (ignore them)
+     * @throws Exception if the phrases could not be added to the database
+     */
+    public static function addPhrases($repositoryID, $languageID, $phraseObjects, $groupID, $doOverwrite) {
         $values = "";
         $counter = 0;
         foreach ($phraseObjects as $phraseObject) {
@@ -110,7 +120,7 @@ class Database {
                 if ($counter > 0) {
                     $values .= ",";
                 }
-                $values .= "(".intval($repositoryID).", ".intval($languageID).", ".self::escape($phraseObject->getPhraseKey()).", 1, ".self::escape($phraseObject->getPayload()).")";
+                $values .= "(".intval($repositoryID).", ".intval($languageID).", ".self::escape($phraseObject->getPhraseKey()).", ".intval($groupID).", 1, ".self::escape($phraseObject->getPayload()).")";
                 $counter++;
             }
             else {
@@ -119,10 +129,10 @@ class Database {
         }
         if (!empty($values)) {
             if ($doOverwrite) {
-                self::insert("INSERT INTO phrases (repositoryID, languageID, phraseKey, enabled, payload) VALUES ".$values." ON DUPLICATE KEY UPDATE payload = VALUES(payload)");
+                self::insert("INSERT INTO phrases (repositoryID, languageID, phraseKey, groupID, enabled, payload) VALUES ".$values." ON DUPLICATE KEY UPDATE groupID = VALUES(groupID), payload = VALUES(payload)");
             }
             else {
-                self::insert("INSERT IGNORE INTO phrases (repositoryID, languageID, phraseKey, enabled, payload) VALUES ".$values);
+                self::insert("INSERT IGNORE INTO phrases (repositoryID, languageID, phraseKey, groupID, enabled, payload) VALUES ".$values);
             }
         }
     }
@@ -226,10 +236,10 @@ class Database {
 		foreach ($edits as $edit) {
 			$previousPhraseData = Database::getPhrase($repositoryID, $languageID, $edit['phraseKey']);
 			if (empty($previousPhraseData)) {
-				$phraseObject = Phrase::create(0, $edit['phraseKey'], $edit['payload'], true, true);
+				$phraseObject = Phrase::create(0, $edit['phraseKey'], $edit['payload'], 0, true, true);
 			}
 			else {
-				$phraseObject = Phrase::create(0, $edit['phraseKey'], $previousPhraseData['payload']);
+				$phraseObject = Phrase::create(0, $edit['phraseKey'], $previousPhraseData['payload'], 0);
 			}
 			$phraseObject->setPhraseValue($edit['phraseSubKey'], $edit['suggestedValue']);
 

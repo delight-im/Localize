@@ -190,9 +190,10 @@ abstract class Language {
      * Returns the platform-specific output for this language
      *
 	 * @param bool $escapeHTML whether to escape HTML or not
+     * @param int $groupID the group ID to get the output for (or Phrase::GROUP_ALL)
      * @return string output for this language
      */
-    abstract public function output($escapeHTML);
+    abstract public function output($escapeHTML, $groupID);
 
     /**
      * Returns the platform-specific key (string) for this language

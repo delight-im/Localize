@@ -3,18 +3,22 @@
 abstract class Phrase {
 
     const NEWLINE_REGEX = '/(\r\n|\r|\n)/';
+    const GROUP_ALL = -1;
+    const GROUP_NONE = 0;
 
     protected $id;
     protected $phraseKey;
+    protected $groupID;
     protected $enabledForTranslation;
 
     /**
      * Returns the output of this phrase for the specific platform and type of phrase
      *
 	 * @param bool $escapeHTML whether to escape HTML or not
+     * @param int $groupID the group ID to get the output for (or Phrase::GROUP_ALL)
      * @return string output of this phrase
      */
-    abstract public function output($escapeHTML);
+    abstract public function output($escapeHTML, $groupID);
 
     /**
      * Returns the the number of complete values and total values for this phrase
@@ -37,6 +41,22 @@ abstract class Phrase {
      * @param bool $createKeysOnly whether the complete phrase should be created (true) or keys only (false)
      */
     abstract public function setPayload($json, $createKeysOnly = false);
+
+    /**
+     * Sets this phrase's group ID to the given integer
+     *
+     * @param int $groupID
+     */
+    public function setGroupID($groupID) {
+        $this->groupID = $groupID;
+    }
+
+    /**
+     * @return int the phrase's group ID
+     */
+    public function getGroupID() {
+        return $this->groupID;
+    }
 
     public function __construct($id, $phraseKey, $enabledForTranslation = true) {
         $this->id = $id;
@@ -82,7 +102,19 @@ abstract class Phrase {
      */
     abstract public function setPhraseValue($subKey, $value);
 
-    public static function create($id, $phraseKey, $json, $enabled = true, $createKeysOnly = false) {
+    /**
+     * Creates a new phrase object using the subclass extracted from the JSON payload
+     *
+     * @param int $id
+     * @param string $phraseKey
+     * @param string $json
+     * @param int $groupID
+     * @param bool $enabled
+     * @param bool $createKeysOnly
+     * @return Phrase the new Phrase object
+     * @throws Exception if no valid Phrase object could be constructed from the input
+     */
+    public static function create($id, $phraseKey, $json, $groupID = 0, $enabled = true, $createKeysOnly = false) {
         $data = json_decode($json, true);
         if (!empty($data)) {
             if (isset($data['class'])) {
@@ -90,6 +122,7 @@ abstract class Phrase {
                 /** @var Phrase $phraseObject */
                 $phraseObject = new $className($id, $phraseKey, $enabled);
                 $phraseObject->setPayload($json, $createKeysOnly);
+                $phraseObject->setGroupID($groupID);
                 return $phraseObject;
             }
             else {

@@ -566,7 +566,7 @@ abstract class UI {
 
                         $previousPhraseData = Database::getPhrase($repositoryID, $languageID, $editData[0]['phraseKey']);
                         if (empty($previousPhraseData)) {
-                            $previousPhrase = Phrase::create(0, $editData[0]['phraseKey'], $editData[0]['payload'], true, true);
+                            $previousPhrase = Phrase::create(0, $editData[0]['phraseKey'], $editData[0]['payload'], 0, true, true);
                         }
                         else {
                             $previousPhrase = Phrase::create(0, $editData[0]['phraseKey'], $previousPhraseData['payload']);
@@ -907,20 +907,37 @@ abstract class UI {
                     $textFilename = new UI_Form_Text('Filename', 'export[filename]', 'strings.xml', false, 'Please choose a name for the XML files that will be exported inside each language folder.');
                     $textFilename->setDefaultValue('strings.xml');
                     $form->addContent($textFilename);
-					
+
+                    $selectGroupID = new UI_Form_Select('Phrase groups', 'export[groupID]', 'Do you want to export <em>all</em> phrases or only a single group?');
+                    $selectGroupID->addOption('- All groups -', Phrase::GROUP_ALL);
+                    $selectGroupID->addOption('(Default group)', Phrase::GROUP_NONE);
+                    $form->addContent($selectGroupID);
+
                     $selectHtmlEscaping = new UI_Form_Select('HTML Escaping', 'export[htmlEscaping]', 'Which Java method do you want to use to get HTML-styled strings from your translations? (<a href="'.URL::toPage('help').'">Help</a>)');
                     $selectHtmlEscaping->addOption('- Please choose -', File_IO::HTML_ESCAPING_NONE);
-					$selectHtmlEscaping->addOption('getText(...)', File_IO::HTML_ESCAPING_GETTEXT);
-					$selectHtmlEscaping->addOption('Html.fromHtml(getString(...))', File_IO::HTML_ESCAPING_HTML_FROMHTML);
-					$selectHtmlEscaping->addOption('I don\'t care', File_IO::HTML_ESCAPING_GETTEXT);
+                    $selectHtmlEscaping->addOption('getText(...)', File_IO::HTML_ESCAPING_GETTEXT);
+                    $selectHtmlEscaping->addOption('Html.fromHtml(getString(...))', File_IO::HTML_ESCAPING_HTML_FROMHTML);
+                    $selectHtmlEscaping->addOption('I don\'t care', File_IO::HTML_ESCAPING_GETTEXT);
                     $form->addContent($selectHtmlEscaping);
 
+                    $isAdmin = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_ADMINISTRATOR);
+
                     $buttonSubmit = new UI_Form_Button('Export XML', UI_Form_Button::TYPE_SUCCESS);
+                    $buttonManageGroups = new UI_Link('Manage groups', URL::toEditProject($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
                     $buttonCancel = new UI_Link('Cancel', URL::toProject($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
-                    $form->addContent(new UI_Form_ButtonGroup(array(
-                        $buttonSubmit,
-                        $buttonCancel
-                    )));
+                    if ($isAdmin) {
+                        $form->addContent(new UI_Form_ButtonGroup(array(
+                            $buttonSubmit,
+                            $buttonManageGroups,
+                            $buttonCancel
+                        )));
+                    }
+                    else {
+                        $form->addContent(new UI_Form_ButtonGroup(array(
+                            $buttonSubmit,
+                            $buttonCancel
+                        )));
+                    }
 
                     $contents[] = new UI_Heading('Export XML', true);
                     $contents[] = $form;
@@ -944,18 +961,34 @@ abstract class UI {
                     }
                     $form->addContent($selectLanguage);
 
+                    $selectGroupID = new UI_Form_Select('Phrase group', 'import[groupID]', 'Which group do you want to import the phrases to?');
+                    $selectGroupID->addOption('(Default group)', Phrase::GROUP_NONE);
+                    $form->addContent($selectGroupID);
+
                     $fileSizeHidden = new UI_Form_Hidden('MAX_FILE_SIZE', File_IO::getMaxFileSize());
                     $form->addContent($fileSizeHidden);
 
                     $fileXML = new UI_Form_File('XML file', 'importFileXML', 'The XML resources file that you want to extract the phrases from.');
                     $form->addContent($fileXML);
 
+                    $isAdmin = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_ADMINISTRATOR);
+
                     $buttonSubmit = new UI_Form_Button('Import XML', UI_Form_Button::TYPE_SUCCESS);
+                    $buttonManageGroups = new UI_Link('Manage groups', URL::toEditProject($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
                     $buttonCancel = new UI_Link('Cancel', URL::toProject($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
-                    $form->addContent(new UI_Form_ButtonGroup(array(
-                        $buttonSubmit,
-                        $buttonCancel
-                    )));
+                    if ($isAdmin) {
+                        $form->addContent(new UI_Form_ButtonGroup(array(
+                            $buttonSubmit,
+                            $buttonManageGroups,
+                            $buttonCancel
+                        )));
+                    }
+                    else {
+                        $form->addContent(new UI_Form_ButtonGroup(array(
+                            $buttonSubmit,
+                            $buttonCancel
+                        )));
+                    }
 
                     $contents[] = new UI_Heading('Import XML', true);
                     $contents[] = $form;

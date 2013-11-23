@@ -268,6 +268,7 @@ elseif (UI::isPage('export')) {
                 $data = UI::getDataPOST('export');
                 $filename = isset($data['filename']) ? trim($data['filename']) : '';
                 if (File_IO::isFilenameValid($filename)) {
+                    $groupID = intval(trim($data['groupID']));
 					$htmlEscaping = intval(trim($data['htmlEscaping']));
 					$htmlEscapingEnabled = FALSE;
 					if ($htmlEscaping == File_IO::HTML_ESCAPING_GETTEXT) {
@@ -284,7 +285,7 @@ elseif (UI::isPage('export')) {
 					if ($htmlEscapingValid) {
 						$repository = new Repository($repositoryID, $repositoryData['name'], $repositoryData['visibility'], $repositoryData['defaultLanguage']);
 						$repository->loadLanguages(true, Repository::SORT_ALL_LANGUAGES, Repository::LOAD_ALL_LANGUAGES);
-						File_IO::exportRepository($repository, $filename, $htmlEscapingEnabled);
+						File_IO::exportRepository($repository, $filename, $groupID, $htmlEscapingEnabled);
 						exit;
 					}
 					else {
@@ -321,6 +322,7 @@ elseif (UI::isPage('import')) {
             $isAllowed = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_DEVELOPER);
             if ($isAllowed) {
                 $data = UI::getDataPOST('import');
+                $groupID = isset($data['groupID']) ? intval(trim($data['groupID'])) : Phrase::GROUP_NONE;
                 $overwriteMode = isset($data['overwrite']) ? intval(trim($data['overwrite'])) : 0;
                 $languageID = isset($data['languageID']) ? intval(trim($data['languageID'])) : 0;
                 if ($overwriteMode == 0 || $overwriteMode == 1) {
@@ -329,7 +331,7 @@ elseif (UI::isPage('import')) {
                             $languageNameFull = Language::getLanguageNameFull($languageID);
                             $importResult = File_IO::importXML($repositoryID, $_FILES['importFileXML']);
                             if (isset($importResult) && is_array($importResult)) {
-                                Database::addPhrases($repositoryID, $languageID, $importResult, $overwriteMode == 1);
+                                Database::addPhrases($repositoryID, $languageID, $importResult, $groupID, $overwriteMode == 1);
                                 Authentication::setCachedLanguageProgress($repositoryID, NULL); // unset cached version of this repository's progress
                                 $alert = new UI_Alert('<p>You have imported '.count($importResult).' phrases to '.$languageNameFull.'.</p>', UI_Alert::TYPE_SUCCESS);
                             }
