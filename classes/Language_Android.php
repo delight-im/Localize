@@ -1,6 +1,7 @@
 <?php
 
 require_once('Language.php');
+require_once('OutputContainer.php');
 
 class Language_Android extends Language {
 
@@ -8,14 +9,24 @@ class Language_Android extends Language {
         parent::__construct($id);
     }
 
+    /**
+     * Constructs the platform-specific output for this Language object
+     *
+     * @param bool $escapeHTML whether to escape HTML (true) or not (false)
+     * @param int $groupID the group ID to get the output for (or Phrase::GROUP_ALL)
+     * @return OutputContainer the output object containing both data and completeness in percent
+     */
     public function output($escapeHTML, $groupID) {
+        $container = new OutputContainer();
         $out = '<?xml version="1.0" encoding="utf-8"?>'."\n";
         $out .= '<resources>'."\n";
         foreach ($this->phrases as $phrase) {
+            $container->newPhrase($phrase->isEmpty());
             $out .= $phrase->output($escapeHTML, $groupID);
         }
         $out .= '</resources>';
-        return $out;
+        $container->setContent($out);
+        return $container;
     }
 
     /**

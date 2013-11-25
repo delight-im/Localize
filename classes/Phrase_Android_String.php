@@ -60,13 +60,16 @@ class Phrase_Android_String extends Phrase_Android {
      *
      * @param string $json JSON data to get the payload from
      * @param bool $createKeysOnly whether the complete phrase should be created (true) or keys only (false)
+     * @param bool $isUsingDefaultPhrase whether this is only using the default language's value and must thus be marked as empty
      */
-    public function setPayload($json, $createKeysOnly = false) {
+    public function setPayload($json, $createKeysOnly = false, $isUsingDefaultPhrase = false) {
         $data = json_decode($json, true);
         if (!$createKeysOnly) {
+            $this->isEmpty = $isUsingDefaultPhrase || empty($data['value']);
             $this->value = $data['value'];
         }
         else {
+            $this->isEmpty = true;
             $this->value = '';
         }
     }

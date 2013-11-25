@@ -63,12 +63,15 @@ class File_IO {
      * @param string $dir directory to delete recursively
      */
     public static function deleteDirectoryRecursively($dir) {
-        foreach(glob($dir.'/*') as $file) { // loop through child elements
-            if (is_dir($file)) {
-                self::deleteDirectoryRecursively($file); // delete directories in this directory
-            }
-            else {
-                unlink($file); // delete files in this directory
+        $files = glob($dir.'/*');
+        if (!empty($files)) {
+            foreach ($files as $file) { // loop through child elements
+                if (is_dir($file)) {
+                    self::deleteDirectoryRecursively($file); // delete directories in this directory
+                }
+                else {
+                    unlink($file); // delete files in this directory
+                }
             }
         }
         rmdir($dir); // delete this directory itself
@@ -85,9 +88,10 @@ class File_IO {
      * @param string $filename the output file name inside each language folder
      * @param int $groupID the group to get the output for (or Phrase::GROUP_ALL)
      * @param bool $escapeHTML whether to escape HTML tags inside the content or not
+     * @param int $minCompletion the minimum percentage of completion for languages to be eligible for exporting
      * @throws Exception if the repository could not be exported
      */
-    public static function exportRepository($repository, $filename, $groupID, $escapeHTML = FALSE) {
+    public static function exportRepository($repository, $filename, $groupID, $escapeHTML = false, $minCompletion = 0) {
         $filename = str_replace('.xml', '', $filename); // drop file extension (will be appended automatically)
         if (self::isFilenameValid($filename)) {
             if ($repository instanceof Repository) {
@@ -101,17 +105,19 @@ class File_IO {
                     foreach ($languages as $language) {
                         $languageObject = $repository->getLanguage($language);
                         $languageKey = $languageObject->getKey();
-                        if (mkdir($savePath.'/'.$languageKey.'/', 0755, true)) {
-                            $xmlOutput = $languageObject->output($escapeHTML, $groupID);
-                            if (file_put_contents($savePath.'/'.$languageKey.'/'.$filename.'.xml', $xmlOutput)) {
-                                $export_success = true;
+                        $xmlOutput = $languageObject->output($escapeHTML, $groupID);
+                        if ($xmlOutput->getCompleteness() >= $minCompletion) {
+                            if (mkdir($savePath.'/'.$languageKey.'/', 0755, true)) {
+                                    if (file_put_contents($savePath.'/'.$languageKey.'/'.$filename.'.xml', $xmlOutput->getContent())) {
+                                        $export_success = true;
+                                    }
+                                    else { // output file could not be written
+                                        $export_success = false;
+                                    }
                             }
-                            else { // output file could not be written
+                            else { // sub-directory for language could not be created
                                 $export_success = false;
                             }
-                        }
-                        else { // sub-directory for language could not be created
-                            $export_success = false;
                         }
                     }
                 }

@@ -84,13 +84,26 @@ class Phrase_Android_Plurals extends Phrase_Android {
      *
      * @param string $json JSON data to get the payload from
      * @param bool $createKeysOnly whether the complete phrase should be created (true) or keys only (false)
+     * @param bool $isUsingDefaultPhrase whether this is only using the default language's value and must thus be marked as empty
      */
-    public function setPayload($json, $createKeysOnly = false) {
+    public function setPayload($json, $createKeysOnly = false, $isUsingDefaultPhrase = false) {
         $data = json_decode($json, true);
         if (!$createKeysOnly) {
+            // CHECK WHETHER THIS PHRASE IS EMPTY OR NOT BEGIN
+            $hasValues = false;
+            if (!$isUsingDefaultPhrase && isset($data['values']) && is_array($data['values'])) {
+                foreach ($data['values'] as $value) {
+                    if (!empty($value)) {
+                        $hasValues = true;
+                    }
+                }
+            }
+            $this->isEmpty = !$hasValues;
+            // CHECK WHETHER THIS PHRASE IS EMPTY OR NOT END
             $this->values = $data['values'];
         }
         else {
+            $this->isEmpty = true;
             $this->values = array();
             $keys = array_keys($data['values']);
             foreach ($keys as $key) {

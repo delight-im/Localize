@@ -10,6 +10,7 @@ abstract class Phrase {
     protected $phraseKey;
     protected $groupID;
     protected $enabledForTranslation;
+    protected $isEmpty;
 
     /**
      * Returns the output of this phrase for the specific platform and type of phrase
@@ -39,8 +40,9 @@ abstract class Phrase {
      *
      * @param string $json JSON data to get the payload from
      * @param bool $createKeysOnly whether the complete phrase should be created (true) or keys only (false)
+     * @param bool $isUsingDefaultPhrase whether this is only using the default language's value and must thus be marked as empty
      */
-    abstract public function setPayload($json, $createKeysOnly = false);
+    abstract public function setPayload($json, $createKeysOnly = false, $isUsingDefaultPhrase = false);
 
     /**
      * Sets this phrase's group ID to the given integer
@@ -62,6 +64,11 @@ abstract class Phrase {
         $this->id = $id;
         $this->phraseKey = $phraseKey;
         $this->enabledForTranslation = $enabledForTranslation;
+        $this->isEmpty = false;
+    }
+
+    public function isEmpty() {
+        return $this->isEmpty;
     }
 
     /**
@@ -111,17 +118,18 @@ abstract class Phrase {
      * @param int $groupID
      * @param bool $enabled
      * @param bool $createKeysOnly
+     * @param bool $isUsingDefaultPhrase
      * @return Phrase the new Phrase object
      * @throws Exception if no valid Phrase object could be constructed from the input
      */
-    public static function create($id, $phraseKey, $json, $groupID = 0, $enabled = true, $createKeysOnly = false) {
+    public static function create($id, $phraseKey, $json, $groupID = 0, $enabled = true, $createKeysOnly = false, $isUsingDefaultPhrase = false) {
         $data = json_decode($json, true);
         if (!empty($data)) {
             if (isset($data['class'])) {
                 $className = $data['class'];
                 /** @var Phrase $phraseObject */
                 $phraseObject = new $className($id, $phraseKey, $enabled);
-                $phraseObject->setPayload($json, $createKeysOnly);
+                $phraseObject->setPayload($json, $createKeysOnly, $isUsingDefaultPhrase);
                 $phraseObject->setGroupID($groupID);
                 return $phraseObject;
             }
@@ -181,6 +189,11 @@ abstract class Phrase {
      * @throws Exception (optionally) if this phrase object does not support auto-incrementing IDs and the given sub-key is not allowed
      */
     abstract public function addValue($value, $subKey = NULL);
+
+    public static function validateGroupName($name) {
+        $name = trim($name);
+        return preg_replace('/[\(\)\[\]\{\}]/s', '', $name);
+    }
 
 }
 

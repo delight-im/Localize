@@ -1,6 +1,7 @@
 <?php
 
 require_once('Phrase.php');
+require_once('OutputContainer.php');
 
 abstract class Language {
 
@@ -187,11 +188,11 @@ abstract class Language {
     protected $phrases;
 
     /**
-     * Returns the platform-specific output for this language
+     * Constructs the platform-specific output for this Language object
      *
-	 * @param bool $escapeHTML whether to escape HTML or not
+     * @param bool $escapeHTML whether to escape HTML (true) or not (false)
      * @param int $groupID the group ID to get the output for (or Phrase::GROUP_ALL)
-     * @return string output for this language
+     * @return OutputContainer the output object containing both data and completeness in percent
      */
     abstract public function output($escapeHTML, $groupID);
 
