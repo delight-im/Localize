@@ -118,12 +118,12 @@ class URL {
         }
     }
 
-    public static function toEditProject($repositoryID) {
+    public static function toEditProject($repositoryID, $toManageGroupsSection = false) {
         if (self::URL_REWRITE) {
-            return self::ROOT_URL.'pages/create_project/'.self::encodeID($repositoryID);
+            return self::ROOT_URL.'pages/create_project/'.self::encodeID($repositoryID).($toManageGroupsSection ? '#manage_groups' : '');
         }
         else {
-            return self::ROOT_URL.'?p=create_project&project='.self::encodeID($repositoryID);
+            return self::ROOT_URL.'?p=create_project&project='.self::encodeID($repositoryID).($toManageGroupsSection ? '#manage_groups' : '');
         }
     }
 

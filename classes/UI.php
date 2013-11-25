@@ -348,11 +348,12 @@ abstract class UI {
     }
 
     public static function getPage_CreateProject($contents, $containers) {
-        $currentPageURL = URL::toPage('create_project');
-        $form = new UI_Form($currentPageURL, false);
-
         $repositoryID = self::validateID(self::getDataGET('project'), true);
         $repositoryData = Database::getRepositoryData($repositoryID);
+
+        $currentPageURL = empty($repositoryData) ? URL::toPage('create_project') : URL::toEditProject($repositoryID);
+        $form = new UI_Form($currentPageURL, false);
+
         if (!empty($repositoryData)) {
             self::addBreadcrumbItem(URL::toProject($repositoryID), htmlspecialchars($repositoryData['name']));
             $isAllowed = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_ADMINISTRATOR);
@@ -406,7 +407,38 @@ abstract class UI {
         $form->addContent(new UI_Form_ButtonGroup(array($buttonSubmit, $buttonCancel)));
 
         $contents[] = new UI_Heading((empty($repositoryData) ? 'Create project' : 'Edit project'), true);
+        $contents[] = new UI_Heading('Project settings', false, 3);
         $contents[] = $form;
+
+        if (!empty($repositoryData)) {
+            $contents[] = new UI_Heading('Manage phrase groups', false, 3, '', 'manage_groups');
+
+            $formList = new UI_Form(htmlspecialchars($currentPageURL), false);
+            $table = new UI_Table(array('Phrase group', 'Phrases', 'Actions'));
+            $table->setColumnPriorities(5, 5, 2);
+            $phraseGroups = Database::getPhraseGroups($repositoryID, $repositoryData['defaultLanguage']);
+            $phrasesInDefaultGroup = Database::getPhraseCountInGroup($repositoryID, 0, $repositoryData['defaultLanguage']);
+            $table->addRow(array(
+                '(Default group)', $phrasesInDefaultGroup.' phrases', ''
+            ));
+            foreach ($phraseGroups as $phraseGroup) {
+                $linkDelete = new UI_Form_Button('Delete', UI_Form_Button::TYPE_DANGER, UI_Form_Button::ACTION_SUBMIT, 'deleteGroup[id]', $phraseGroup['id'], 'return confirm(\'Are you sure you want to delete this group? All phrases will be moved to the default group.\');');
+                $table->addRow(array(
+                    $phraseGroup['name'], $phraseGroup['phraseCount'].' phrases', $linkDelete->getHTML()
+                ));
+            }
+            $formList->addContent($table);
+
+            $contents[] = $formList;
+
+            $contents[] = new UI_Heading('Add a new phrase group', false, 3);
+            $formAdd = new UI_Form(htmlspecialchars($currentPageURL), false);
+            $formAdd->addContent(new UI_Form_Text('Add new group', 'addGroup[name]', 'Enter group name ...', false, 'If you want to create a new phrase group, please enter its name here.'));
+            $formAdd->addContent(new UI_Form_ButtonGroup(array(new UI_Form_Button('Create group'))));
+
+            $contents[] = $formAdd;
+        }
+
         $cell = new UI_Cell($contents);
         $row = new UI_Row(array($cell));
 
@@ -566,7 +598,7 @@ abstract class UI {
 
                         $previousPhraseData = Database::getPhrase($repositoryID, $languageID, $editData[0]['phraseKey']);
                         if (empty($previousPhraseData)) {
-                            $previousPhrase = Phrase::create(0, $editData[0]['phraseKey'], $editData[0]['payload'], 0, true, true);
+                            $previousPhrase = Phrase::create(0, $editData[0]['phraseKey'], $editData[0]['payload'], 0, true);
                         }
                         else {
                             $previousPhrase = Phrase::create(0, $editData[0]['phraseKey'], $previousPhraseData['payload']);
@@ -714,7 +746,7 @@ abstract class UI {
         /** @var array|UI_Form_Select[] $selectTimezones */
         $selectTimezones = array();
         $selectCountry = new UI_Form_Select('Country', 'settings[country]', 'Choose your country of residence to control the timezone selection below.', false, '', '', 'chooseTimezoneByCountry(this.value);');
-        $selectCountry->addOption('- Please choose -', '');
+        $selectCountry->addOption('— Please choose —', '');
         $countries = Time::getCountries();
         $defaultCountry = Authentication::getUserCountry();
         $defaultTimezone = Authentication::getUserTimezone();
@@ -785,35 +817,67 @@ abstract class UI {
                 $currentPageURL = URL::toPhraseDetails($repositoryID, $languageID, $phraseID);
                 self::addBreadcrumbItem($currentPageURL, $phraseData['phraseKey']);
 
-                $heading = new UI_Heading('Phrase: '.$phraseData['phraseKey'], true);
-
                 $phraseObject = Phrase::create($phraseID, $phraseData['phraseKey'], $phraseData['payload']);
                 $phraseObjectEntries = $phraseObject->getPhraseValues();
                 $phraseEntries = new UI_List();
                 foreach ($phraseObjectEntries as $phraseObjectEntry) {
-                    $phraseEntries->addItem(htmlspecialchars($phraseObjectEntry));
+                    $phraseEntries->addItem(nl2br(htmlspecialchars($phraseObjectEntry)));
                 }
 
                 if ($mayMovePhrases) {
+                    $formMove = new UI_Form($currentPageURL, false);
+                    $formMove->addContent(new UI_Form_Hidden('phraseMove[phraseKey]', $phraseData['phraseKey']));
+
+                    $phraseGroupSelection = new UI_Form_Select('New group', 'phraseMove[groupID]');
+                    $phraseGroupSelection->addOption('(Default group)', Phrase::GROUP_NONE);
+                    $phraseGroups = Database::getPhraseGroups($repositoryID, $repositoryData['defaultLanguage']);
+                    foreach ($phraseGroups as $phraseGroup) {
+                        $phraseGroupSelection->addOption($phraseGroup['name'], $phraseGroup['id']);
+                    }
+                    $phraseGroupSelection->addDefaultOption($phraseData['groupID']);
+                    $formMove->addContent($phraseGroupSelection);
+
                     $formButtonList = array(
-                        new UI_Form_Button('Remove translations', UI_Form_Button::TYPE_WARNING, UI_Form_Button::ACTION_SUBMIT, 'phraseChange[action]', 'untranslate', 'return confirm(\'Are you sure you want to remove all translations for this phrase and keep the default language entry?\');'),
-                        new UI_Form_Button('Delete phrase', UI_Form_Button::TYPE_DANGER, UI_Form_Button::ACTION_SUBMIT, 'phraseChange[action]', 'delete', 'return confirm(\'Are you sure you want to delete the phrase from your project completely?\');'),
+                        new UI_Form_Button('Update group', UI_Form_Button::TYPE_SUCCESS),
                         new UI_Link('Cancel', URL::toLanguage($repositoryID, $languageID), UI_Link::TYPE_UNIMPORTANT)
                     );
+                    $formMove->addContent(new UI_Form_ButtonGroup($formButtonList));
                 }
                 else {
-                    $formButtonList = NULL;
+                    $formMove = NULL;
                 }
 
-                $form = new UI_Form($currentPageURL, false);
-                $form->addContent(new UI_Form_Hidden('phraseChange[phraseKey]', $phraseData['phraseKey']));
-                if (isset($formButtonList)) {
-                    $form->addContent(new UI_Form_ButtonGroup($formButtonList, true));
+                if ($mayMovePhrases) {
+                    $formChange = new UI_Form($currentPageURL, false);
+                    $formChange->addContent(new UI_Form_Hidden('phraseChange[phraseKey]', $phraseData['phraseKey']));
+
+                    $actionTypeSelection = new UI_Form_Select('Operation', 'phraseChange[action]');
+                    $actionTypeSelection->addOption('— Please choose —', '');
+                    $actionTypeSelection->addOption('Untranslate: Remove all translations of this phrase only', 'untranslate');
+                    $actionTypeSelection->addOption('Delete: Completly remove this phrase from the project', 'delete');
+                    $formChange->addContent($actionTypeSelection);
+
+                    $formButtonList = array(
+                        new UI_Form_Button('Execute', UI_Form_Button::TYPE_DANGER, UI_Form_Button::ACTION_SUBMIT, '', '', 'return confirm(\'Are you sure you want to execute the selected operation? This cannot be undone!\');'),
+                        new UI_Link('Cancel', URL::toLanguage($repositoryID, $languageID), UI_Link::TYPE_UNIMPORTANT)
+                    );
+                    $formChange->addContent(new UI_Form_ButtonGroup($formButtonList));
+                }
+                else {
+                    $formChange = NULL;
                 }
 
-                $contents[] = $heading;
+                $contents[] = new UI_Heading('Phrase: '.$phraseData['phraseKey'], true);
+                $contents[] = new UI_Heading('Contents', false, 3);
                 $contents[] = $phraseEntries;
-                $contents[] = $form;
+                if (isset($formMove)) {
+                    $contents[] = new UI_Heading('Move phrase to another group', false, 3);
+                    $contents[] = $formMove;
+                }
+                if (isset($formChange)) {
+                    $contents[] = new UI_Heading('Reset or delete phrase', false, 3);
+                    $contents[] = $formChange;
+                }
             }
         }
 
@@ -908,13 +972,27 @@ abstract class UI {
                     $textFilename->setDefaultValue('strings.xml');
                     $form->addContent($textFilename);
 
-                    $selectGroupID = new UI_Form_Select('Phrase groups', 'export[groupID]', 'Do you want to export <em>all</em> phrases or only a single group?');
-                    $selectGroupID->addOption('- All groups -', Phrase::GROUP_ALL);
+                    $selectGroupID = new UI_Form_Select('Phrase groups', 'export[groupID]', 'Do you want to export all phrases or only a single group?');
+                    $selectGroupID->addOption('(All groups)', Phrase::GROUP_ALL);
                     $selectGroupID->addOption('(Default group)', Phrase::GROUP_NONE);
+                    $phraseGroups = Database::getPhraseGroups($repositoryID, $repositoryData['defaultLanguage'], false);
+                    foreach ($phraseGroups as $phraseGroup) {
+                        $selectGroupID->addOption($phraseGroup['name'], $phraseGroup['id']);
+                    }
                     $form->addContent($selectGroupID);
+                    
+                    $selectMinCompletion = new UI_Form_Select('Minimum completion', 'export[minCompletion]', 'You can either export all languages or only those with a given minimum completion.');
+                    $selectMinCompletion->addOption('Export all languages', 0);
+                    $selectMinCompletion->addOption('5% completion or more', 5);
+                    $selectMinCompletion->addOption('10% completion or more', 10);
+                    $selectMinCompletion->addOption('25% completion or more', 25);
+                    $selectMinCompletion->addOption('50% completion or more', 50);
+                    $selectMinCompletion->addOption('75% completion or more', 75);
+                    $selectMinCompletion->addOption('100% completion or more', 100);
+                    $form->addContent($selectMinCompletion);
 
                     $selectHtmlEscaping = new UI_Form_Select('HTML Escaping', 'export[htmlEscaping]', 'Which Java method do you want to use to get HTML-styled strings from your translations? (<a href="'.URL::toPage('help').'">Help</a>)');
-                    $selectHtmlEscaping->addOption('- Please choose -', File_IO::HTML_ESCAPING_NONE);
+                    $selectHtmlEscaping->addOption('— Please choose —', File_IO::HTML_ESCAPING_NONE);
                     $selectHtmlEscaping->addOption('getText(...)', File_IO::HTML_ESCAPING_GETTEXT);
                     $selectHtmlEscaping->addOption('Html.fromHtml(getString(...))', File_IO::HTML_ESCAPING_HTML_FROMHTML);
                     $selectHtmlEscaping->addOption('I don\'t care', File_IO::HTML_ESCAPING_GETTEXT);
@@ -923,7 +1001,7 @@ abstract class UI {
                     $isAdmin = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_ADMINISTRATOR);
 
                     $buttonSubmit = new UI_Form_Button('Export XML', UI_Form_Button::TYPE_SUCCESS);
-                    $buttonManageGroups = new UI_Link('Manage groups', URL::toEditProject($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
+                    $buttonManageGroups = new UI_Link('Manage groups', URL::toEditProject($repositoryID, true), UI_Form_Button::TYPE_UNIMPORTANT);
                     $buttonCancel = new UI_Link('Cancel', URL::toProject($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
                     if ($isAdmin) {
                         $form->addContent(new UI_Form_ButtonGroup(array(
@@ -954,7 +1032,7 @@ abstract class UI {
                     $form->addContent($radioOverwrite);
 
                     $selectLanguage = new UI_Form_Select('Language', 'import[languageID]', 'Which language do you want to import the phrases for?');
-                    $selectLanguage->addOption('- Please choose -', 0);
+                    $selectLanguage->addOption('— Please choose —', 0);
                     $languageIDs = Language::getList();
                     foreach ($languageIDs as $languageID) {
                         $selectLanguage->addOption(Language::getLanguageNameFull($languageID), $languageID);
@@ -963,6 +1041,10 @@ abstract class UI {
 
                     $selectGroupID = new UI_Form_Select('Phrase group', 'import[groupID]', 'Which group do you want to import the phrases to?');
                     $selectGroupID->addOption('(Default group)', Phrase::GROUP_NONE);
+                    $phraseGroups = Database::getPhraseGroups($repositoryID, $repositoryData['defaultLanguage'], false);
+                    foreach ($phraseGroups as $phraseGroup) {
+                        $selectGroupID->addOption($phraseGroup['name'], $phraseGroup['id']);
+                    }
                     $form->addContent($selectGroupID);
 
                     $fileSizeHidden = new UI_Form_Hidden('MAX_FILE_SIZE', File_IO::getMaxFileSize());
@@ -974,7 +1056,7 @@ abstract class UI {
                     $isAdmin = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_ADMINISTRATOR);
 
                     $buttonSubmit = new UI_Form_Button('Import XML', UI_Form_Button::TYPE_SUCCESS);
-                    $buttonManageGroups = new UI_Link('Manage groups', URL::toEditProject($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
+                    $buttonManageGroups = new UI_Link('Manage groups', URL::toEditProject($repositoryID, true), UI_Form_Button::TYPE_UNIMPORTANT);
                     $buttonCancel = new UI_Link('Cancel', URL::toProject($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
                     if ($isAdmin) {
                         $form->addContent(new UI_Form_ButtonGroup(array(

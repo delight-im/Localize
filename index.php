@@ -269,6 +269,7 @@ elseif (UI::isPage('export')) {
                 $filename = isset($data['filename']) ? trim($data['filename']) : '';
                 if (File_IO::isFilenameValid($filename)) {
                     $groupID = intval(trim($data['groupID']));
+                    $minCompletion = intval(trim($data['minCompletion']));
 					$htmlEscaping = intval(trim($data['htmlEscaping']));
 					$htmlEscapingEnabled = FALSE;
 					if ($htmlEscaping == File_IO::HTML_ESCAPING_GETTEXT) {
@@ -285,7 +286,7 @@ elseif (UI::isPage('export')) {
 					if ($htmlEscapingValid) {
 						$repository = new Repository($repositoryID, $repositoryData['name'], $repositoryData['visibility'], $repositoryData['defaultLanguage']);
 						$repository->loadLanguages(true, Repository::SORT_ALL_LANGUAGES, Repository::LOAD_ALL_LANGUAGES);
-						File_IO::exportRepository($repository, $filename, $groupID, $htmlEscapingEnabled);
+						File_IO::exportRepository($repository, $filename, $groupID, $htmlEscapingEnabled, $minCompletion);
 						exit;
 					}
 					else {
@@ -546,6 +547,43 @@ elseif (UI::isPage('create_project') && Authentication::isSignedIn()) {
 
         echo UI::getPage(UI::PAGE_CREATE_PROJECT, array($alert));
     }
+    elseif (UI::isAction('addGroup')) {
+        $data = UI::getDataPOST('addGroup');
+        $repositoryID = UI::validateID(UI::getDataGET('project'), true);
+
+        $groupSuccessFullyAdded = true;
+        $data['name'] = Phrase::validateGroupName($data['name']);
+        if (mb_strlen($data['name']) >= 3) {
+            try {
+                Database::addGroup($repositoryID, $data['name']);
+            }
+            catch (Exception $e) {
+                $groupSuccessFullyAdded = false;
+            }
+
+            if ($groupSuccessFullyAdded) {
+                $alert = new UI_Alert('<p>The new group has successfully been added!</p>', UI_Alert::TYPE_SUCCESS);
+            }
+            else {
+                $alert = new UI_Alert('<p>A group with the given name does already exist!</p>', UI_Alert::TYPE_WARNING);
+            }
+        }
+        else {
+            $alert = new UI_Alert('<p>Group names must consist of 3 or more characters</p><p>They must not contain any brackets!</p>', UI_Alert::TYPE_WARNING);
+        }
+
+        echo UI::getPage(UI::PAGE_CREATE_PROJECT, array($alert));
+    }
+    elseif (UI::isAction('deleteGroup')) {
+        $data = UI::getDataPOST('deleteGroup');
+        $repositoryID = UI::validateID(UI::getDataGET('project'), true);
+
+        Database::deleteGroup($repositoryID, $data['id']);
+
+        $alert = new UI_Alert('<p>The selected group has been deleted!</p><p>All phrases that were in this group have been moved to the default group.</p>', UI_Alert::TYPE_SUCCESS);
+
+        echo UI::getPage(UI::PAGE_CREATE_PROJECT, array($alert));
+    }
     else {
         echo UI::getPage(UI::PAGE_CREATE_PROJECT);
     }
@@ -568,6 +606,26 @@ elseif (UI::isPage('phrase')) {
                         Database::phraseDelete($repositoryID, $data['phraseKey']);
                         $alert = new UI_Alert('<p>You have successfully deleted the phrase from the project completely!</p>', UI_Alert::TYPE_SUCCESS);
                     }
+                }
+            }
+            else {
+                $alert = new UI_Alert('<p>You are not allowed to edit phrases for this project.</p>', UI_Alert::TYPE_WARNING);
+            }
+        }
+        else {
+            $alert = new UI_Alert('<p>The project could not be found.</p>', UI_Alert::TYPE_WARNING);
+        }
+    }
+    elseif (UI::isAction('phraseMove')) {
+        $repositoryID = UI::validateID(UI::getDataGET('project'), true);
+        $repositoryData = Database::getRepositoryData($repositoryID);
+        if (!empty($repositoryData)) {
+            $isAllowed = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_DEVELOPER);
+            if ($isAllowed) {
+                $data = UI::getDataPOST('phraseMove');
+                if (isset($data['phraseKey']) && isset($data['groupID'])) {
+                    Database::setPhraseGroup($repositoryID, $data['phraseKey'], $data['groupID']);
+                    $alert = new UI_Alert('<p>You have successfully moved the phrase to its new group!</p>', UI_Alert::TYPE_SUCCESS);
                 }
             }
             else {

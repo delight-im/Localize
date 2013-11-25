@@ -28,7 +28,15 @@ CREATE TABLE IF NOT EXISTS `edits` (
   UNIQUE KEY `combination` (`repositoryID`,`languageID`,`referencedPhraseID`,`phraseSubKey`,`userID`),
   KEY `userID` (`userID`),
   KEY `selection` (`repositoryID`,`languageID`,`submit_time`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=2375 ;
+
+CREATE TABLE IF NOT EXISTS `groups` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `repositoryID` int(10) unsigned NOT NULL,
+  `name` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `combination` (`repositoryID`,`name`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=18 ;
 
 CREATE TABLE IF NOT EXISTS `invitations` (
   `repositoryID` int(10) unsigned NOT NULL,
@@ -52,11 +60,14 @@ CREATE TABLE IF NOT EXISTS `phrases` (
   `repositoryID` int(10) unsigned NOT NULL,
   `languageID` int(10) unsigned NOT NULL,
   `phraseKey` varchar(255) NOT NULL,
+  `groupID` int(10) unsigned NOT NULL DEFAULT '0',
   `enabled` tinyint(1) unsigned NOT NULL,
   `payload` blob NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `combination` (`repositoryID`,`languageID`,`phraseKey`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+  UNIQUE KEY `combination` (`repositoryID`,`languageID`,`phraseKey`),
+  KEY `groupID` (`groupID`),
+  KEY `phraseCount` (`repositoryID`,`languageID`,`groupID`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=16690 ;
 
 CREATE TABLE IF NOT EXISTS `repositories` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -67,7 +78,7 @@ CREATE TABLE IF NOT EXISTS `repositories` (
   PRIMARY KEY (`id`),
   KEY `name` (`name`),
   FULLTEXT KEY `name_2` (`name`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=20 ;
 
 CREATE TABLE IF NOT EXISTS `roles` (
   `userID` int(10) unsigned NOT NULL,
@@ -89,7 +100,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `localeTimezone` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=128 ;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

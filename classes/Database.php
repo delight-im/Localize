@@ -46,7 +46,7 @@ class Database {
     }
 
     public static function insert($sql_string) {
-        self::$db->exec($sql_string);
+        return self::$db->exec($sql_string);
     }
 
     public static function update($sql_string) {
@@ -81,7 +81,7 @@ class Database {
 
     public static function getPhraseData($repositoryID, $id) {
         if ($id > 0) {
-            return Database::selectFirst("SELECT phraseKey, payload FROM phrases WHERE id = ".intval($id)." AND repositoryID = ".intval($repositoryID));
+            return Database::selectFirst("SELECT phraseKey, payload, groupID FROM phrases WHERE id = ".intval($id)." AND repositoryID = ".intval($repositoryID));
         }
         else {
             return NULL;
@@ -236,7 +236,7 @@ class Database {
 		foreach ($edits as $edit) {
 			$previousPhraseData = Database::getPhrase($repositoryID, $languageID, $edit['phraseKey']);
 			if (empty($previousPhraseData)) {
-				$phraseObject = Phrase::create(0, $edit['phraseKey'], $edit['payload'], 0, true, true);
+				$phraseObject = Phrase::create(0, $edit['phraseKey'], $edit['payload'], 0, true);
 			}
 			else {
 				$phraseObject = Phrase::create(0, $edit['phraseKey'], $previousPhraseData['payload'], 0);
@@ -287,6 +287,32 @@ class Database {
 
     public static function phraseDelete($repositoryID, $phraseKey) {
         self::delete("DELETE FROM phrases WHERE repositoryID = ".intval($repositoryID)." AND phraseKey = ".self::escape($phraseKey));
+    }
+
+    public static function getPhraseCountInGroup($repositoryID, $groupID, $defaultLanguageID) {
+        return self::selectCount("SELECT COUNT(*) FROM phrases WHERE repositoryID = ".intval($repositoryID)." AND languageID = ".intval($defaultLanguageID)." AND groupID = ".intval($groupID));
+    }
+
+    public static function getPhraseGroups($repositoryID, $defaultLanguageID, $needCount = true) {
+        if ($needCount) {
+            return self::select("SELECT id, name, (SELECT COUNT(*) FROM phrases WHERE repositoryID = ".intval($repositoryID)." AND languageID = ".intval($defaultLanguageID)." AND groupID = groups.id) AS phraseCount FROM groups WHERE repositoryID = ".intval($repositoryID));
+        }
+        else {
+            return self::select("SELECT id, name, 0 AS phraseCount FROM groups WHERE repositoryID = ".intval($repositoryID));
+        }
+    }
+
+    public static function addGroup($repositoryID, $groupName) {
+        return self::insert("INSERT INTO groups (repositoryID, name) VALUES (".intval($repositoryID).", ".self::escape($groupName).")");
+    }
+
+    public static function deleteGroup($repositoryID, $groupID) {
+        self::update("UPDATE phrases SET groupID = 0 WHERE groupID = ".intval($groupID));
+        self::delete("DELETE FROM groups WHERE id = ".intval($groupID)." AND repositoryID = ".intval($repositoryID));
+    }
+
+    public static function setPhraseGroup($repositoryID, $phraseKey, $groupID) {
+        self::update("UPDATE phrases SET groupID = ".intval($groupID)." WHERE repositoryID = ".intval($repositoryID)." AND phraseKey = ".self::escape($phraseKey));
     }
 
 }
