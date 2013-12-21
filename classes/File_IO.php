@@ -22,40 +22,50 @@ class File_IO {
     /**
      * Compresses a given folder to a ZIP file
      *
-     * @param string $source the source folder that is to be zipped
-     * @param string $destination the destination file that the ZIP is to be written to
+     * @param string $inputFolder the source folder that is to be zipped
+     * @param string $zipOutputFile the destination file that the ZIP is to be written to
      * @return boolean whether this process was successful or not
      */
-    public static function zipFolder($source, $destination) {
-        if (!extension_loaded('zip') || !file_exists($source)) {
-            return false;
-        }
-        $zip = new ZipArchive();
-        if (!$zip->open($destination, ZIPARCHIVE::CREATE)) {
-            return false;
-        }
-        $source = str_replace('\\', '/', realpath($source));
-        if (is_dir($source) === true) {
-            $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($source), RecursiveIteratorIterator::SELF_FIRST);
-            foreach ($files as $file) {
-                $file = str_replace('\\', '/', $file);
-                if (in_array(substr($file, strrpos($file, '/')+1), array('.', '..'))) { // ignore '.' and '..' files
-                    continue;
-                }
-                $file = realpath($file);
-                if (is_dir($file) === true) {
-                    $zip->addEmptyDir(str_replace($source . '/', '', $file . '/'));
-                }
-                else if (is_file($file) === true) {
-                    $zip->addFromString(str_replace($source . '/', '', $file), file_get_contents($file));
-                }
-            }
-        }
-        else if (is_file($source) === true) {
-            $zip->addFromString(basename($source), file_get_contents($source));
-        }
-        return $zip->close();
-    }
+	function zipFolder($inputFolder, $zipOutputFile) {
+		if (!extension_loaded('zip') || !file_exists($inputFolder)) {
+			return false;
+		}
+
+		$zip = new ZipArchive();
+		if (!$zip->open($zipOutputFile, ZIPARCHIVE::CREATE)) {
+			return false;
+		}
+
+		$inputFolder = str_replace('\\', '/', realpath($inputFolder));
+
+		if (is_dir($inputFolder) === true) {
+			$files = new RecursiveIteratorIterator(
+				new RecursiveDirectoryIterator(
+					$inputFolder,
+					FilesystemIterator::SKIP_DOTS | FilesystemIterator::UNIX_PATHS
+				),
+				RecursiveIteratorIterator::SELF_FIRST
+			);
+
+			foreach ($files as $file) {
+				$file = str_replace('\\', '/', $file);
+
+				if (is_dir($file) === true) {
+					$dirName = str_replace($inputFolder.'/', '', $file.'/');
+					$zip->addEmptyDir($dirName);
+				}
+				else if (is_file($file) === true) {
+					$fileName = str_replace($inputFolder.'/', '', $file);
+					$zip->addFromString($fileName, file_get_contents($file));
+				}
+			}
+		}
+		else if (is_file($inputFolder) === true) {
+			$zip->addFromString(basename($inputFolder), file_get_contents($inputFolder));
+		}
+
+		return $zip->close();
+	}
 
     /**
      * Recursively deletes a directory and its content
