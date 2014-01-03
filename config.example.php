@@ -16,4 +16,6 @@ define('CONFIG_TEMP_PATH', 'temp/'); // local directory where temporary files (e
 define('CONFIG_UPLOAD_PATH', 'uploads/'); // local directory where uploaded files will be saved (with trailing slash)
 define('CONFIG_MAX_FILE_SIZE', 1572864); // 1024 * 1024 * 1.5
 
+define('CONFIG_PAYMENTS_FLATTR_DATA', ''); // your personal Flattr.com account data: 'user_id=[USERNAME]&url=[URL]&title=[TITLE]&hidden=[HIDDEN]&category=[CATEGORY]' or an empty string
+
 ?>

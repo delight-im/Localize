@@ -124,11 +124,18 @@ abstract class UI {
 
     protected static function getFooter() {
         $footerHTML = file_get_contents('templates/footer.html');
+        if (defined('CONFIG_PAYMENTS_FLATTR_DATA') && CONFIG_PAYMENTS_FLATTR_DATA !== '') {
+            $flattrLink = ' &middot; <a href="https://flattr.com/submit/auto?'.CONFIG_PAYMENTS_FLATTR_DATA.'">Flattr</a>';
+        }
+        else {
+            $flattrLink = '';
+        }
         return sprintf(
             $footerHTML,
             URL::toPage('help'),
 			URL::toPage('contact'),
-            URL::toResource('js/')
+            URL::toResource('js/'),
+            $flattrLink
         );
     }
 
