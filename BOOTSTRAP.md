@@ -3,13 +3,13 @@
 ## LESS files
 
  * Components:
-  * no Glyphicons
+  * uncheck `Glyphicons`
  * JavaScript components:
-  * no Carousel
+  * uncheck `Carousel`
 
 ## jQuery plugins
 
- * no Carousel functionality
+ * uncheck `Carousel functionality`
 
 ## LESS variables
 
@@ -21,3 +21,7 @@
  * @navbar-inverse-link-active-color = @navbar-inverse-link-color
  * @nav-disabled-link-color = #ffffff
  * @nav-disabled-link-hover-color = @gray-lighter
+
+## Theme CSS files
+
+Remove all rules for classes containing "navbar" from `bootstrape-theme.css` and `bootstrap-theme.min.css`
