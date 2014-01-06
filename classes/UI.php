@@ -113,12 +113,13 @@ abstract class UI {
         $headerHTML = file_get_contents($isSignedIn ? 'templates/header_signed_in.html' : 'templates/header_signed_out.html');
         return sprintf(
             $headerHTML,
-            URL::toResource('css/'),
-            URL::toResource('js/'),
+            CONFIG_ASSETS_CDN === '' ? URL::toResource('css/') : CONFIG_ASSETS_CDN.'css/',
+            CONFIG_ASSETS_CDN === '' ? URL::toResource('js/') : CONFIG_ASSETS_CDN.'js/',
             URL::toResource('img/'),
             URL::toDashboard(),
             URL::toPage('settings'),
-            URL::toPage('sign_out')
+            URL::toPage('sign_out'),
+            self::isGzipSupported() ? '.gz' : ''
         );
     }
 
@@ -134,9 +135,15 @@ abstract class UI {
             $footerHTML,
             URL::toPage('help'),
 			URL::toPage('contact'),
-            URL::toResource('js/'),
-            $flattrLink
+            CONFIG_ASSETS_CDN === '' ? URL::toResource('js/') : CONFIG_ASSETS_CDN.'js/',
+            $flattrLink,
+            date('Y'),
+            self::isGzipSupported() ? '.gz' : ''
         );
+    }
+
+    protected static function isGzipSupported() {
+        return CONFIG_USE_GZIP_FILES && stripos($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') !== false;
     }
 
     protected static function showBreadcrumb() {
