@@ -127,6 +127,15 @@ class URL {
         }
     }
 
+    public static function toEmailVerification($verificationToken) {
+        if (self::URL_REWRITE) {
+            return self::ROOT_URL.'verify/'.urlencode($verificationToken);
+        }
+        else {
+            return self::ROOT_URL.'?p=settings&verify='.urlencode($verificationToken);
+        }
+    }
+
     public static function isProject($url) {
         return stripos($url, '?p=') !== false || stripos($url, 'projects/') !== false;
     }

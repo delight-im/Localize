@@ -731,55 +731,104 @@ abstract class UI {
     }
 
     public static function getPage_Settings($contents, $containers) {
-        $currentPageURL = URL::toPage('settings');
-        UI::addBreadcrumbItem($currentPageURL, 'Settings');
-        $contents[] = new UI_Heading('Settings', true);
-        $form = new UI_Form($currentPageURL, false);
+        if (Authentication::getUserID() <= 0) {
+            $contents[] = new UI_Heading('Settings', true);
+            $contents[] = self::getLoginForm('Please sign in below to access your settings.');
+        }
+        else {
+            $verificationToken = self::getDataGET('verify');
+            if (!empty($verificationToken)) {
+                $verificationUser = Database::getVerificationUser($verificationToken);
+                if (isset($verificationUser['userID'])) {
+                    $userObject = Authentication::getUser();
+                    $userObject->setEmail_lastVerificationAttempt(0);
+                    Authentication::updateUserInfo($userObject);
 
-        $form->addContent(new UI_Form_StaticText('Username', Authentication::getUserName()));
-        $textRealName = new UI_Form_Text('Real name', 'settings[realName]', 'Enter your name here', false, 'Let others know who you are, so that they know who is contributing to their projects.');
-        $textRealName->setDefaultValue(Authentication::getUserRealName());
-        $form->addContent($textRealName);
-        $selectNativeLanguage = new UI_Form_Select('Native language', 'settings[nativeLanguage][]', 'Which language is your native language? You may select multiple entries here.', true);
-        $userNativeLanguages = Database::getNativeLanguages(Authentication::getUserID());
-        $languages = Language::getList();
-        foreach ($languages as $languageID) {
-            $selectNativeLanguage->addOption(Language::getLanguageNameFull($languageID), $languageID);
-        }
-        foreach ($userNativeLanguages as $userNativeLanguage) {
-            $selectNativeLanguage->addDefaultOption($userNativeLanguage);
-        }
-        Time::init();
-        /** @var array|UI_Form_Select[] $selectTimezones */
-        $selectTimezones = array();
-        $selectCountry = new UI_Form_Select('Country', 'settings[country]', 'Choose your country of residence to control the timezone selection below.', false, '', '', 'chooseTimezoneByCountry(this.value);');
-        $selectCountry->addOption('— Please choose —', '');
-        $countries = Time::getCountries();
-        $defaultCountry = Authentication::getUserCountry();
-        $defaultTimezone = Authentication::getUserTimezone();
-        foreach ($countries as $countryCode => $countryName) {
-            $selectCountry->addOption($countryName, $countryCode);
-            $timezones = Time::getTimezones($countryCode);
-            $selectTimezones[$countryCode] = new UI_Form_Select('Timezone', 'settings[timezone]['.$countryCode.']', 'Set your timezone here to determine how dates are displayed for you.', false, 'timezone-select timezone-select-'.$countryCode, ($countryCode == $defaultCountry ? '' : 'display:none;'));
-            foreach ($timezones as $timezoneName) {
-                $selectTimezones[$countryCode]->addOption($timezoneName, $timezoneName);
+                    Database::verifyUserEmail($verificationUser['userID']);
+                    $contents[] = new UI_Alert('Your email address has been verified.', UI_Alert::TYPE_SUCCESS);
+                }
+                else {
+                    $contents[] = new UI_Alert('We were not able to verify your email address. Please try again!', UI_Alert::TYPE_WARNING);
+                }
             }
-            if ($countryCode == $defaultCountry) {
-                $selectTimezones[$countryCode]->addDefaultOption($defaultTimezone);
-            }
-        }
-        $selectCountry->addDefaultOption($defaultCountry);
 
-        $form->addContent($selectNativeLanguage);
-        $form->addContent($selectCountry);
-        foreach ($selectTimezones as $selectTimezone) {
-            $form->addContent($selectTimezone);
+            $currentPageURL = URL::toPage('settings');
+            UI::addBreadcrumbItem($currentPageURL, 'Settings');
+            $contents[] = new UI_Heading('Settings', true);
+            $form = new UI_Form($currentPageURL, false);
+
+            $form->addContent(new UI_Form_StaticText('Username', Authentication::getUserName()));
+            $textRealName = new UI_Form_Text('Real name', 'settings[realName]', 'Enter your name here', false, 'Let others know who you are, so that they know who is contributing to their projects.');
+            $textRealName->setDefaultValue(Authentication::getUserRealName());
+            $form->addContent($textRealName);
+            $selectNativeLanguage = new UI_Form_Select('Native language', 'settings[nativeLanguage][]', 'Which language is your native language? You may select multiple entries here.', true);
+            $userNativeLanguages = Database::getNativeLanguages(Authentication::getUserID());
+            $languages = Language::getList();
+            foreach ($languages as $languageID) {
+                $selectNativeLanguage->addOption(Language::getLanguageNameFull($languageID), $languageID);
+            }
+            foreach ($userNativeLanguages as $userNativeLanguage) {
+                $selectNativeLanguage->addDefaultOption($userNativeLanguage);
+            }
+            Time::init();
+            /** @var array|UI_Form_Select[] $selectTimezones */
+            $selectTimezones = array();
+            $selectCountry = new UI_Form_Select('Country', 'settings[country]', 'Choose your country of residence to control the timezone selection below.', false, '', '', 'chooseTimezoneByCountry(this.value);');
+            $selectCountry->addOption('— Please choose —', '');
+            $countries = Time::getCountries();
+            $defaultCountry = Authentication::getUserCountry();
+            $defaultTimezone = Authentication::getUserTimezone();
+            foreach ($countries as $countryCode => $countryName) {
+                $selectCountry->addOption($countryName, $countryCode);
+                $timezones = Time::getTimezones($countryCode);
+                $selectTimezones[$countryCode] = new UI_Form_Select('Timezone', 'settings[timezone]['.$countryCode.']', 'Set your timezone here to determine how dates are displayed for you.', false, 'timezone-select timezone-select-'.$countryCode, ($countryCode == $defaultCountry ? '' : 'display:none;'));
+                foreach ($timezones as $timezoneName) {
+                    $selectTimezones[$countryCode]->addOption($timezoneName, $timezoneName);
+                }
+                if ($countryCode == $defaultCountry) {
+                    $selectTimezones[$countryCode]->addDefaultOption($defaultTimezone);
+                }
+            }
+            $selectCountry->addDefaultOption($defaultCountry);
+
+            $form->addContent($selectNativeLanguage);
+            $form->addContent($selectCountry);
+            foreach ($selectTimezones as $selectTimezone) {
+                $form->addContent($selectTimezone);
+            }
+            // EMAIL ADDRESS FIELD BEGIN
+            $emailVerificationStatus = Authentication::getUserEmail_lastVerificationAttempt() == 0 ? '' : '<span style="color:#f00;">Unverified:</span> ';
+            if (Authentication::mayChangeEmailAgain(Authentication::getUserEmail_lastVerificationAttempt())) {
+                $emailReadonly = false;
+                if (Authentication::mayVerifyEmailAgain(Authentication::getUserEmail_lastVerificationAttempt())) {
+                    $resendVerificationLink = new UI_Link('You may re-send the verification link.', '#');
+                    $emailHelpText = 'Enter your personal email address here, optionally. '.$resendVerificationLink->getHTML();
+                }
+                else {
+                    $emailHelpText = 'Enter your personal email address here, optionally. Please make sure that it is up-to-date.';
+                }
+            }
+            else {
+                $emailReadonly = true;
+                if (Authentication::mayVerifyEmailAgain(Authentication::getUserEmail_lastVerificationAttempt())) {
+                    $resendVerificationLink = new UI_Link('You may re-send the verification link.', '#');
+                    $emailHelpText = 'You cannot change your email address again, yet. '.$resendVerificationLink->getHTML();
+                }
+                else {
+                    $emailHelpText = 'You cannot change your email address again, yet. Please visit this page later again.';
+                }
+            }
+            $textEmail = new UI_Form_Text('Email address', 'settings[email]', 'Enter your email address here', false, $emailVerificationStatus.$emailHelpText);
+            $textEmail->setReadOnly($emailReadonly);
+            $textEmail->setDefaultValue(Authentication::getUserEmail());
+            $form->addContent($textEmail);
+            // EMAIL ADDRESS FIELD END
+            $form->addContent(new UI_Form_ButtonGroup(array(
+                new UI_Form_Button('Save'),
+                new UI_Link('Cancel', URL::toDashboard(), UI_Form_Button::TYPE_UNIMPORTANT)
+            )));
+            $contents[] = $form;
         }
-        $form->addContent(new UI_Form_ButtonGroup(array(
-            new UI_Form_Button('Save'),
-            new UI_Link('Cancel', URL::toDashboard(), UI_Form_Button::TYPE_UNIMPORTANT)
-        )));
-        $contents[] = $form;
 
         $cell = new UI_Cell($contents);
         $row = new UI_Row(array($cell));
@@ -1278,10 +1327,10 @@ abstract class UI {
         }
     }
 
-    public static function getLoginForm() {
+    public static function getLoginForm($message = 'Please sign in below to access this project.') {
         $form = new UI_Form(URL::toDashboard(), false);
 
-        $form->addContent(new UI_Form_StaticText('', 'Please sign in below to access this project. Don\'t have an account yet? <a href="'.URL::toPage('sign_up').'">Sign up in 60 seconds!</a>'));
+        $form->addContent(new UI_Form_StaticText('', $message.' Don\'t have an account yet? <a href="'.URL::toPage('sign_up').'">Sign up in 30 seconds!</a>'));
         $form->addContent(new UI_Form_Text('Username', 'sign_in[username]', 'Enter your username', false));
         $form->addContent(new UI_Form_Text('Password', 'sign_in[password]', 'Type your password', true));
         $form->addContent(new UI_Form_Hidden('sign_in[returnURL]', base64_encode($_SERVER['REQUEST_URI'])));

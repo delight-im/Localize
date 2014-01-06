@@ -183,6 +183,20 @@ class Database {
         }
     }
 
+    public static function updateEmail($userID, $email) {
+        $data = self::selectFirst("SELECT email, email_lastVerificationAttempt FROM users WHERE id = ".intval($userID));
+        if (isset($data['email_lastVerificationAttempt']) && isset($data['email'])) {
+            if (Authentication::mayChangeEmailAgain($data['email_lastVerificationAttempt'])) {
+                if ($email != $data['email']) {
+                    $verificationStatus = $email == '' ? 0 : time();
+                    self::update("UPDATE users SET email = ".self::escape($email).", email_lastVerificationAttempt = ".$verificationStatus." WHERE id = ".intval($userID));
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public static function setLastLogin($userID, $loginTime) {
         self::update("UPDATE users SET last_login = ".intval($loginTime)." WHERE id = ".intval($userID));
     }
@@ -313,6 +327,19 @@ class Database {
 
     public static function setPhraseGroup($repositoryID, $phraseKey, $groupID) {
         self::update("UPDATE phrases SET groupID = ".intval($groupID)." WHERE repositoryID = ".intval($repositoryID)." AND phraseKey = ".self::escape($phraseKey));
+    }
+
+    public static function saveVerificationToken($userID, $verificationToken, $validUntil) {
+        self::insert("INSERT INTO verificationTokens (userID, token, validUntil) VALUES (".intval($userID).", ".self::escape($verificationToken).", ".intval($validUntil).")");
+    }
+
+    public static function getVerificationUser($verificationToken) {
+        return self::selectFirst("SELECT userID FROM verificationTokens WHERE token = ".self::escape($verificationToken)." AND validUntil > ".time());
+    }
+
+    public static function verifyUserEmail($userID) {
+        self::delete("DELETE FROM verificationTokens WHERE userID = ".intval($userID));
+        self::update("UPDATE users SET email_lastVerificationAttempt = 0 WHERE id = ".intval($userID));
     }
 
 }

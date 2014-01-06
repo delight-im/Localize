@@ -15,6 +15,7 @@ class UI_Form_Text extends UI {
     protected $isInline;
     protected $isRTL;
     protected $defaultValue;
+    protected $readOnly;
 
     function __construct($label, $key, $placeholder, $isPassword = false, $helpText = '', $cssClasses = '', $cssStyles = '', $hasUniqueID = true, $isInline = false, $isRTL = false) {
         $this->label = $label;
@@ -28,6 +29,11 @@ class UI_Form_Text extends UI {
         $this->isInline = $isInline;
         $this->isRTL = $isRTL;
         $this->defaultValue = NULL;
+        $this->readOnly = false;
+    }
+
+    public function setReadOnly($readOnly) {
+        $this->readOnly = $readOnly;
     }
 
     public function setDefaultValue($value) {
@@ -65,6 +71,9 @@ class UI_Form_Text extends UI {
         }
         if (!empty($this->defaultValue)) {
             $out .= ' value="'.htmlspecialchars($this->defaultValue).'"';
+        }
+        if ($this->readOnly) {
+            $out .= ' readonly="readonly"';
         }
         $out .= ' name="'.htmlspecialchars($this->key).'" placeholder="'.htmlspecialchars($this->placeholder).'">';
         if (!$this->isInline) {

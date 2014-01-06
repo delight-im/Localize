@@ -6,6 +6,8 @@ define('CONFIG_DB_PASSWORD', ''); // password for database authorization
 define('CONFIG_DB_REPOSITORIES_SEQUENCE', NULL); // needed on same DB systems (e.g. Postgres) for getLastInsertID()
 
 define('CONFIG_ROOT_URL', 'http://www.localize.io/'); // public base URL to this folder (with trailing slash)
+define('CONFIG_SITE_NAME', 'Localize'); // public site name
+define('CONFIG_SITE_EMAIL', 'info@example.org'); // public email address of site (used as sender of mails)
 define('CONFIG_BASE_PATH', '/path/to/this/file/'); // absolute local base path to the directory of this file (with trailing slash)
 define('CONFIG_URL_REWRITE', true); // whether to enable URL rewriting (true) or not (false)
 define('CONFIG_ERROR_REPORTING_ON', true); // whether error reporting on display is enabled (true) or not (false) which it should only be for debugging

@@ -13,6 +13,7 @@ require_once(__DIR__.'/classes/UI_Alert.php');
 require_once(__DIR__.'/classes/User.php');
 require_once(__DIR__.'/classes/Database.php');
 require_once(__DIR__.'/classes/Edit.php');
+require_once(__DIR__.'/classes/Email.php');
 require_once(__DIR__.'/libs/password_compat.php');
 
 Authentication::init();
@@ -84,12 +85,46 @@ elseif (UI::isPage('settings')) {
         $nativeLanguages = isset($data['nativeLanguage']) ? $data['nativeLanguage'] : array();
         $localeCountry = isset($data['country']) ? trim($data['country']) : '';
         $localeTimezone = isset($data['timezone'][$localeCountry]) ? trim($data['timezone'][$localeCountry]) : '';
-        Database::updateSettings(Authentication::getUserID(), $realName, $nativeLanguages, $localeCountry, $localeTimezone);
+        $email = isset($data['email']) ? trim($data['email']) : '';
+        Database::updateSettings(Authentication::getUserID(), $realName, $nativeLanguages, $localeCountry, $localeTimezone, $email);
         $userObject = Authentication::getUser();
         if (!empty($userObject)) {
             $userObject->setRealName($realName);
             $userObject->setCountry($localeCountry);
             $userObject->setTimezone($localeTimezone);
+            if (!empty($email)) {
+                if (User::isEmailValid($email)) {
+                    if (Database::updateEmail(Authentication::getUserID(), $email)) {
+                        $mailSubject = CONFIG_SITE_NAME.': Verify your email address';
+                        $mailDomain = parse_url(CONFIG_ROOT_URL, PHP_URL_HOST);
+                        $mailVerificationToken = Authentication::createVerificationToken($email);
+
+                        Database::saveVerificationToken(Authentication::getUserID(), $mailVerificationToken, time()+86400);
+
+                        $mail = new Email(CONFIG_SITE_EMAIL, CONFIG_SITE_NAME, $mailSubject);
+                        $mail->addRecipient($email);
+                        $mail->addLine('Hello '.Authentication::getUserName().',');
+                        $mail->addLine('');
+                        $mail->addLine('Please open the following link in order to verify your email address on '.CONFIG_SITE_NAME.':');
+                        $mail->addLine(URL::toEmailVerification($mailVerificationToken));
+                        $mail->addLine('');
+                        $mail->addLine('If you did not sign up on '.CONFIG_SITE_NAME.' and enter your email address there, please just ignore this email and accept our excuses.');
+                        $mail->addLine('');
+                        $mail->addLine('Regards');
+                        $mail->addLine(CONFIG_SITE_NAME);
+                        $mail->addLine($mailDomain);
+                        $mail->send();
+
+                        $userObject->setEmail($email);
+                        $userObject->setEmail_lastVerificationAttempt(time());
+                    }
+                }
+            }
+            else {
+                Database::updateEmail(Authentication::getUserID(), '');
+                $userObject->setEmail('');
+                $userObject->setEmail_lastVerificationAttempt(0);
+            }
             Authentication::updateUserInfo($userObject);
         }
         $alert = new UI_Alert('<p>Your settings have been updated.</p>', UI_Alert::TYPE_SUCCESS);
@@ -658,10 +693,10 @@ else {
             }
         }
 
-        $userData = Database::selectFirst("SELECT id, username, password, real_name, localeCountry, localeTimezone, type, join_date FROM users WHERE username = ".Database::escape($data_username));
+        $userData = Database::selectFirst("SELECT id, username, password, real_name, localeCountry, localeTimezone, email, email_lastVerificationAttempt, type, join_date FROM users WHERE username = ".Database::escape($data_username));
         if (!empty($userData)) {
             if (isset($userData['password']) && password_verify($data_password, $userData['password'])) {
-                $userObject = new User($userData['id'], $userData['type'], $userData['username'], $userData['real_name'], $userData['localeCountry'], $userData['localeTimezone'], $userData['join_date']);
+                $userObject = new User($userData['id'], $userData['type'], $userData['username'], $userData['real_name'], $userData['localeCountry'], $userData['localeTimezone'], $userData['email'], $userData['email_lastVerificationAttempt'], $userData['join_date']);
                 Authentication::signIn($userObject);
                 $pendingEdits = Database::getPendingEditsByUser($userData['id']);
                 Authentication::restoreCachedEdits($pendingEdits);

@@ -27,6 +27,11 @@ class Authentication {
         return isset($_SESSION) && isset($_SESSION['user']);
     }
 
+    /**
+     * Gets the user object for the currently authenticated user
+     *
+     * @return User the user object
+     */
     public static function getUser() {
         if (isset($_SESSION) && isset($_SESSION['user'])) {
             return unserialize($_SESSION['user']);
@@ -83,6 +88,26 @@ class Authentication {
         }
         else {
             return $userObject->getTimezone();
+        }
+    }
+
+    public static function getUserEmail() {
+        $userObject = self::getUser();
+        if (empty($userObject)) {
+            return '';
+        }
+        else {
+            return $userObject->getEmail();
+        }
+    }
+
+    public static function getUserEmail_lastVerificationAttempt() {
+        $userObject = self::getUser();
+        if (empty($userObject)) {
+            return time();
+        }
+        else {
+            return $userObject->getEmail_lastVerificationAttempt();
         }
     }
 
@@ -171,6 +196,18 @@ class Authentication {
 
     public static function setCachedLanguageProgress($repositoryID, $data) {
         $_SESSION['cachedLanguageProgress'][$repositoryID] = $data;
+    }
+
+    public static function mayChangeEmailAgain($email_lastVerificationAttempt) {
+        return (time()-$email_lastVerificationAttempt) > 86400;
+    }
+
+    public static function mayVerifyEmailAgain($email_lastVerificationAttempt) {
+        return $email_lastVerificationAttempt > 0 && (time()-$email_lastVerificationAttempt) > 21600;
+    }
+
+    public static function createVerificationToken($email) {
+        return sha1(mt_rand(1, 1000000000).' '.$email.' '.mt_rand(1, 1000000000));
     }
 
 }

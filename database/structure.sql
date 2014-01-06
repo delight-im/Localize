@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS `edits` (
   UNIQUE KEY `combination` (`repositoryID`,`languageID`,`referencedPhraseID`,`phraseSubKey`,`userID`),
   KEY `userID` (`userID`),
   KEY `selection` (`repositoryID`,`languageID`,`submit_time`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=2375 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=4645 ;
 
 CREATE TABLE IF NOT EXISTS `groups` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS `groups` (
   `name` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `combination` (`repositoryID`,`name`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=18 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=28 ;
 
 CREATE TABLE IF NOT EXISTS `invitations` (
   `repositoryID` int(10) unsigned NOT NULL,
@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS `phrases` (
   UNIQUE KEY `combination` (`repositoryID`,`languageID`,`phraseKey`),
   KEY `groupID` (`groupID`),
   KEY `phraseCount` (`repositoryID`,`languageID`,`groupID`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=16690 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=24709 ;
 
 CREATE TABLE IF NOT EXISTS `repositories` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS `repositories` (
   PRIMARY KEY (`id`),
   KEY `name` (`name`),
   FULLTEXT KEY `name_2` (`name`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=20 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=26 ;
 
 CREATE TABLE IF NOT EXISTS `roles` (
   `userID` int(10) unsigned NOT NULL,
@@ -98,9 +98,20 @@ CREATE TABLE IF NOT EXISTS `users` (
   `last_login` int(10) unsigned NOT NULL DEFAULT '0',
   `localeCountry` varchar(255) NOT NULL DEFAULT '',
   `localeTimezone` varchar(255) NOT NULL DEFAULT '',
+  `email` varchar(255) NOT NULL DEFAULT '',
+  `email_lastVerificationAttempt` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=128 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=178 ;
+
+CREATE TABLE IF NOT EXISTS `verificationTokens` (
+  `id` int(10) unsigned NOT NULL,
+  `userID` int(10) unsigned NOT NULL,
+  `token` varchar(255) NOT NULL,
+  `validUntil` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `token` (`token`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
