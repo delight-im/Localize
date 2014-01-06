@@ -127,6 +127,15 @@ class URL {
         }
     }
 
+    public static function toWatchProject($repositoryID) {
+        if (self::URL_REWRITE) {
+            return self::ROOT_URL.'watch/'.self::encodeID($repositoryID);
+        }
+        else {
+            return self::ROOT_URL.'?p=watch&project='.self::encodeID($repositoryID);
+        }
+    }
+
     public static function toEmailVerification($verificationToken) {
         if (self::URL_REWRITE) {
             return self::ROOT_URL.'verify/'.urlencode($verificationToken);

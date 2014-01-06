@@ -291,6 +291,36 @@ elseif (UI::isPage('invitations')) {
         echo UI::getPage(UI::PAGE_INVITATIONS, array($alert));
     }
 }
+elseif (UI::isPage('watch')) {
+    $alert = NULL;
+    if (UI::isAction('watch')) {
+        $repositoryID = UI::validateID(UI::getDataGET('project'), true);
+        $repositoryData = Database::getRepositoryData($repositoryID);
+        if (!empty($repositoryData)) {
+            $data = UI::getDataPOST('watch');
+            if (isset($data['events'])) {
+                $events = array(
+                    Repository::WATCH_EVENT_UPDATED_PHRASES,
+                    Repository::WATCH_EVENT_NEW_TRANSLATIONS
+                );
+                foreach ($events as $event) {
+                    $eventStatus = isset($data['events'][$event]) ? intval($data['events'][$event]) : 0;
+                    Database::setWatchedEvents($repositoryID, $event, Authentication::getUserID(), $eventStatus);
+                    $alert = new UI_Alert('<p>Your preferences for this project have been updated.</p>', UI_Alert::TYPE_SUCCESS);
+                }
+            }
+        }
+        else {
+            $alert = new UI_Alert('<p>The project could not be found.</p>', UI_Alert::TYPE_WARNING);
+        }
+    }
+    if (empty($alert)) {
+        echo UI::getPage(UI::PAGE_WATCH);
+    }
+    else {
+        echo UI::getPage(UI::PAGE_WATCH, array($alert));
+    }
+}
 elseif (UI::isPage('export')) {
     $alert = NULL;
     if (UI::isAction('export')) {

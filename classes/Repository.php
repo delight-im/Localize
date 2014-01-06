@@ -17,6 +17,8 @@ class Repository {
     const INVITATION_DECLINED = -1;
     const INVITATION_PENDING = 0;
     const INVITATION_ACCEPTED = 1;
+    const WATCH_EVENT_UPDATED_PHRASES = 1;
+    const WATCH_EVENT_NEW_TRANSLATIONS = 2;
 
     protected $id;
     protected $name;

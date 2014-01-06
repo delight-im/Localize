@@ -342,4 +342,22 @@ class Database {
         self::update("UPDATE users SET email_lastVerificationAttempt = 0 WHERE id = ".intval($userID));
     }
 
+    public static function getWatchedEvents($repositoryID, $userID) {
+        $events = self::select("SELECT eventID, lastNotification FROM watchers WHERE repositoryID = ".intval($repositoryID)." AND userID = ".intval($userID));
+        $watchedEvents = array();
+        foreach ($events as $event) {
+            $watchedEvents[$event['eventID']] = $event['lastNotification'];
+        }
+        return $watchedEvents;
+    }
+
+    public static function setWatchedEvents($repositoryID, $eventID, $userID, $watchStatus) {
+        if ($watchStatus == 1) {
+            self::insert("INSERT IGNORE INTO watchers (repositoryID, eventID, userID) VALUES (".intval($repositoryID).", ".intval($eventID).", ".intval($userID).")");
+        }
+        else {
+            self::delete("DELETE FROM watchers WHERE repositoryID = ".intval($repositoryID)." AND eventID = ".intval($eventID)." AND userID = ".intval($userID));
+        }
+    }
+
 }

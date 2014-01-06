@@ -39,6 +39,7 @@ abstract class UI {
     const PAGE_INVITATIONS = 9;
 	const PAGE_HELP = 10;
     const PAGE_PHRASE = 11;
+    const PAGE_WATCH = 12;
 
     private static $page;
     private static $actionPOST;
@@ -211,6 +212,8 @@ abstract class UI {
 				return self::getPage_Help($contents, $containers);
             case self::PAGE_PHRASE:
                 return self::getPage_Phrase($contents, $containers);
+            case self::PAGE_WATCH:
+                return self::getPage_Watch($contents, $containers);
             default:
                 throw new Exception('Unknown page ID '.$pageID);
         }
@@ -951,6 +954,86 @@ abstract class UI {
         return new UI_Group($containers);
     }
 
+    public static function getPage_Watch($contents, $containers) {
+        $repositoryID = self::validateID(self::getDataGET('project'), true);
+        $repositoryData = Database::getRepositoryData($repositoryID);
+
+        if (empty($repositoryData)) {
+            self::addBreadcrumbItem(URL::toWatchProject($repositoryID), 'Project not found');
+            $contents[] = new UI_Heading('Project not found', true);
+            $contents[] = new UI_Paragraph('We\'re sorry, but we could not find the project that you requested.');
+            $contents[] = new UI_Paragraph('Please check if you have made any typing errors.');
+        }
+        else {
+            self::addBreadcrumbItem(URL::toProject($repositoryID), htmlspecialchars($repositoryData['name']));
+            self::addBreadcrumbItem(URL::toWatchProject($repositoryID), 'Watch');
+            Authentication::saveCachedRepository($repositoryID, $repositoryData['name']);
+
+            $repository = new Repository($repositoryID, $repositoryData['name'], $repositoryData['visibility'], $repositoryData['defaultLanguage']);
+            $role = Database::getRepositoryRole(Authentication::getUserID(), $repositoryID);
+            $permissions = $repository->getPermissions(Authentication::getUserID(), $role);
+
+            if (Authentication::getUserID() <= 0) {
+                $contents[] = new UI_Heading(htmlspecialchars($repositoryData['name']), true);
+                $contents[] = self::getLoginForm();
+            }
+            elseif ($permissions->isInvitationMissing()) {
+                $contents[] = new UI_Heading(htmlspecialchars($repositoryData['name']), true);
+                $contents[] = self::getInvitationForm($repositoryID);
+            }
+            elseif (Authentication::getUserEmail() == '' || Authentication::getUserEmail_lastVerificationAttempt() > 0) { // no email address or unverified email
+                $contents[] = new UI_Heading('Watch project', true);
+                $contents[] = new UI_Paragraph('You need a verified email address in order to watch projects and receive notifications.');
+                $contents[] = new UI_Paragraph('Enter your email address in your settings to get started.');
+                $linkSettings = new UI_Link('Go to settings', URL::toPage('settings'), UI_Link::TYPE_SUCCESS);
+                $linkCancel = new UI_Link('Cancel', URL::toProject($repositoryID), UI_Link::TYPE_UNIMPORTANT);
+                $contents[] = new UI_Paragraph($linkSettings->getHTML().' '.$linkCancel->getHTML());
+            }
+            else {
+                $currentPageURL = URL::toWatchProject($repositoryID);
+
+                $contents[] = new UI_Heading('Watch project', true);
+                $contents[] = new UI_Paragraph('Do you want to receive email notifications for certain events in this project?');
+                $contents[] = new UI_Paragraph('You will receive updates from us not more than once per 24 hours. And of course, you can unsubscribe from the notifications on this page at any time.');
+
+                $oldSettings = Database::getWatchedEvents($repositoryID, Authentication::getUserID());
+
+                $formWatch = new UI_Form($currentPageURL, false);
+
+                $formWatchUpdatedPhrases = new UI_Form_Select('Updated phrases', 'watch[events]['.Repository::WATCH_EVENT_UPDATED_PHRASES.']', 'Do you want to be informed about new phrases becoming available for translation?');
+                $formWatchUpdatedPhrases->addOption('Off (I do not want notifications)', 0);
+                $formWatchUpdatedPhrases->addOption('On (I want to receive notifications)', 1);
+                $formWatchUpdatedPhrases->addDefaultOption(isset($oldSettings[Repository::WATCH_EVENT_UPDATED_PHRASES]) ? 1 : 0);
+                $formWatch->addContent($formWatchUpdatedPhrases);
+
+                if (Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_MODERATOR)) {
+                    $formWatchNewTranslations = new UI_Form_Select('New translations', 'watch[events]['.Repository::WATCH_EVENT_NEW_TRANSLATIONS.']', 'Do you want to be informed when users have submitted new translations for this project?');
+                    $formWatchNewTranslations->addOption('Off (I do not want notifications)', 0);
+                    $formWatchNewTranslations->addOption('On (I want to receive notifications)', 1);
+                    $formWatchNewTranslations->addDefaultOption(isset($oldSettings[Repository::WATCH_EVENT_NEW_TRANSLATIONS]) ? 1 : 0);
+                    $formWatch->addContent($formWatchNewTranslations);
+                }
+                else {
+                    $formWatch->addContent(new UI_Form_Hidden('watch[events]['.Repository::WATCH_EVENT_NEW_TRANSLATIONS.']', 0));
+                }
+
+                $formButtonList = array(
+                    new UI_Form_Button('Save', UI_Form_Button::TYPE_SUCCESS, UI_Form_Button::ACTION_SUBMIT),
+                    new UI_Link('Cancel', URL::toProject($repositoryID), UI_Link::TYPE_UNIMPORTANT)
+                );
+                $formWatch->addContent(new UI_Form_ButtonGroup($formButtonList));
+
+                $contents[] = $formWatch;
+            }
+        }
+
+        $cell = new UI_Cell($contents);
+        $row = new UI_Row(array($cell));
+
+        $containers[] = new UI_Container(array($row));
+        return new UI_Group($containers);
+    }
+
     public static function getPage_Project($contents, $containers) {
         $page = self::getDataGET('p');
         $repositoryID = self::validateID(self::getDataGET('project'), true);
@@ -1176,6 +1259,7 @@ abstract class UI {
                     $buttonExport = new UI_Link('Export XML', URL::toExport($repositoryID), UI_Form_Button::TYPE_SUCCESS);
                     $buttonImport = new UI_Link('Import XML', URL::toImport($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
                     $buttonEdit = new UI_Link('Edit project', URL::toEditProject($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
+                    $buttonWatch = new UI_Link('Watch', URL::toWatchProject($repositoryID), UI_Form_Button::TYPE_INFO);
                     $actionsForm->addContent(new UI_Form_Hidden('exportXML', 1));
 
                     $isAdmin = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_ADMINISTRATOR);
@@ -1184,13 +1268,15 @@ abstract class UI {
                         $actionButtons = array(
                             $buttonExport,
                             $buttonImport,
-                            $buttonEdit
+                            $buttonEdit,
+                            $buttonWatch
                         );
                     }
                     elseif ($isDev) {
                         $actionButtons = array(
                             $buttonExport,
-                            $buttonImport
+                            $buttonImport,
+                            $buttonWatch
                         );
                     }
                     else {
