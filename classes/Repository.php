@@ -258,6 +258,57 @@ class Repository {
         return URL::toProjectShort($repositoryID);
     }
 
+    public static function sendNotificationToWatchers($repositoryID, $eventID, $repositoryName) {
+        $watchers = Database::getWatchers($repositoryID, $eventID);
+        $recipients = array();
+        $recipientIDs = array();
+
+        foreach ($watchers as $watcher) {
+            if ($watcher['email'] != '') { // if user has set an email address
+                if ($watcher['email_lastVerificationAttempt'] == 0) { // if email address has been verified
+                    if (Authentication::mayReceiveNotificationsAgain($watcher['lastNotification'])) { // only one notification per 24 hours
+                        $recipients[] = $watcher['email'];
+                        $recipientIDs[] = $watcher['userID'];
+                    }
+                }
+            }
+        }
+
+        if (count($recipients) > 0) { // if there are users who must be notified
+            $mailDomain = parse_url(CONFIG_ROOT_URL, PHP_URL_HOST);
+            switch ($eventID) {
+                case self::WATCH_EVENT_UPDATED_PHRASES:
+                    $mailSubject = 'Localize: Updated phrases for '.$repositoryName;
+                    $mailIntroduction = 'There has been an update to the phrases of \''.$repositoryName.'\' on '.CONFIG_SITE_NAME.':';
+                    break;
+                case self::WATCH_EVENT_NEW_TRANSLATIONS:
+                    $mailSubject = 'Localize: New translations for '.$repositoryName;
+                    $mailIntroduction = 'New translations have been submitted to \''.$repositoryName.'\' on '.CONFIG_SITE_NAME.':';
+                    break;
+                default:
+                    throw new Exception('Unknown event ID: '.$eventID);
+            }
+
+            $mail = new Email(CONFIG_SITE_EMAIL, CONFIG_SITE_NAME, $mailSubject);
+            foreach ($recipients as $recipient) {
+                $mail->addRecipient($recipient, true);
+            }
+            $mail->addLine('Hello,');
+            $mail->addLine('');
+            $mail->addLine($mailIntroduction);
+            $mail->addLine(URL::toProjectShort($repositoryID));
+            $mail->addLine('');
+            $mail->addLine('You are receiving this email because you have added \''.$repositoryName.'\' to your personal watch list.');
+            $mail->addLine('');
+            $mail->addLine('Regards');
+            $mail->addLine(CONFIG_SITE_NAME);
+            $mail->addLine($mailDomain);
+
+            Database::setWatchersLastNotification($recipientIDs, time());
+            $mail->send();
+        }
+    }
+
 }
 
 class RepositoryPermissions {

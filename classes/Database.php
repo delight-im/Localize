@@ -360,4 +360,15 @@ class Database {
         }
     }
 
+    public static function getWatchers($repositoryID, $eventID) {
+        return self::select("SELECT a.userID, a.lastNotification, b.email, b.email_lastVerificationAttempt FROM watchers AS a JOIN users AS b ON a.userID = b.id WHERE a.repositoryID = ".intval($repositoryID)." AND a.eventID = ".intval($eventID));
+    }
+
+    public static function setWatchersLastNotification($userIDs, $timestamp) {
+        if (count($userIDs) > 0) {
+            $userIDList = self::escape(implode(',', $userIDs));
+            self::update("UPDATE watchers SET lastNotification = ".intval($timestamp)." WHERE userID IN (".$userIDList.")");
+        }
+    }
+
 }

@@ -57,17 +57,20 @@ class Email {
         }
         else {
             $from_string = (isset($this->fromName) && $this->fromName != '') ? $this->fromName.' <'.$this->fromMail.'>' : $this->fromMail;
-            $header = 'From: '.$from_string."\r\n";
+            $headers = array();
+            $headers[] = 'From: '.$from_string;
             if (count($this->recipientsBCC) > 0) {
-                $header .= 'Bcc: '.implode(', ', $this->recipientsBCC)."\r\n";
+                $headers[] = 'Bcc: '.implode(', ', $this->recipientsBCC);
             }
+            $headers[] = 'MIME-Version: 1.0';
             if ($this->is_html) {
-                $header .= 'Content-type: text/html; charset=utf-8';
+                $headers[] = 'Content-type: text/html; charset=utf-8';
             }
             else {
-                $header .= 'Content-type: text/plain; charset=utf-8';
+                $headers[] = 'Content-type: text/plain; charset=utf-8';
             }
-            mail(implode(', ', $this->recipientsTo), $this->subject, self::getBody(), $header);
+            $headers[] = 'Content-Transfer-Encoding: 8bit';
+            mail(implode(', ', $this->recipientsTo), $this->subject, self::getBody(), implode("\r\n", $headers));
         }
     }
 

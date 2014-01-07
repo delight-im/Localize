@@ -172,6 +172,8 @@ elseif (UI::isPage('language')) {
                     if (!empty($editData)) {
                         Database::submitEdits($repositoryID, $languageID, Authentication::getUserID(), $editData);
                         $alert = new UI_Alert('<p>Thank you very much!</p><p>Your modifications to '.$counter.' phrases have been submitted to this project.</p><p>They will now be reviewed by the project owners.</p>', UI_Alert::TYPE_SUCCESS);
+
+                        Repository::sendNotificationToWatchers($repositoryID, Repository::WATCH_EVENT_NEW_TRANSLATIONS, $repositoryData['name']);
                     }
                     else {
                         $alert = new UI_Alert('<p>You did change any phrase. Please try again!</p>', UI_Alert::TYPE_WARNING);
@@ -400,6 +402,8 @@ elseif (UI::isPage('import')) {
                                 Database::addPhrases($repositoryID, $languageID, $importResult, $groupID, $overwriteMode == 1);
                                 Authentication::setCachedLanguageProgress($repositoryID, NULL); // unset cached version of this repository's progress
                                 $alert = new UI_Alert('<p>You have imported '.count($importResult).' phrases to '.$languageNameFull.'.</p>', UI_Alert::TYPE_SUCCESS);
+
+                                Repository::sendNotificationToWatchers($repositoryID, Repository::WATCH_EVENT_UPDATED_PHRASES, $repositoryData['name']);
                             }
                             else {
                                 switch ($importResult) {
@@ -470,6 +474,8 @@ elseif (UI::isPage('add_phrase')) {
                             try {
                                 Database::addPhrase($repositoryID, $repositoryDefaultLanguage, $phraseKey, $phrasePayload);
                                 $alert = new UI_Alert('<p>The new phrase has successfully been added.</p>', UI_Alert::TYPE_SUCCESS);
+
+                                Repository::sendNotificationToWatchers($repositoryID, Repository::WATCH_EVENT_UPDATED_PHRASES, $repositoryData['name']);
                             }
                             catch (Exception $e) {
                                 $alert = new UI_Alert('<p>The new phrase could not be added.</p><p>It seems there is already a phrase with the same key.</p>', UI_Alert::TYPE_WARNING);
@@ -498,6 +504,8 @@ elseif (UI::isPage('add_phrase')) {
                                 try {
                                     Database::addPhrase($repositoryID, $repositoryDefaultLanguage, $phraseKey, $phrasePayload);
                                     $alert = new UI_Alert('<p>The new phrase has successfully been added.</p>', UI_Alert::TYPE_SUCCESS);
+
+                                    Repository::sendNotificationToWatchers($repositoryID, Repository::WATCH_EVENT_UPDATED_PHRASES, $repositoryData['name']);
                                 }
                                 catch (Exception $e) {
                                     $alert = new UI_Alert('<p>The new phrase could not be added.</p><p>It seems there is already a phrase with the same key.</p>', UI_Alert::TYPE_WARNING);
@@ -527,6 +535,8 @@ elseif (UI::isPage('add_phrase')) {
                                 try {
                                     Database::addPhrase($repositoryID, $repositoryDefaultLanguage, $phraseKey, $phrasePayload);
                                     $alert = new UI_Alert('<p>The new phrase has successfully been added.</p>', UI_Alert::TYPE_SUCCESS);
+
+                                    Repository::sendNotificationToWatchers($repositoryID, Repository::WATCH_EVENT_UPDATED_PHRASES, $repositoryData['name']);
                                 }
                                 catch (Exception $e) {
                                     $alert = new UI_Alert('<p>The new phrase could not be added.</p><p>It seems there is already a phrase with the same key.</p>', UI_Alert::TYPE_WARNING);

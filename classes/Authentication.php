@@ -206,6 +206,10 @@ class Authentication {
         return $email_lastVerificationAttempt > 0 && (time()-$email_lastVerificationAttempt) > 21600;
     }
 
+    public static function mayReceiveNotificationsAgain($lastNotification) {
+        return (time()-$lastNotification) > 86400;
+    }
+
     public static function createVerificationToken($email) {
         return sha1(mt_rand(1, 1000000000).' '.$email.' '.mt_rand(1, 1000000000));
     }

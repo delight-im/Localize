@@ -941,7 +941,7 @@ abstract class UI {
                     $contents[] = $formMove;
                 }
                 if (isset($formChange)) {
-                    $contents[] = new UI_Heading('Reset or delete phrase', false, 3);
+                    $contents[] = new UI_Heading('Untranslate or delete phrase', false, 3);
                     $contents[] = $formChange;
                 }
             }
