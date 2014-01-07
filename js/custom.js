@@ -83,29 +83,35 @@ function openTablePage(tableID, pageToOpen) {
                 if (typeof(table) !== 'undefined' && table !== null) { // make sure the pagination bar exists
                     // show the requested page of the table
                     var pages = table.getElementsByClassName('table-page');
-                    var pageToOpenClass = 'table-page table-page-'+pageToOpen;
+                    var pageToOpenClass = pageToOpen >= 0 ? 'table-page table-page-'+pageToOpen : null;
                     for (var i = 0; i < pages.length; i++) {
-                        if (pages[i].className == pageToOpenClass) {
+                        if (pages[i].className == pageToOpenClass || pageToOpenClass === null) {
                             pages[i].style.display = 'table-row-group';
                         }
                         else {
                             pages[i].style.display = 'none';
                         }
                     }
-
-                    // mark the correct page in the pagination bar
-                    var counter = 0;
-                    for (var c = 0; c < pagination.childNodes.length; c++) {
-                        if (pagination.childNodes[c].tagName == 'LI') {
-                            if (counter == pageToOpen) {
-                                pagination.childNodes[c].className = 'active';
-                            }
-                            else {
-                                pagination.childNodes[c].className = '';
-                            }
-                            counter++;
-                        }
-                    }
+					
+					if (pageToOpen >= 0) {
+						// mark the correct page in the pagination bar
+						var counter = 0;
+						for (var c = 0; c < pagination.childNodes.length; c++) {
+							if (pagination.childNodes[c].tagName == 'LI') {
+								if (counter == pageToOpen) {
+									pagination.childNodes[c].className = 'active';
+								}
+								else {
+									pagination.childNodes[c].className = '';
+								}
+								counter++;
+							}
+						}					
+					}
+					else {
+						// remove the pagination bar
+						pagination.parentNode.removeChild(pagination);
+					}
 
                     // scroll back to the top of the page
                     try {

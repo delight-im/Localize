@@ -107,6 +107,7 @@ class UI_Table extends UI {
                 }
                 $out .= '><a href="#" onclick="openTablePage(\''.$this->uniqueViewID.'\', '.($p-1).'); return false;">'.$p.'</a></li>';
             }
+			$out .= '<li><a href="#" onclick="openTablePage(\''.$this->uniqueViewID.'\', -1); return false;">Show all</a></li>';
             $out .= '</ul></div>';
         }
         return $out;
