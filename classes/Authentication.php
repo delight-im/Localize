@@ -11,7 +11,8 @@ class Authentication {
     public static function init() {
         ini_set('session.use_only_cookies', 1); // use cookies only (no session IDs that are sent via GET)
         ini_set('session.cookie_lifetime', 0); // total session lifetime is not limited (until the browser is closed)
-        ini_set('session.gc_maxlifetime', 43200); // session may time out if user is not active for 12 hours
+		// make sure to set session.gc_maxlifetime = 86400 in php.ini as well
+        ini_set('session.gc_maxlifetime', 86400); // session may be regarded as garbage and thus time out if user is not active for 24 hours
 
         $cookieParams = session_get_cookie_params();
         session_set_cookie_params($cookieParams['lifetime'], $cookieParams['path'], $cookieParams['domain'], self::SESSION_HTTPS, self::SESSION_HTTP_ONLY);
