@@ -746,22 +746,6 @@ abstract class UI {
             $contents[] = self::getLoginForm('Please sign in below to access your settings.');
         }
         else {
-            $verificationToken = self::getDataGET('verify');
-            if (!empty($verificationToken)) {
-                $verificationUser = Database::getVerificationUser($verificationToken);
-                if (isset($verificationUser['userID'])) {
-                    $userObject = Authentication::getUser();
-                    $userObject->setEmail_lastVerificationAttempt(0);
-                    Authentication::updateUserInfo($userObject);
-
-                    Database::verifyUserEmail($verificationUser['userID']);
-                    $contents[] = new UI_Alert('Your email address has been verified.', UI_Alert::TYPE_SUCCESS);
-                }
-                else {
-                    $contents[] = new UI_Alert('We were not able to verify your email address. Please try again!', UI_Alert::TYPE_WARNING);
-                }
-            }
-
             $currentPageURL = URL::toPage('settings');
             UI::addBreadcrumbItem($currentPageURL, 'Settings');
             $contents[] = new UI_Heading('Settings', true);
@@ -811,7 +795,7 @@ abstract class UI {
             if (Authentication::mayChangeEmailAgain(Authentication::getUserEmail_lastVerificationAttempt())) {
                 $emailReadonly = false;
                 if (Authentication::mayVerifyEmailAgain(Authentication::getUserEmail_lastVerificationAttempt())) {
-                    $resendVerificationLink = new UI_Link('You may re-send the verification link.', '#');
+                    $resendVerificationLink = new UI_Link('You may re-send the verification link.', URL::toSettingsAction('resendVerificationEmail'));
                     $emailHelpText = 'Enter your personal email address here, optionally. '.$resendVerificationLink->getHTML();
                 }
                 else {
@@ -821,11 +805,11 @@ abstract class UI {
             else {
                 $emailReadonly = true;
                 if (Authentication::mayVerifyEmailAgain(Authentication::getUserEmail_lastVerificationAttempt())) {
-                    $resendVerificationLink = new UI_Link('You may re-send the verification link.', '#');
+                    $resendVerificationLink = new UI_Link('You may re-send the verification link.', URL::toSettingsAction('resendVerificationEmail'));
                     $emailHelpText = 'You cannot change your email address again, yet. '.$resendVerificationLink->getHTML();
                 }
                 else {
-                    $emailHelpText = 'You cannot change your email address again, yet. Please visit this page later again.';
+                    $emailHelpText = 'You cannot change your email address again, yet. Please visit this page later.';
                 }
             }
             $textEmail = new UI_Form_Text('Email address', 'settings[email]', 'Enter your email address here', false, $emailVerificationStatus.$emailHelpText);

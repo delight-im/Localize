@@ -145,6 +145,15 @@ class URL {
         }
     }
 
+    public static function toSettingsAction($action) {
+        if (self::URL_REWRITE) {
+            return self::ROOT_URL.'settings/action/'.urlencode($action);
+        }
+        else {
+            return self::ROOT_URL.'?p=settings&action='.urlencode($action);
+        }
+    }
+
     public static function isProject($url) {
         return stripos($url, '?p=') !== false || stripos($url, 'projects/') !== false;
     }

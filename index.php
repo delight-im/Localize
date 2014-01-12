@@ -79,6 +79,7 @@ elseif (UI::isPage('help')) {
     echo UI::getPage(UI::PAGE_HELP);
 }
 elseif (UI::isPage('settings')) {
+    $alert = NULL;
     if (UI::isAction('settings')) {
         $data = UI::getDataPOST('settings');
         $realName = isset($data['realName']) ? trim($data['realName']) : '';
@@ -95,28 +96,9 @@ elseif (UI::isPage('settings')) {
             if (!empty($email)) {
                 if (User::isEmailValid($email)) {
                     if (Database::updateEmail(Authentication::getUserID(), $email)) {
-                        $mailSubject = CONFIG_SITE_NAME.': Verify your email address';
-                        $mailDomain = parse_url(CONFIG_ROOT_URL, PHP_URL_HOST);
-                        $mailVerificationToken = Authentication::createVerificationToken($email);
-
-                        Database::saveVerificationToken(Authentication::getUserID(), $mailVerificationToken, time()+86400);
-
-                        $mail = new Email(CONFIG_SITE_EMAIL, CONFIG_SITE_NAME, $mailSubject);
-                        $mail->addRecipient($email);
-                        $mail->addLine('Hello '.Authentication::getUserName().',');
-                        $mail->addLine('');
-                        $mail->addLine('Please open the following link in order to verify your email address on '.CONFIG_SITE_NAME.':');
-                        $mail->addLine(URL::toEmailVerification($mailVerificationToken));
-                        $mail->addLine('');
-                        $mail->addLine('If you did not sign up on '.CONFIG_SITE_NAME.' and enter your email address there, please just ignore this email and accept our excuses.');
-                        $mail->addLine('');
-                        $mail->addLine('Regards');
-                        $mail->addLine(CONFIG_SITE_NAME);
-                        $mail->addLine($mailDomain);
-                        $mail->send();
+                        Authentication::askForEmailVerification($email, $userObject);
 
                         $userObject->setEmail($email);
-                        $userObject->setEmail_lastVerificationAttempt(time());
                     }
                 }
             }
@@ -128,10 +110,43 @@ elseif (UI::isPage('settings')) {
             Authentication::updateUserInfo($userObject);
         }
         $alert = new UI_Alert('<p>Your settings have been updated.</p>', UI_Alert::TYPE_SUCCESS);
-        echo UI::getPage(UI::PAGE_SETTINGS, array($alert));
     }
     else {
+        $verificationToken = UI::getDataGET('verify');
+        if (!empty($verificationToken)) {
+            $verificationUser = Database::getVerificationUser($verificationToken);
+            if (isset($verificationUser['userID'])) {
+                $userObject = Authentication::getUser();
+                $userObject->setEmail_lastVerificationAttempt(0);
+                Authentication::updateUserInfo($userObject);
+
+                Database::verifyUserEmail($verificationUser['userID']);
+                $alert = new UI_Alert('Your email address has been verified.', UI_Alert::TYPE_SUCCESS);
+            }
+            else {
+                $alert = new UI_Alert('We were not able to verify your email address. Please try again!', UI_Alert::TYPE_WARNING);
+            }
+        }
+        else {
+            $actionString = UI::getDataGET('action');
+            if (!empty($actionString)) {
+                if ($actionString == 'resendVerificationEmail') {
+                    if (Database::updateEmailVerificationAttempt(Authentication::getUserID())) {
+                        Authentication::askForEmailVerification(Authentication::getUserEmail());
+                        $alert = new UI_Alert('A new verification email has been sent to \''.htmlspecialchars(Authentication::getUserEmail()).'\'!', UI_Alert::TYPE_SUCCESS);
+                    }
+                    else {
+                        $alert = new UI_Alert('You may not request a new verification email right now. Please try again later!', UI_Alert::TYPE_WARNING);
+                    }
+                }
+            }
+        }
+    }
+    if (empty($alert)) {
         echo UI::getPage(UI::PAGE_SETTINGS);
+    }
+    else {
+        echo UI::getPage(UI::PAGE_SETTINGS, array($alert));
     }
 }
 elseif (UI::isPage('sign_out')) {

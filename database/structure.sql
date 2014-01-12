@@ -105,7 +105,7 @@ CREATE TABLE IF NOT EXISTS `users` (
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `verificationTokens` (
-  `id` int(10) unsigned NOT NULL,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `userID` int(10) unsigned NOT NULL,
   `token` varchar(255) NOT NULL,
   `validUntil` int(10) unsigned NOT NULL,

@@ -197,6 +197,19 @@ class Database {
         return false;
     }
 
+    public static function updateEmailVerificationAttempt($userID) {
+        $data = self::selectFirst("SELECT email, email_lastVerificationAttempt FROM users WHERE id = ".intval($userID));
+        if (isset($data['email_lastVerificationAttempt']) && isset($data['email'])) {
+            if (Authentication::mayVerifyEmailAgain($data['email_lastVerificationAttempt'])) {
+                if ($data['email'] != '') {
+                    self::update("UPDATE users SET email_lastVerificationAttempt = ".time()." WHERE id = ".intval($userID));
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public static function setLastLogin($userID, $loginTime) {
         self::update("UPDATE users SET last_login = ".intval($loginTime)." WHERE id = ".intval($userID));
     }
@@ -330,7 +343,7 @@ class Database {
     }
 
     public static function saveVerificationToken($userID, $verificationToken, $validUntil) {
-        self::insert("INSERT INTO verificationTokens (userID, token, validUntil) VALUES (".intval($userID).", ".self::escape($verificationToken).", ".intval($validUntil).")");
+        self::insert("INSERT INTO verificationTokens (userID, token, validUntil) VALUES (".intval($userID).", ".self::escape($verificationToken).", ".intval($validUntil).") ON DUPLICATE KEY UPDATE userID = VALUES(userID), validUntil = VALUES(validUntil)");
     }
 
     public static function getVerificationUser($verificationToken) {

@@ -215,6 +215,49 @@ class Authentication {
         return sha1(mt_rand(1, 1000000000).' '.$email.' '.mt_rand(1, 1000000000));
     }
 
+    /**
+     * Creates a new verification token, saves it to the database and sends the verification mail
+     *
+     * @param string $email the email address to verify
+     * @param User $userObject (optional) the existing session user object to modify
+     */
+    public static function askForEmailVerification($email, &$userObject = NULL) {
+        $mailVerificationToken = Authentication::createVerificationToken($email);
+        Database::saveVerificationToken(Authentication::getUserID(), $mailVerificationToken, time()+86400);
+
+        // save the timestamp for this new verification attempt to the current session
+        if (empty($userObject)) {
+            $newUserObject = self::getUser();
+            $newUserObject->setEmail_lastVerificationAttempt(time());
+            self::updateUserInfo($newUserObject);
+        }
+        else {
+            $userObject->setEmail_lastVerificationAttempt(time());
+        }
+
+        // send the email containing the verification link
+        self::sendVerificationMail($email, $mailVerificationToken);
+    }
+
+    public static function sendVerificationMail($email, $mailVerificationToken) {
+        $mailSubject = CONFIG_SITE_NAME.': Verify your email address';
+        $mailDomain = parse_url(CONFIG_ROOT_URL, PHP_URL_HOST);
+
+        $mail = new Email(CONFIG_SITE_EMAIL, CONFIG_SITE_NAME, $mailSubject);
+        $mail->addRecipient($email);
+        $mail->addLine('Hello '.self::getUserName().',');
+        $mail->addLine('');
+        $mail->addLine('Please open the following link in order to verify your email address on '.CONFIG_SITE_NAME.':');
+        $mail->addLine(URL::toEmailVerification($mailVerificationToken));
+        $mail->addLine('');
+        $mail->addLine('If you did not sign up on '.CONFIG_SITE_NAME.' and enter your email address there, please just ignore this email and accept our excuses.');
+        $mail->addLine('');
+        $mail->addLine('Regards');
+        $mail->addLine(CONFIG_SITE_NAME);
+        $mail->addLine($mailDomain);
+        $mail->send();
+    }
+
 }
 
 ?>

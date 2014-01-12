@@ -14,6 +14,7 @@ RewriteRule ^add_phrase/([a-zA-Z0-9_-]+)/languages/([a-zA-Z0-9_-]+)$ index.php?p
 RewriteRule ^phrases/([a-zA-Z0-9_-]+)/([a-zA-Z0-9_-]+)/([a-zA-Z0-9_-]+)$ index.php?p=phrase&project=$1&language=$2&phrase=$3
 RewriteRule ^watch/([a-zA-Z0-9_-]+)$ index.php?p=watch&project=$1
 RewriteRule ^verify/([a-zA-Z0-9_-]+)$ index.php?p=settings&verify=$1
+RewriteRule ^settings/action/([a-zA-Z0-9_-]+)$ index.php?p=settings&action=$1
 
 # Redirects
 RewriteRule ^v/([a-zA-Z0-9_-]+)$ /projects/$1 [L,R=301]

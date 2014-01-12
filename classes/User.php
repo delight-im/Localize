@@ -89,11 +89,11 @@ class User {
     }
 
     public function setEmail($email) {
-        return $this->email = $email;
+        $this->email = $email;
     }
 
     public function setEmail_lastVerificationAttempt($email_lastVerificationAttempt) {
-        return $this->email_lastVerificationAttempt = $email_lastVerificationAttempt;
+        $this->email_lastVerificationAttempt = $email_lastVerificationAttempt;
     }
 
     public function isDeveloper() {
