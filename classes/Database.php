@@ -384,4 +384,40 @@ class Database {
         }
     }
 
+    /**
+     * Starts a new translation session
+     *
+     * @param int $repositoryID the repository ID to start the session for
+     * @param int $languageID the language ID to start the session for
+     * @param int $userID the user ID to start the session for
+     * @param string $secret the secret that will later be used to verify integrity
+     * @param int $timeStart the time when the session has been started
+     */
+    public static function initTranslationSession($repositoryID, $languageID, $userID, $secret, $timeStart) {
+        self::insert("INSERT INTO translationSessions (repositoryID, languageID, userID, secret, timeStart) VALUES (".intval($repositoryID).", ".intval($languageID).", ".intval($userID).", ".self::escape($secret).", ".intval($timeStart).")");
+    }
+
+    /**
+     * Attempts to finish and close a translation session that has been started before
+     *
+     * @param int $repositoryID the repository ID to finish the session for
+     * @param int $languageID the language ID to finish the session for
+     * @param int $userID the user ID to finish the session for
+     * @param string $secret the secret that is used to verify integrity
+     * @param int $timeEnd the time when the session has been closed
+     * @return boolean whether the translation session could be found and finished or not
+     */
+    public static function finishTranslationSession($repositoryID, $languageID, $userID, $secret, $timeEnd) {
+        $translationSession = self::selectFirst("SELECT id, timeStart FROM translationSessions WHERE repositoryID = ".intval($repositoryID)." AND languageID = ".intval($languageID)." AND userID = ".intval($userID)." AND secret = ".self::escape($secret));
+        if (!empty($translationSession)) {
+            if (isset($translationSession['id']) && isset($translationSession['timeStart'])) {
+                if (($timeEnd - $translationSession['timeStart']) < Authentication::TRANSLATION_SESSION_MAX_DURATION) {
+                    self::update("UPDATE translationSessions SET timeEnd = ".intval($timeEnd)." WHERE id = ".intval($translationSession['id']));
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 }

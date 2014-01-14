@@ -1298,6 +1298,7 @@ abstract class UI {
                         $phrasesTable = new UI_Table(array($defaultLanguage->getNameFull(), $language->getNameFull()));
                         $phrasesTable->setColumnPriorities(6, 6);
                     }
+                    $translationSecret = Authentication::createSecret();
                     if (count($languageLeftPhrases) <= 0) {
                         $phrasesTable->addRow(array(
                             'No phrases yet',
@@ -1305,6 +1306,7 @@ abstract class UI {
                         ));
                     }
                     else {
+                        Database::initTranslationSession($repositoryID, $languageID, Authentication::getUserID(), $translationSecret, time());
                         if ($language->getID() == $defaultLanguage->getID()) { // viewing the default language itself
                             /** @var Phrase $defaultPhrase */
                             foreach ($languageLeftPhrases as $defaultPhrase) {
@@ -1375,6 +1377,8 @@ abstract class UI {
                     $form = new UI_Form($formTargetURL, false);
                     $form->addContent($formButtons);
                     $form->addContent($phrasesTable);
+                    $form->addContent(new UI_Form_Hidden('updatePhrases[secret]', $translationSecret));
+                    $form->addContent(new UI_Form_Hidden('updatePhrases[translatorID]', Authentication::getUserID()));
                     $form->addContent($formButtons);
 
                     $contents[] = $heading;

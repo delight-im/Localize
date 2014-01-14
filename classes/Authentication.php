@@ -7,6 +7,9 @@ class Authentication {
     const SESSION_HTTPS = CONFIG_SESSION_HTTPS; // bool from config.php in root directory
     const SESSION_HTTP_ONLY = true;
     const ALLOW_SIGN_UP_DEVELOPERS = CONFIG_ALLOW_SIGN_UP_DEVELOPERS; // bool from config.php in root directory
+    const SECRET_LENGTH_SHORT = 128; // 128 bit = 32 chars
+    const SECRET_LENGTH_LONG = 256; // 256 bit = 64 chars
+    const TRANSLATION_SESSION_MAX_DURATION = 604800; // 7 days
 
     public static function init() {
         ini_set('session.use_only_cookies', 1); // use cookies only (no session IDs that are sent via GET)
@@ -211,10 +214,6 @@ class Authentication {
         return (time()-$lastNotification) > 86400;
     }
 
-    public static function createVerificationToken($email) {
-        return sha1(mt_rand(1, 1000000000).' '.$email.' '.mt_rand(1, 1000000000));
-    }
-
     /**
      * Creates a new verification token, saves it to the database and sends the verification mail
      *
@@ -222,7 +221,7 @@ class Authentication {
      * @param User $userObject (optional) the existing session user object to modify
      */
     public static function askForEmailVerification($email, &$userObject = NULL) {
-        $mailVerificationToken = Authentication::createVerificationToken($email);
+        $mailVerificationToken = self::createSecret(self::SECRET_LENGTH_SHORT);
         Database::saveVerificationToken(Authentication::getUserID(), $mailVerificationToken, time()+86400);
 
         // save the timestamp for this new verification attempt to the current session
@@ -256,6 +255,31 @@ class Authentication {
         $mail->addLine(CONFIG_SITE_NAME);
         $mail->addLine($mailDomain);
         $mail->send();
+    }
+
+    /**
+     * Converts binary data to custom HEX string with improved readability
+     *
+     * @param string $raw binary data to encode in custom HEX
+     * @return string custom HEX string
+     */
+    protected static function bin2hex_custom($raw) {
+        $hex = bin2hex($raw);
+        $hex = str_replace('0', 'w', $hex); // replace HEX-character 0 with better-readable w (which is not part of hex-alphabet)
+        $hex = str_replace('1', 'p', $hex); // replace HEX-character 1 with better-readable p (which is not part of hex-alphabet)
+        $hex = str_replace('f', 'y', $hex); // replace HEX-character f with better-readable y (which is not part of hex-alphabet)
+        return strtolower($hex); // return lowercase for uniform case-insensitivity
+    }
+
+    /**
+     * Creates a readable and secure secret of pre-defined length
+     *
+     * @param int $bitLength the bit length to use for this secret
+     * @return string the secret string
+     */
+    public static function createSecret($bitLength = self::SECRET_LENGTH_LONG) {
+        $raw = openssl_random_pseudo_bytes((int) ($bitLength / 8)); // create secure random bytes
+        return self::bin2hex_custom($raw); // convert random data to custom HEX
     }
 
 }

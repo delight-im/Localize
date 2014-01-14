@@ -164,42 +164,44 @@ elseif (UI::isPage('language')) {
         $repositoryID = UI::validateID(UI::getDataGET('project'), true);
         $repositoryData = Database::getRepositoryData($repositoryID);
         if (!empty($repositoryData)) {
-            $repository = new Repository($repositoryID, $repositoryData['name'], $repositoryData['visibility'], $repositoryData['defaultLanguage']);
-            $role = Database::getRepositoryRole(Authentication::getUserID(), $repositoryID);
-            $permissions = $repository->getPermissions(Authentication::getUserID(), $role);
-
-            if (Authentication::getUserID() > 0 && !$permissions->isInvitationMissing()) {
-                $data = UI::getDataPOST('updatePhrases');
-                if (isset($data['edits']) && is_array($data['edits']) && isset($data['previous']) && is_array($data['previous'])) {
-                    Authentication::saveCachedEdits($repositoryID, $languageID, $data['edits']);
-                    $editData = array();
-                    $counter = 0;
-                    foreach ($data['edits'] as $phraseID => $phraseSubKeys) {
-                        foreach ($phraseSubKeys as $phraseSubKey => $phraseSuggestedValue) {
-                            $previousValue = isset($data['previous'][$phraseID][$phraseSubKey]) ? trim($data['previous'][$phraseID][$phraseSubKey]) : '';
-                            $phraseSuggestedValue = trim($phraseSuggestedValue);
-                            if ($phraseSuggestedValue != '' && $phraseSuggestedValue != $previousValue) {
-                                $editData[] = new Edit(URL::decodeID($phraseID), $phraseSubKey, $phraseSuggestedValue);
-                                $counter++;
+            $data = UI::getDataPOST('updatePhrases');
+            if (isset($data['secret']) && isset($data['translatorID'])) {
+                $translatorID = intval(trim($data['translatorID']));
+                if (Database::finishTranslationSession($repositoryID, $languageID, $translatorID, trim($data['secret']), time())) {
+                    if (isset($data['edits']) && is_array($data['edits']) && isset($data['previous']) && is_array($data['previous'])) {
+                        Authentication::saveCachedEdits($repositoryID, $languageID, $data['edits']);
+                        $editData = array();
+                        $counter = 0;
+                        foreach ($data['edits'] as $phraseID => $phraseSubKeys) {
+                            foreach ($phraseSubKeys as $phraseSubKey => $phraseSuggestedValue) {
+                                $previousValue = isset($data['previous'][$phraseID][$phraseSubKey]) ? trim($data['previous'][$phraseID][$phraseSubKey]) : '';
+                                $phraseSuggestedValue = trim($phraseSuggestedValue);
+                                if ($phraseSuggestedValue != '' && $phraseSuggestedValue != $previousValue) {
+                                    $editData[] = new Edit(URL::decodeID($phraseID), $phraseSubKey, $phraseSuggestedValue);
+                                    $counter++;
+                                }
                             }
                         }
-                    }
-                    if (!empty($editData)) {
-                        Database::submitEdits($repositoryID, $languageID, Authentication::getUserID(), $editData);
-                        $alert = new UI_Alert('<p>Thank you very much!</p><p>Your modifications to '.$counter.' phrases have been submitted to this project.</p><p>They will now be reviewed by the project owners.</p>', UI_Alert::TYPE_SUCCESS);
+                        if (!empty($editData)) {
+                            Database::submitEdits($repositoryID, $languageID, $translatorID, $editData);
+                            $alert = new UI_Alert('<p>Thank you very much!</p><p>Your modifications to '.$counter.' phrases have been submitted to this project.</p><p>They will now be reviewed by the project owners.</p>', UI_Alert::TYPE_SUCCESS);
 
-                        Repository::sendNotificationToWatchers($repositoryID, Repository::WATCH_EVENT_NEW_TRANSLATIONS, $repositoryData['name']);
+                            Repository::sendNotificationToWatchers($repositoryID, Repository::WATCH_EVENT_NEW_TRANSLATIONS, $repositoryData['name']);
+                        }
+                        else {
+                            $alert = new UI_Alert('<p>You did change any phrase. Please try again!</p>', UI_Alert::TYPE_WARNING);
+                        }
                     }
                     else {
-                        $alert = new UI_Alert('<p>You did change any phrase. Please try again!</p>', UI_Alert::TYPE_WARNING);
+                        $alert = new UI_Alert('<p>You did not send any modifications. Please try again!</p>', UI_Alert::TYPE_WARNING);
                     }
                 }
                 else {
-                    $alert = new UI_Alert('<p>You did not send any modifications. Please try again!</p>', UI_Alert::TYPE_WARNING);
+                    $alert = new UI_Alert('<p>You are not allowed to submit changes to this project.</p>', UI_Alert::TYPE_WARNING);
                 }
             }
             else {
-                $alert = new UI_Alert('<p>You are not allowed to submit changes to this project.</p>', UI_Alert::TYPE_WARNING);
+                $alert = new UI_Alert('<p>Authentication has failed. Please try again!</p>', UI_Alert::TYPE_WARNING);
             }
         }
         else {
