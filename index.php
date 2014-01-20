@@ -272,6 +272,13 @@ elseif (UI::isPage('review')) {
             $alert = new UI_Alert('<p>The project could not be found.</p>', UI_Alert::TYPE_WARNING);
         }
     }
+    elseif (UI::isAction('discussion')) {
+        $data = UI::getDataPOST('discussion');
+        $data_editID = isset($data['editID']) ? UI::validateID($data['editID'], true) : '';
+        $data_message = isset($data['message']) ? trim($data['message']) : '';
+        Database::saveDiscussionEntry($data_editID, Authentication::getUserID(), time(), $data_message);
+        $alert = new UI_Alert('<p>Your message has been saved to the discussion on this page.</p>', UI_Alert::TYPE_SUCCESS);
+    }
     if (empty($alert)) {
         echo UI::getPage(UI::PAGE_REVIEW);
     }

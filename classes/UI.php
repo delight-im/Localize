@@ -553,46 +553,65 @@ abstract class UI {
                 $contents[] = new UI_Heading(htmlspecialchars($repositoryData['name']), true);
                 $contents[] = self::getLoginForm();
             }
-            elseif (!Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_MODERATOR)) {
-                $contents[] = new UI_Heading(htmlspecialchars($repositoryData['name']), true);
-                $contents[] = new UI_Paragraph('Only administrators, developers and moderators of this project are allowed to review contributions.');
-            }
             else {
+                $isAllowedToReview = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_MODERATOR);
                 self::addBreadcrumbItem(URL::toReview($repositoryID), 'Review');
                 if (empty($languageData)) { // review index page for this repository
                     $contents[] = new UI_Heading('Review contributions', true);
+                    if ($isAllowedToReview) {
+                        $table = new UI_Table(array('Language', 'Review'));
+                        $table->setColumnPriorities(9, 3);
+                        $pendingLanguages = Database::getPendingEditsByRepository($repositoryID);
 
-                    $table = new UI_Table(array('Language', 'Review'));
-                    $table->setColumnPriorities(9, 3);
-                    $pendingLanguages = Database::getPendingEditsByRepository($repositoryID);
-
-                    if (count($pendingLanguages) > 0) {
-                        foreach ($pendingLanguages as $pendingLanguage) {
-                            $reviewURL = URL::toReviewLanguage($repositoryID, $pendingLanguage['languageID']);
-                            $linkedName = new UI_Link(Language::getLanguageNameFull($pendingLanguage['languageID']), $reviewURL, UI_Link::TYPE_UNIMPORTANT);
-                            $pendingCount = new UI_Link($pendingLanguage['COUNT(*)'], $reviewURL, UI_Link::TYPE_INFO);
-                            $table->addRow(array(
-                                $linkedName->getHTML(),
-                                $pendingCount->getHTML()
-                            ));
+                        if (count($pendingLanguages) > 0) {
+                            foreach ($pendingLanguages as $pendingLanguage) {
+                                $reviewURL = URL::toReviewLanguage($repositoryID, $pendingLanguage['languageID']);
+                                $linkedName = new UI_Link(Language::getLanguageNameFull($pendingLanguage['languageID']), $reviewURL, UI_Link::TYPE_UNIMPORTANT);
+                                $pendingCount = new UI_Link($pendingLanguage['COUNT(*)'], $reviewURL, UI_Link::TYPE_INFO);
+                                $table->addRow(array(
+                                    $linkedName->getHTML(),
+                                    $pendingCount->getHTML()
+                                ));
+                            }
                         }
+                        else {
+                            $table->addRow(array('No pending contributions', 'No pending contributions'));
+                        }
+
+                        $contents[] = $table;
                     }
                     else {
-                        $table->addRow(array('No pending contributions', 'No pending contributions'));
+                        $contents[] = new UI_Paragraph('Only administrators, developers and moderators of this project are allowed to review contributions.');
                     }
-
-                    $contents[] = $table;
                 }
                 else { // single-language review details page for this repository
-                    $currentPageURL = URL::toReviewLanguage($repositoryID, $languageID);
+                    $editID = self::validateID(self::getDataGET('edit'), true);
+
+                    if ($editID <= 0) {
+                        $currentPageURL = URL::toReviewLanguage($repositoryID, $languageID);
+                    }
+                    else {
+                        $currentPageURL = URL::toReviewLanguage($repositoryID, $languageID, $editID);
+                    }
                     self::addBreadcrumbItem(htmlspecialchars($currentPageURL), Language::getLanguageNameFull($languageID));
                     $contents[] = new UI_Heading($languageData->getNameFull(), true);
 
-                    $editData = Database::getPendingEdit($repositoryID, $languageID);
-                    if (empty($editData)) { // no edits available for review (anymore)
-                        UI::redirectToURL(URL::toReview($repositoryID));
+                    if ($editID <= 0) {
+                        $editData = Database::getPendingEdit($repositoryID, $languageID);
                     }
-                    else { // edits available to review
+                    else {
+                        $editData = Database::getPendingEdit($repositoryID, $languageID, $editID);
+                    }
+                    if (empty($editData)) { // no edits available for review (anymore)
+                        if ($isAllowedToReview) { // user is a staff member allowed to review phrases
+                            UI::redirectToURL(URL::toReview($repositoryID)); // redirect to review index page
+                        }
+                        else { // user is a guest taking part in the discussion only
+                            $contents[] = new UI_Paragraph('This link has expired and is not valid anymore.');
+                            $contents[] = new UI_Paragraph('The discussion has been closed. Thanks for your collaboration!');
+                        }
+                    }
+                    else { // edits available for review
                         $form = new UI_Form(htmlspecialchars($currentPageURL), false);
                         $table = new UI_Table(array('', ''));
                         $table->setColumnPriorities(3, 9);
@@ -602,14 +621,21 @@ abstract class UI {
                         $buttonReviewLater = new UI_Form_Button('Review later', UI_Form_Button::TYPE_UNIMPORTANT, UI_Form_Button::ACTION_SUBMIT, 'review[action]', 'reviewLater');
                         $buttonReject = new UI_Form_Button('Reject', UI_Form_Button::TYPE_WARNING, UI_Form_Button::ACTION_SUBMIT, 'review[action]', 'reject');
                         $buttonApproveAllByContributor = new UI_Form_Button('Approve all from this contributor', UI_Form_Button::TYPE_SUCCESS, UI_Form_Button::ACTION_SUBMIT, 'review[action]', 'approveAllFromThisContributor', 'return confirm(\'Are you sure you want to execute this batch operation?\');');
-						$buttonRejectAllByContributor = new UI_Form_Button('Reject all from this contributor', UI_Form_Button::TYPE_DANGER, UI_Form_Button::ACTION_SUBMIT, 'review[action]', 'rejectAllFromThisContributor', 'return confirm(\'Are you sure you want to execute this batch operation?\');');
+                        $buttonRejectAllByContributor = new UI_Form_Button('Reject all from this contributor', UI_Form_Button::TYPE_DANGER, UI_Form_Button::ACTION_SUBMIT, 'review[action]', 'rejectAllFromThisContributor', 'return confirm(\'Are you sure you want to execute this batch operation?\');');
 
                         $actionButtons = new UI_Form_ButtonGroup(array(
                             $buttonApprove,
                             $buttonReviewLater,
                             $buttonReject
                         ), true);
-                        $newValueEdit = new UI_Form_Textarea('', 'review[newValue]', $editData[0]['suggestedValue'], '', true, htmlspecialchars($editData[0]['suggestedValue']), UI_Form_Textarea::getOptimalRowCount($editData[0]['suggestedValue'], 2), Language::isLanguageRTL($languageID));
+
+                        if ($isAllowedToReview) {
+                            $newValueEdit = new UI_Form_Textarea('', 'review[newValue]', $editData[0]['suggestedValue'], '', true, htmlspecialchars($editData[0]['suggestedValue']), UI_Form_Textarea::getOptimalRowCount($editData[0]['suggestedValue'], 2), Language::isLanguageRTL($languageID));
+                            $newValueHTML = $newValueEdit->getHTML();
+                        }
+                        else {
+                            $newValueHTML = '<span dir="'.(Language::isLanguageRTL($languageID) ? 'rtl' : 'ltr').'">'.nl2br(htmlspecialchars($editData[0]['suggestedValue'])).'</span>';
+                        }
 
                         $referencedPhrase = Phrase::create(0, $editData[0]['phraseKey'], $editData[0]['payload']);
 
@@ -636,24 +662,50 @@ abstract class UI {
                         $table->addRow(array('<strong>'.Language::getLanguageNameFull($repositoryData['defaultLanguage']).'</strong>', '<span dir="'.(Language::isLanguageRTL($repositoryData['defaultLanguage']) ? 'rtl' : 'ltr').'">'.nl2br($phraseWithMarkedPlaceholders).'</span>'));
                         $table->addRow(array('<strong>Old value</strong>', '<span dir="'.(Language::isLanguageRTL($languageID) ? 'rtl' : 'ltr').'">'.nl2br(htmlspecialchars($valuePrevious)).'</span>'));
                         $table->addRow(array('<strong>Applied changes</strong>', '<span dir="'.(Language::isLanguageRTL($languageID) ? 'rtl' : 'ltr').'">'.nl2br(htmlDiff(htmlspecialchars($valuePrevious), htmlspecialchars($editData[0]['suggestedValue']))).'</span>'));
-                        $table->addRow(array('<strong>New value</strong>', $newValueEdit->getHTML()));
+                        $table->addRow(array('<strong>New value</strong>', $newValueHTML));
                         $table->addRow(array('<strong>Submit time</strong>', date('d.m.Y H:i', $editData[0]['submit_time'])));
-                        $table->addRow(array('<strong>Contributor</strong>', $contributorName));
-                        $table->addRow(array('<strong>Edits left</strong>', $pendingEditsLeft));
+                        if ($isAllowedToReview) {
+                            $table->addRow(array('<strong>Contributor</strong>', $contributorName));
+                            $table->addRow(array('<strong>Edits left</strong>', $pendingEditsLeft));
+                        }
 
-                        $form->addContent(new UI_Form_Hidden('review[editID]', URL::encodeID($editData[0]['id'])));
-                        $form->addContent(new UI_Form_Hidden('review[referenceValue]', $valueReference));
-                        $form->addContent(new UI_Form_Hidden('review[phraseObject]', base64_encode(serialize($previousPhrase))));
-                        $form->addContent(new UI_Form_Hidden('review[phraseKey]', htmlspecialchars($editData[0]['phraseKey'])));
-                        $form->addContent(new UI_Form_Hidden('review[phraseSubKey]', htmlspecialchars($editData[0]['phraseSubKey'])));
-                        $form->addContent(new UI_Form_Hidden('review[contributorID]', URL::encodeID($editData[0]['userID'])));
+                        if ($isAllowedToReview) {
+                            $form->addContent(new UI_Form_Hidden('review[editID]', URL::encodeID($editData[0]['id'])));
+                            $form->addContent(new UI_Form_Hidden('review[referenceValue]', $valueReference));
+                            $form->addContent(new UI_Form_Hidden('review[phraseObject]', base64_encode(serialize($previousPhrase))));
+                            $form->addContent(new UI_Form_Hidden('review[phraseKey]', htmlspecialchars($editData[0]['phraseKey'])));
+                            $form->addContent(new UI_Form_Hidden('review[phraseSubKey]', htmlspecialchars($editData[0]['phraseSubKey'])));
+                            $form->addContent(new UI_Form_Hidden('review[contributorID]', URL::encodeID($editData[0]['userID'])));
+                        }
 
-                        $form->addContent($actionButtons);
+                        if ($isAllowedToReview) {
+                            $form->addContent($actionButtons);
+                        }
                         $form->addContent($table);
-                        $form->addContent($actionButtons);
-                        $form->addContent(new UI_Form_ButtonGroup(array($buttonApproveAllByContributor, $buttonRejectAllByContributor), true));
+                        if ($isAllowedToReview) {
+                            $form->addContent($actionButtons);
+                            $form->addContent(new UI_Form_ButtonGroup(array($buttonApproveAllByContributor, $buttonRejectAllByContributor), true));
+                        }
 
                         $contents[] = $form;
+
+                        if ($editID > 0 || $isAllowedToReview) { // only for guest users who have the direct link to this edit ID and staff members who are allowed to review phrases
+
+                            $contents[] = new UI_Heading('Discussion', true, UI_Heading::LEVEL_MIN, URL::toReviewLanguage($repositoryID, $languageID, $editData[0]['id']));
+
+                            $discussion = new UI_Form(htmlspecialchars($currentPageURL), false);
+                            $discussion->addContent(new UI_Form_Text('Your message', 'discussion[message]', 'Type here ...'));
+                            $discussion->addContent(new UI_Form_Hidden('discussion[editID]', URL::encodeID($editData[0]['id'])));
+                            $discussion->addContent(new UI_Form_ButtonGroup(array(
+                                new UI_Form_Button('Send')
+                            )));
+                            $contents[] = $discussion;
+
+                            $discussionEntries = Database::getDiscussionEntries($editData[0]['id']);
+                            foreach ($discussionEntries as $discussionEntry) {
+                                $contents[] = new UI_Paragraph('<strong>'.$discussionEntry['username'].'</strong> ('.Time::getTimeAgo($discussionEntry['timeSent']).'):<br />'.$discussionEntry['content']);
+                            }
+                        }
                     }
                 }
             }

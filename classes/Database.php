@@ -214,8 +214,8 @@ class Database {
         self::update("UPDATE users SET last_login = ".intval($loginTime)." WHERE id = ".intval($userID));
     }
 
-    public static function getPendingEdit($repositoryID, $languageID) {
-        return self::select("SELECT a.id, a.phraseSubKey, a.userID, a.suggestedValue, a.submit_time, b.username, b.real_name, c.phraseKey, c.payload FROM edits AS a JOIN users AS b ON a.userID = b.id JOIN phrases AS c ON a.referencedPhraseID = c.id WHERE a.repositoryID = ".intval($repositoryID)." AND a.languageID = ".intval($languageID)." ORDER BY a.submit_time ASC LIMIT 0, 1");
+    public static function getPendingEdit($repositoryID, $languageID, $editID = 0) {
+        return self::select("SELECT a.id, a.phraseSubKey, a.userID, a.suggestedValue, a.submit_time, b.username, b.real_name, c.phraseKey, c.payload FROM edits AS a JOIN users AS b ON a.userID = b.id JOIN phrases AS c ON a.referencedPhraseID = c.id WHERE a.repositoryID = ".intval($repositoryID)." AND a.languageID = ".intval($languageID).($editID > 0 ? " AND a.id = ".intval($editID) : "")." ORDER BY a.submit_time ASC LIMIT 0, 1");
     }
 
     public static function getPendingEditsByRepositoryLanguageAndUser($repositoryID, $languageID, $contributorID) {
@@ -418,6 +418,14 @@ class Database {
             }
         }
         return false;
+    }
+
+    public static function getDiscussionEntries($editID) {
+        return self::select("SELECT a.id, a.userID, a.timeSent, a.content, b.username, b.real_name FROM discussions AS a JOIN users AS b ON a.userID = b.id WHERE a.editID = ".intval($editID));
+    }
+
+    public static function saveDiscussionEntry($editID, $userID, $timeSent, $content) {
+        self::insert("INSERT INTO discussions (editID, userID, timeSent, content) VALUES (".intval($editID).", ".intval($userID).", ".intval($timeSent).", ".self::escape($content).")");
     }
 
 }

@@ -73,12 +73,22 @@ class URL {
         }
     }
 
-    public static function toReviewLanguage($repositoryID, $languageID) {
+    public static function toReviewLanguage($repositoryID, $languageID, $editID = 0) {
         if (self::URL_REWRITE) {
-            return self::ROOT_URL.'review/'.self::encodeID($repositoryID).'/languages/'.self::encodeID($languageID);
+            if ($editID <= 0) {
+                return self::ROOT_URL.'review/'.self::encodeID($repositoryID).'/languages/'.self::encodeID($languageID);
+            }
+            else {
+                return self::ROOT_URL.'review/'.self::encodeID($repositoryID).'/languages/'.self::encodeID($languageID).'/edit/'.self::encodeID($editID);
+            }
         }
         else {
-            return self::ROOT_URL.'?p=review&project='.self::encodeID($repositoryID).'&language='.self::encodeID($languageID);
+            if ($editID <= 0) {
+                return self::ROOT_URL.'?p=review&project='.self::encodeID($repositoryID).'&language='.self::encodeID($languageID);
+            }
+            else {
+                return self::ROOT_URL.'?p=review&project='.self::encodeID($repositoryID).'&language='.self::encodeID($languageID).'&edit='.self::encodeID($editID);
+            }
         }
     }
 

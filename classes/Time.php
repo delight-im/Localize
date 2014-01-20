@@ -274,4 +274,23 @@ class Time {
         return DateTimeZone::listIdentifiers(DateTimeZone::PER_COUNTRY, $country);
     }
 
+    public static function getTimeAgo($timestamp) {
+        $secondsAgo = time()-$timestamp;
+        if ($secondsAgo < 60) { // less than a minute passed
+            return 'just now';
+        }
+        elseif ($secondsAgo < 3600) { // minutes have passed
+            $minutesAgo = round($secondsAgo / 60);
+            return $minutesAgo.' '.($minutesAgo == 1 ? 'minute' : 'minutes').' ago';
+        }
+        elseif ($secondsAgo < 86400) { // hours have passed
+            $hoursAgo = round($secondsAgo / 3600);
+            return $hoursAgo.' '.($hoursAgo == 1 ? 'hour' : 'hours').' ago';
+        }
+        else { // days have passed
+            $daysAgo = round($secondsAgo / 86400);
+            return $daysAgo.' '.($daysAgo == 1 ? 'day' : 'days').' ago';
+        }
+    }
+
 }

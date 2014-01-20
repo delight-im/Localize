@@ -7,6 +7,7 @@ RewriteRule ^pages/([a-zA-Z0-9_-]+)$ index.php?p=$1
 RewriteRule ^pages/([a-zA-Z0-9_-]+)/([a-zA-Z0-9_-]+)$ index.php?p=$1&project=$2
 RewriteRule ^review/([a-zA-Z0-9_-]+)$ index.php?p=review&project=$1
 RewriteRule ^review/([a-zA-Z0-9_-]+)/languages/([a-zA-Z0-9_-]+)$ index.php?p=review&project=$1&language=$2
+RewriteRule ^review/([a-zA-Z0-9_-]+)/languages/([a-zA-Z0-9_-]+)/edit/([a-zA-Z0-9_-]+)$ index.php?p=review&project=$1&language=$2&edit=$3
 RewriteRule ^import/([a-zA-Z0-9_-]+)$ index.php?p=import&project=$1
 RewriteRule ^export/([a-zA-Z0-9_-]+)$ index.php?p=export&project=$1
 RewriteRule ^invitations/([a-zA-Z0-9_-]+)$ index.php?p=invitations&project=$1
