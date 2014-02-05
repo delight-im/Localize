@@ -247,13 +247,17 @@ abstract class Language {
      *
      * @param string $phraseKey
      * @param Phrase $referencePhrase
+     * @param boolean $prefillContent whether to pre-fill the phrase with the default language's content (true) or not (false)
      */
-    public function normalizePhrase($phraseKey, $referencePhrase) {
-        $phraseValues = $this->phrases[$phraseKey]->getPhraseValues();
-        $referenceValues = $referencePhrase->getPhraseValues();
-        foreach ($phraseValues as $subKey => $value) {
-            if ($value == '') {
-                $this->phrases[$phraseKey]->setPhraseValue($subKey, $referenceValues[$subKey]);
+    public function normalizePhrase($phraseKey, $referencePhrase, $prefillContent) {
+        $this->phrases[$phraseKey]->setGroupID($referencePhrase->getGroupID());
+        if ($prefillContent) {
+            $phraseValues = $this->phrases[$phraseKey]->getPhraseValues();
+            $referenceValues = $referencePhrase->getPhraseValues();
+            foreach ($phraseValues as $subKey => $value) {
+                if ($value == '') {
+                    $this->phrases[$phraseKey]->setPhraseValue($subKey, $referenceValues[$subKey]);
+                }
             }
         }
     }

@@ -118,8 +118,16 @@ class Repository {
         $this->languages[$language]->removePhrase($phraseKey);
     }
 
-    public function normalizePhrase($language, $phraseKey, $referencePhrase) {
-        $this->languages[$language]->normalizePhrase($phraseKey, $referencePhrase);
+    /**
+     * Normalizes the phrase with the given phrase key by comparing it to the given reference phrase
+     *
+     * @param string $language
+     * @param string $phraseKey
+     * @param Phrase $referencePhrase
+     * @param boolean $prefillContent whether to pre-fill the phrase with the default language's content (true) or not (false)
+     */
+    public function normalizePhrase($language, $phraseKey, $referencePhrase, $prefillContent) {
+        $this->languages[$language]->normalizePhrase($phraseKey, $referencePhrase, $prefillContent);
     }
 
     /**
@@ -163,7 +171,10 @@ class Repository {
                             $this->removePhrase($langID, $currentPhrase->getPhraseKey()); // remove from this language as well
                         }
                         elseif ($isExport) { // if phrase does exist in default language as well and this is an export
-                            $this->normalizePhrase($langID, $currentPhrase->getPhraseKey(), $originalPhrase); // normalize phrase with default language data
+                            $this->normalizePhrase($langID, $currentPhrase->getPhraseKey(), $originalPhrase, true); // normalize phrase with default language data and pre-fill with default language's content
+                        }
+                        else {
+                            $this->normalizePhrase($langID, $currentPhrase->getPhraseKey(), $originalPhrase, false); // normalize phrase with default language data
                         }
                     }
                     foreach ($defLangPhrases as $defLangPhrase) { // loop through phrases of default language

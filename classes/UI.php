@@ -941,6 +941,7 @@ abstract class UI {
 
                     $formButtonList = array(
                         new UI_Form_Button('Update group', UI_Form_Button::TYPE_SUCCESS),
+                        new UI_Link('Manage groups', URL::toEditProject($repositoryID, true), UI_Form_Button::TYPE_UNIMPORTANT),
                         new UI_Link('Cancel', URL::toLanguage($repositoryID, $languageID), UI_Link::TYPE_UNIMPORTANT)
                     );
                     $formMove->addContent(new UI_Form_ButtonGroup($formButtonList));
@@ -1213,7 +1214,7 @@ abstract class UI {
                     $radioOverwrite->addOption('<strong>Import all phrases</strong> and overwrite any phrases that do already exist', 1);
                     $form->addContent($radioOverwrite);
 
-                    $selectLanguage = new UI_Form_Select('Language', 'import[languageID]', 'Which language do you want to import the phrases for?');
+                    $selectLanguage = new UI_Form_Select('Language', 'import[languageID]', 'Which language do you want to import the phrases for?', false, '', '', 'if (this.value === \''.$repositoryData['defaultLanguage'].'\') { $(\'.import-group-id\').show(400); } else { $(\'.import-group-id\').hide(400); }');
                     $selectLanguage->addOption('— Please choose —', 0);
                     $languageIDs = Language::getList();
                     foreach ($languageIDs as $languageID) {
@@ -1221,7 +1222,7 @@ abstract class UI {
                     }
                     $form->addContent($selectLanguage);
 
-                    $selectGroupID = new UI_Form_Select('Phrase group', 'import[groupID]', 'Which group do you want to import the phrases to?');
+                    $selectGroupID = new UI_Form_Select('Phrase group', 'import[groupID]', 'Which group do you want to import the phrases to?', false, 'import-group-id', 'display:none;');
                     $selectGroupID->addOption('(Default group)', Phrase::GROUP_NONE);
                     $phraseGroups = Database::getPhraseGroups($repositoryID, $repositoryData['defaultLanguage'], false);
                     foreach ($phraseGroups as $phraseGroup) {
