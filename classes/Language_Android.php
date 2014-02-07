@@ -30,13 +30,14 @@ class Language_Android extends Language {
     }
 
     /**
-     * Returns the platform-specific key (string) for this language
+     * Returns the platform-specific key (string) for the given language
      *
+     * @param int $languageID the language ID to get the key for
      * @return string key for this language
      * @throws Exception if the given language ID could not be found
      */
-    public function getKey() {
-        switch ($this->id) {
+    public static function getLanguageKey($languageID) {
+        switch ($languageID) {
             case self::LANGUAGE_ENGLISH:
                 return 'values';
             case self::LANGUAGE_AFRIKAANS:
@@ -230,8 +231,18 @@ class Language_Android extends Language {
             case self::LANGUAGE_ZULU:
                 return 'values-zu';
             default:
-                throw new Exception('Unknown language ID '.$this->id);
+                throw new Exception('Unknown language ID '.$languageID);
         }
+    }
+
+    /**
+     * Returns the platform-specific key (string) for this language
+     *
+     * @return string key for this language
+     * @throws Exception if the given language ID could not be found
+     */
+    public function getKey() {
+        return self::getLanguageKey($this->id);
     }
 
 }
