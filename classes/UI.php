@@ -529,6 +529,37 @@ abstract class UI {
 		$contents[] = new UI_Paragraph('<strong>What does that mean for me?</strong><br />Localize takes care of all the text processing and escaping for you. When exporting your translations to XML files, you can choose between approaches A (<code>getText(...)</code>) and B (<code>Html.fromHtml(getString(...))</code>) for your project.');
 		$contents[] = new UI_Paragraph('<img src="'.URL::toResource('img/android/html_in_resources.png').'" alt="Embedding HTML in Android String resources and using it from Java" title="Embedding HTML in Android String resources and using it from Java" width="666">');
 
+        // PREPARE HUMAN-READABLE AND MACHINE-READABLE LANGUAGE SELECION BEGIN
+        $langList = Language::getList(Language::LANGUAGE_AFRIKAANS);
+
+        $langXMLHuman = '<string-array name="language_selection_human" translatable="false">'."\n";
+        $langXMLHuman .= '    <item>—</item>'."\n";
+        foreach ($langList as $langItem) {
+            $langXMLName = str_replace('values-', '', Language::getLanguageNameFull($langItem));
+            $langXMLHuman .= '    <item>'.$langXMLName.'</item>'."\n";
+        }
+        $langXMLHuman .= '</string-array>';
+
+        $langXMLMachine = '<string-array name="language_selection_machine" translatable="false">'."\n";
+        $langXMLMachine .= '    <item></item>'."\n";
+        foreach ($langList as $langItem) {
+            if ($langItem == Language::LANGUAGE_ENGLISH) {
+                $langXMLName = 'en';
+            }
+            else {
+                $langXMLName = str_replace('values-', '', Language_Android::getLanguageKey($langItem));
+            }
+            $langXMLMachine .= '    <item>'.$langXMLName.'</item>'."\n";
+        }
+        $langXMLMachine .= '</string-array>';
+        // PREPARE HUMAN-READABLE AND MACHINE-READABLE LANGUAGE SELECION END
+
+        $contents[] = new UI_Heading('Providing a custom language selection in Android', true, 3);
+        $contents[] = new UI_Paragraph('Use the following <code>string-array</code> as the resource for your <strong>human-readable</strong> preference options. You can use <code>ListPreference</code>\'s <code>android:entries</code>, for example.');
+        $contents[] = new UI_Paragraph($langXMLHuman, true);
+        $contents[] = new UI_Paragraph('Use the following <code>string-array</code> as the resource for your <strong>machine-readable</strong> preference options. You can use <code>ListPreference</code>\'s <code>android:entryValues</code>, for example.');
+        $contents[] = new UI_Paragraph($langXMLMachine, true);
+
         $cell = new UI_Cell($contents);
         $row = new UI_Row(array($cell));
 
