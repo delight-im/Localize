@@ -11,7 +11,6 @@ class File_IO {
     const UPLOAD_ERROR_XML_INVALID = 4;
     const UPLOAD_ERROR_NO_TRANSLATIONS_FOUND = 5;
     const FILENAME_REGEX = '/^[a-z]+[a-z0-9_.]*$/';
-	const HTML_ESCAPING_NONE = 0;
 	const HTML_ESCAPING_GETTEXT = 1;
 	const HTML_ESCAPING_HTML_FROMHTML = 2;
 

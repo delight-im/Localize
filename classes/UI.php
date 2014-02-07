@@ -1176,10 +1176,9 @@ abstract class UI {
                     $form->addContent($selectMinCompletion);
 
                     $selectHtmlEscaping = new UI_Form_Select('HTML Escaping', 'export[htmlEscaping]', 'Which Java method do you want to use to get HTML-styled strings from your translations? (<a href="'.URL::toPage('help').'">Help</a>)');
-                    $selectHtmlEscaping->addOption('— Please choose —', File_IO::HTML_ESCAPING_NONE);
+                    $selectHtmlEscaping->addOption('I don\'t care', File_IO::HTML_ESCAPING_GETTEXT);
                     $selectHtmlEscaping->addOption('getText(...)', File_IO::HTML_ESCAPING_GETTEXT);
                     $selectHtmlEscaping->addOption('Html.fromHtml(getString(...))', File_IO::HTML_ESCAPING_HTML_FROMHTML);
-                    $selectHtmlEscaping->addOption('I don\'t care', File_IO::HTML_ESCAPING_GETTEXT);
                     $form->addContent($selectHtmlEscaping);
 
                     $isAdmin = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_ADMINISTRATOR);
