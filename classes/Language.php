@@ -488,7 +488,7 @@ abstract class Language {
             case self::LANGUAGE_GEORGIAN:
                 return 'ქართული';
             case self::LANGUAGE_KANNADA:
-                return 'ಕನ್ನಡ ';
+                return 'ಕನ್ನಡ';
             case self::LANGUAGE_KAZAKH:
                 return 'Қазақ тілі';
             case self::LANGUAGE_KOREAN:
@@ -526,7 +526,7 @@ abstract class Language {
             case self::LANGUAGE_POLISH:
                 return 'Polski';
             case self::LANGUAGE_PORTUGUESE_BRAZIL:
-                return 'Português brasileiro';
+                return 'Português';
             case self::LANGUAGE_PORTUGUESE_PORTUGAL:
                 return 'Português';
             case self::LANGUAGE_ROMANIAN:
@@ -548,7 +548,7 @@ abstract class Language {
             case self::LANGUAGE_SWAHILI:
                 return 'Kiswahili';
             case self::LANGUAGE_TELUGU:
-                return 'తెలుగు ';
+                return 'తెలుగు';
             case self::LANGUAGE_TAJIK:
                 return 'Тоҷикӣ';
             case self::LANGUAGE_THAI:
