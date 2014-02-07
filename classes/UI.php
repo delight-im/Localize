@@ -229,9 +229,10 @@ abstract class UI {
         $contents[] = new UI_Paragraph('<a class="btn btn-success btn-lg" href="'.URL::toPage('sign_up').'">Create free account &raquo;</a>');
         $landingView = new UI_Container($contents, true);
 
+        $nLanguages = count(Language::getList());
         $featureColumn1 = new UI_Cell(array(
             new UI_Heading('Geared to Android', false, 2),
-            new UI_Paragraph('Import XML files from your Android app and export a single ZIP file at the end &mdash; ready for deployment, containing all translations for every single language. Support for 83 languages, including LTR and RTL. Manage <abbr title="Resource type for single phrases">string</abbr>, <abbr title="Resource type for arrays of phrases">string-array</abbr> and <abbr title="Resource type for quantity strings">plurals</abbr> elements.')
+            new UI_Paragraph('Import XML files from your Android app and export a single ZIP file at the end &mdash; ready for deployment, containing all translations for every single language. Support for '.$nLanguages.' languages, including LTR and RTL. Manage <abbr title="Resource type for single phrases">string</abbr>, <abbr title="Resource type for arrays of phrases">string-array</abbr> and <abbr title="Resource type for quantity strings">plurals</abbr> elements.')
         ), 4);
         $featureColumn2 = new UI_Cell(array(
             new UI_Heading('Free of charge', false, 2),

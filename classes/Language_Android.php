@@ -203,6 +203,32 @@ class Language_Android extends Language {
                 return 'values-zh-rCN';
             case self::LANGUAGE_CHINESE_TRADITIONAL:
                 return 'values-zh-rTW';
+            case self::LANGUAGE_ARAGONESE:
+                return 'values-an';
+            case self::LANGUAGE_HAUSA:
+                return 'values-ha';
+            case self::LANGUAGE_IGBO:
+                return 'values-ig';
+            case self::LANGUAGE_KHMER:
+                return 'values-km';
+            case self::LANGUAGE_LAO:
+                return 'values-lo';
+            case self::LANGUAGE_MALTESE:
+                return 'values-mt';
+            case self::LANGUAGE_MAORI:
+                return 'values-mi';
+            case self::LANGUAGE_PUNJABI:
+                return 'values-pa';
+            case self::LANGUAGE_SOMALI:
+                return 'values-so';
+            case self::LANGUAGE_TAMIL:
+                return 'values-ta';
+            case self::LANGUAGE_URDU:
+                return 'values-ur';
+            case self::LANGUAGE_YIDDISH:
+                return 'values-yi';
+            case self::LANGUAGE_ZULU:
+                return 'values-zu';
             default:
                 throw new Exception('Unknown language ID '.$this->id);
         }

@@ -88,92 +88,20 @@ abstract class Language {
     const LANGUAGE_YORUBA = 81;
     const LANGUAGE_CHINESE_SIMPLIFIED = 82;
     const LANGUAGE_CHINESE_TRADITIONAL = 83;
+    const LANGUAGE_ARAGONESE = 84;
+    const LANGUAGE_HAUSA = 85;
+    const LANGUAGE_IGBO = 86;
+    const LANGUAGE_KHMER = 87;
+    const LANGUAGE_LAO = 88;
+    const LANGUAGE_MALTESE = 89;
+    const LANGUAGE_MAORI = 90;
+    const LANGUAGE_PUNJABI = 91;
+    const LANGUAGE_SOMALI = 92;
+    const LANGUAGE_TAMIL = 93;
+    const LANGUAGE_URDU = 94;
+    const LANGUAGE_YIDDISH = 95;
+    const LANGUAGE_ZULU = 96;
 
-    protected static $list = array(
-        self::LANGUAGE_AFRIKAANS,
-        self::LANGUAGE_ALBANIAN,
-        self::LANGUAGE_AMHARIC,
-        self::LANGUAGE_ARABIC,
-        self::LANGUAGE_ARMENIAN,
-        self::LANGUAGE_AZERBAIJANI,
-        self::LANGUAGE_BASHKIR,
-        self::LANGUAGE_BASQUE,
-        self::LANGUAGE_BELARUSIAN,
-        self::LANGUAGE_BENGALI,
-        self::LANGUAGE_BOSNIAN,
-        self::LANGUAGE_BRETON,
-        self::LANGUAGE_BULGARIAN,
-        self::LANGUAGE_CATALAN,
-        self::LANGUAGE_CHINESE_SIMPLIFIED,
-        self::LANGUAGE_CHINESE_TRADITIONAL,
-        self::LANGUAGE_CHUVASH,
-        self::LANGUAGE_CROATIAN,
-        self::LANGUAGE_CZECH,
-        self::LANGUAGE_DANISH,
-        self::LANGUAGE_DUTCH,
-        self::LANGUAGE_ENGLISH,
-        self::LANGUAGE_ESTONIAN,
-        self::LANGUAGE_FINNISH,
-        self::LANGUAGE_FRENCH,
-        self::LANGUAGE_GALICIAN,
-        self::LANGUAGE_GEORGIAN,
-        self::LANGUAGE_GERMAN,
-        self::LANGUAGE_GREEK,
-        self::LANGUAGE_GUJARATI,
-        self::LANGUAGE_HAITIAN,
-        self::LANGUAGE_HEBREW,
-        self::LANGUAGE_HINDI,
-        self::LANGUAGE_HUNGARIAN,
-        self::LANGUAGE_ICELANDIC,
-        self::LANGUAGE_INDONESIAN,
-        self::LANGUAGE_IRISH,
-        self::LANGUAGE_ITALIAN,
-        self::LANGUAGE_JAPANESE,
-        self::LANGUAGE_JAVANESE,
-        self::LANGUAGE_KANNADA,
-        self::LANGUAGE_KAZAKH,
-        self::LANGUAGE_KIRGHIZ,
-        self::LANGUAGE_KOREAN,
-        self::LANGUAGE_KURDISH,
-        self::LANGUAGE_LATVIAN,
-        self::LANGUAGE_LITHUANIAN,
-        self::LANGUAGE_LUXEMBOURGISH,
-        self::LANGUAGE_MACEDONIAN,
-        self::LANGUAGE_MALAGASY,
-        self::LANGUAGE_MALAY,
-        self::LANGUAGE_MALAYALAM,
-        self::LANGUAGE_MARATHI,
-        self::LANGUAGE_NEPALI,
-        self::LANGUAGE_NORWEGIAN_BOKMAL,
-        self::LANGUAGE_NORWEGIAN_NYNORSK,
-        self::LANGUAGE_OCCITAN,
-        self::LANGUAGE_PERSIAN,
-        self::LANGUAGE_POLISH,
-        self::LANGUAGE_PORTUGUESE_BRAZIL,
-        self::LANGUAGE_PORTUGUESE_PORTUGAL,
-        self::LANGUAGE_ROMANIAN,
-        self::LANGUAGE_RUSSIAN,
-        self::LANGUAGE_SERBIAN,
-        self::LANGUAGE_SLOVAK,
-        self::LANGUAGE_SLOVENE,
-        self::LANGUAGE_SPANISH,
-        self::LANGUAGE_SUNDANESE,
-        self::LANGUAGE_SWAHILI,
-        self::LANGUAGE_SWEDISH,
-        self::LANGUAGE_TAGALOG,
-        self::LANGUAGE_TAJIK,
-        self::LANGUAGE_TATAR,
-        self::LANGUAGE_TELUGU,
-        self::LANGUAGE_THAI,
-        self::LANGUAGE_TURKISH,
-        self::LANGUAGE_UKRAINIAN,
-        self::LANGUAGE_UZBEK,
-        self::LANGUAGE_VIETNAMESE,
-        self::LANGUAGE_WALLOON,
-        self::LANGUAGE_WELSH,
-        self::LANGUAGE_WESTERN_FRISIAN,
-        self::LANGUAGE_YORUBA
-    );
     /**
      * ID of this language
      *
@@ -442,6 +370,32 @@ abstract class Language {
                 return 'Chinese (Simplified)';
             case self::LANGUAGE_CHINESE_TRADITIONAL:
                 return 'Chinese (Traditional)';
+            case self::LANGUAGE_ARAGONESE:
+                return 'Aragonese';
+            case self::LANGUAGE_HAUSA:
+                return 'Hausa';
+            case self::LANGUAGE_IGBO:
+                return 'Igbo';
+            case self::LANGUAGE_KHMER:
+                return 'Khmer';
+            case self::LANGUAGE_LAO:
+                return 'Lao';
+            case self::LANGUAGE_MALTESE:
+                return 'Maltese';
+            case self::LANGUAGE_MAORI:
+                return 'Maori';
+            case self::LANGUAGE_PUNJABI:
+                return 'Punjabi';
+            case self::LANGUAGE_SOMALI:
+                return 'Somali';
+            case self::LANGUAGE_TAMIL:
+                return 'Tamil';
+            case self::LANGUAGE_URDU:
+                return 'Urdu';
+            case self::LANGUAGE_YIDDISH:
+                return 'Yiddish';
+            case self::LANGUAGE_ZULU:
+                return 'Zulu';
             default:
                 throw new Exception('Unknown language ID '.$languageID);
         }
@@ -619,6 +573,32 @@ abstract class Language {
                 return '中文';
             case self::LANGUAGE_CHINESE_TRADITIONAL:
                 return '中文';
+            case self::LANGUAGE_ARAGONESE:
+                return 'Aragonés';
+            case self::LANGUAGE_HAUSA:
+                return 'Hausa';
+            case self::LANGUAGE_IGBO:
+                return 'Asụsụ Igbo';
+            case self::LANGUAGE_KHMER:
+                return 'ភាសាខ្មែរ';
+            case self::LANGUAGE_LAO:
+                return 'ພາສາລາວ';
+            case self::LANGUAGE_MALTESE:
+                return 'Malti';
+            case self::LANGUAGE_MAORI:
+                return 'Māori';
+            case self::LANGUAGE_PUNJABI:
+                return 'ਪੰਜਾਬੀ';
+            case self::LANGUAGE_SOMALI:
+                return 'Af-Soomaali';
+            case self::LANGUAGE_TAMIL:
+                return 'தமிழ்';
+            case self::LANGUAGE_URDU:
+                return 'Urdū';
+            case self::LANGUAGE_YIDDISH:
+                return 'ייִדיש';
+            case self::LANGUAGE_ZULU:
+                return 'isiZulu';
             default:
                 throw new Exception('Unknown language ID '.$languageID);
         }
@@ -629,18 +609,118 @@ abstract class Language {
     }
 
     public static function isLanguageRTL($languageID) {
-        return $languageID == self::LANGUAGE_ARABIC || $languageID == self::LANGUAGE_PERSIAN || $languageID == self::LANGUAGE_HEBREW;
+        return $languageID == self::LANGUAGE_ARABIC || $languageID == self::LANGUAGE_PERSIAN || $languageID == self::LANGUAGE_HEBREW || $languageID == self::LANGUAGE_YIDDISH || $languageID == self::LANGUAGE_URDU;
     }
 
     public static function getList($defaultLanguage = self::LANGUAGE_ENGLISH) {
-        $list = array();
-        $list[] = $defaultLanguage;
-        foreach (self::$list as $language) {
+        $list = array(
+            self::LANGUAGE_AFRIKAANS,
+            self::LANGUAGE_ALBANIAN,
+            self::LANGUAGE_AMHARIC,
+            self::LANGUAGE_ARABIC,
+            self::LANGUAGE_ARAGONESE,
+            self::LANGUAGE_ARMENIAN,
+            self::LANGUAGE_AZERBAIJANI,
+            self::LANGUAGE_BASHKIR,
+            self::LANGUAGE_BASQUE,
+            self::LANGUAGE_BELARUSIAN,
+            self::LANGUAGE_BENGALI,
+            self::LANGUAGE_BOSNIAN,
+            self::LANGUAGE_BRETON,
+            self::LANGUAGE_BULGARIAN,
+            self::LANGUAGE_CATALAN,
+            self::LANGUAGE_CHINESE_SIMPLIFIED,
+            self::LANGUAGE_CHINESE_TRADITIONAL,
+            self::LANGUAGE_CHUVASH,
+            self::LANGUAGE_CROATIAN,
+            self::LANGUAGE_CZECH,
+            self::LANGUAGE_DANISH,
+            self::LANGUAGE_DUTCH,
+            self::LANGUAGE_ENGLISH,
+            self::LANGUAGE_ESTONIAN,
+            self::LANGUAGE_FINNISH,
+            self::LANGUAGE_FRENCH,
+            self::LANGUAGE_GALICIAN,
+            self::LANGUAGE_GEORGIAN,
+            self::LANGUAGE_GERMAN,
+            self::LANGUAGE_GREEK,
+            self::LANGUAGE_GUJARATI,
+            self::LANGUAGE_HAITIAN,
+            self::LANGUAGE_HAUSA,
+            self::LANGUAGE_HEBREW,
+            self::LANGUAGE_HINDI,
+            self::LANGUAGE_HUNGARIAN,
+            self::LANGUAGE_ICELANDIC,
+            self::LANGUAGE_IGBO,
+            self::LANGUAGE_INDONESIAN,
+            self::LANGUAGE_IRISH,
+            self::LANGUAGE_ITALIAN,
+            self::LANGUAGE_JAPANESE,
+            self::LANGUAGE_JAVANESE,
+            self::LANGUAGE_KANNADA,
+            self::LANGUAGE_KAZAKH,
+            self::LANGUAGE_KHMER,
+            self::LANGUAGE_KIRGHIZ,
+            self::LANGUAGE_KOREAN,
+            self::LANGUAGE_KURDISH,
+            self::LANGUAGE_LAO,
+            self::LANGUAGE_LATVIAN,
+            self::LANGUAGE_LITHUANIAN,
+            self::LANGUAGE_LUXEMBOURGISH,
+            self::LANGUAGE_MACEDONIAN,
+            self::LANGUAGE_MALAGASY,
+            self::LANGUAGE_MALAY,
+            self::LANGUAGE_MALAYALAM,
+            self::LANGUAGE_MALTESE,
+            self::LANGUAGE_MAORI,
+            self::LANGUAGE_MARATHI,
+            self::LANGUAGE_NEPALI,
+            self::LANGUAGE_NORWEGIAN_BOKMAL,
+            self::LANGUAGE_NORWEGIAN_NYNORSK,
+            self::LANGUAGE_OCCITAN,
+            self::LANGUAGE_PERSIAN,
+            self::LANGUAGE_POLISH,
+            self::LANGUAGE_PORTUGUESE_BRAZIL,
+            self::LANGUAGE_PORTUGUESE_PORTUGAL,
+            self::LANGUAGE_PUNJABI,
+            self::LANGUAGE_ROMANIAN,
+            self::LANGUAGE_RUSSIAN,
+            self::LANGUAGE_SERBIAN,
+            self::LANGUAGE_SLOVAK,
+            self::LANGUAGE_SLOVENE,
+            self::LANGUAGE_SOMALI,
+            self::LANGUAGE_SPANISH,
+            self::LANGUAGE_SUNDANESE,
+            self::LANGUAGE_SWAHILI,
+            self::LANGUAGE_SWEDISH,
+            self::LANGUAGE_TAGALOG,
+            self::LANGUAGE_TAJIK,
+            self::LANGUAGE_TAMIL,
+            self::LANGUAGE_TATAR,
+            self::LANGUAGE_TELUGU,
+            self::LANGUAGE_THAI,
+            self::LANGUAGE_TURKISH,
+            self::LANGUAGE_UKRAINIAN,
+            self::LANGUAGE_URDU,
+            self::LANGUAGE_UZBEK,
+            self::LANGUAGE_VIETNAMESE,
+            self::LANGUAGE_WALLOON,
+            self::LANGUAGE_WELSH,
+            self::LANGUAGE_WESTERN_FRISIAN,
+            self::LANGUAGE_YIDDISH,
+            self::LANGUAGE_YORUBA,
+            self::LANGUAGE_ZULU
+        );
+
+        $out = array();
+        $out[] = $defaultLanguage;
+        foreach ($list as $language) {
             if ($language != $defaultLanguage) {
-                $list[] = $language;
+                $out[] = $language;
             }
         }
-        return $list;
+
+        return $out;
     }
 
     /**
