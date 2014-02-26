@@ -31,6 +31,7 @@ class UI_Table extends UI {
      */
     protected $columnPriorities;
     protected $uniqueViewID;
+    protected $showSearchFilter;
 
     function __construct($headers) {
         if (isset($headers) && is_array($headers) && !empty($headers)) {
@@ -43,6 +44,7 @@ class UI_Table extends UI {
         $this->rows = array();
         $this->columnPriorities = array();
         $this->uniqueViewID = sha1('table-'.mt_rand(100000, 900000));
+        $this->showSearchFilter = false;
     }
 
     public function addRow($columns, $id = '', $cssClasses = '', $cssStyles = '') {
@@ -57,6 +59,10 @@ class UI_Table extends UI {
         else {
             throw new Exception('Columns must be a non-empty array of strings');
         }
+    }
+
+    public function setShowSearchFilter($show) {
+        $this->showSearchFilter = $show;
     }
 
     public function getHTML() {
@@ -80,7 +86,8 @@ class UI_Table extends UI {
 
         $out .= '<div class="table-responsive">';
         $out .= '<table class="table table-bordered" id="'.$this->uniqueViewID.'">';
-        $headHTML = '<thead><tr>';
+        $headHTML = '<thead>';
+        $headHTML .= '<tr>';
         $hasHeaders = false;
         $counter = 0;
         foreach ($this->headers as $header) {
@@ -90,7 +97,16 @@ class UI_Table extends UI {
             }
             $counter++;
         }
-        $headHTML .= '</tr></thead>';
+        $headHTML .= '</tr>';
+        if ($this->showSearchFilter) {
+            $headHTML .= '<tr><td colspan="'.intval($this->columnCount).'">';
+            $headHTML .= '<form role="form">';
+            $headHTML .= '<label class="sr-only" for="filter-'.$this->uniqueViewID.'">Filter:</label>';
+            $headHTML .= '<input onkeyup="filterTable(\''.$this->uniqueViewID.'\', this.value);"  type="text" class="form-control" id="filter-'.$this->uniqueViewID.'" placeholder="Type here to filter the table ...">';
+            $headHTML .= '</form>';
+            $headHTML .= '</td></tr>';
+        }
+        $headHTML .= '</thead>';
         if ($hasHeaders) {
             $out .= $headHTML;
         }

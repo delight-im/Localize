@@ -1460,6 +1460,8 @@ abstract class UI {
                     }
                     $formButtons = new UI_Form_ButtonGroup($formButtonList, true);
 
+                    $phrasesTable->setShowSearchFilter(Authentication::isUserDeveloper());
+
                     $form = new UI_Form($formTargetURL, false);
                     $form->addContent($formButtons);
                     $form->addContent($phrasesTable);
