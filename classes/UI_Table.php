@@ -60,7 +60,25 @@ class UI_Table extends UI {
     }
 
     public function getHTML() {
-        $out = '<div class="table-responsive">';
+        $pages = array();
+        $rowCount = count($this->rows);
+        $rowsPerPage = self::getOptimalRowsPerPageCount($rowCount);
+        foreach ($this->rows as $rowID => $row) {
+            $page = (int) ($rowID / $rowsPerPage);
+            if (!isset($pages[$page])) {
+                $pages[$page] = '';
+            }
+            $pages[$page] .= $row->getHTML();
+        }
+        $pageCount = count($pages);
+
+        $out = '';
+
+        if ($pageCount > 1) {
+            $out .= $this->getPagination($pageCount);
+        }
+
+        $out .= '<div class="table-responsive">';
         $out .= '<table class="table table-bordered" id="'.$this->uniqueViewID.'">';
         $headHTML = '<thead><tr>';
         $hasHeaders = false;
@@ -77,16 +95,6 @@ class UI_Table extends UI {
             $out .= $headHTML;
         }
 
-        $pages = array();
-        $rowCount = count($this->rows);
-        $rowsPerPage = self::getOptimalRowsPerPageCount($rowCount);
-        foreach ($this->rows as $rowID => $row) {
-            $page = (int) ($rowID / $rowsPerPage);
-            if (!isset($pages[$page])) {
-                $pages[$page] = '';
-            }
-            $pages[$page] .= $row->getHTML();
-        }
         foreach ($pages as $pageID => $pageContent) {
             $out .= '<tbody class="table-page table-page-'.$pageID.'"';
             if ($pageID > 0) {
@@ -97,19 +105,23 @@ class UI_Table extends UI {
         $out .= '</table>';
         $out .= '</div>';
 
-        $pageCount = count($pages);
         if ($pageCount > 1) {
-            $out .= '<div class="text-center"><ul class="pagination pagination-lg" id="pagination-'.$this->uniqueViewID.'">';
-            for ($p = 1; $p <= $pageCount; $p++) {
-                $out .= '<li';
-                if ($p == 1) {
-                    $out .= ' class="active"';
-                }
-                $out .= '><a href="#" onclick="openTablePage(\''.$this->uniqueViewID.'\', '.($p-1).'); return false;">'.$p.'</a></li>';
-            }
-			$out .= '<li><a href="#" onclick="openTablePage(\''.$this->uniqueViewID.'\', -1); return false;">Show all</a></li>';
-            $out .= '</ul></div>';
+            $out .= $this->getPagination($pageCount);
         }
+        return $out;
+    }
+
+    protected function getPagination($pageCount) {
+        $out = '<div class="text-center"><ul class="pagination pagination-lg" id="pagination-'.$this->uniqueViewID.'">';
+        for ($p = 1; $p <= $pageCount; $p++) {
+            $out .= '<li';
+            if ($p == 1) {
+                $out .= ' class="active"';
+            }
+            $out .= '><a href="#" onclick="openTablePage(\''.$this->uniqueViewID.'\', '.($p-1).'); return false;">'.$p.'</a></li>';
+        }
+        $out .= '<li><a href="#" onclick="openTablePage(\''.$this->uniqueViewID.'\', -1); return false;">Show all</a></li>';
+        $out .= '</ul></div>';
         return $out;
     }
 

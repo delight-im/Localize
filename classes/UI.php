@@ -282,6 +282,7 @@ abstract class UI {
                 }
                 $contents[] = new UI_Paragraph($createProjectButton);
                 $contents[] = $projectTable;
+                $contents[] = new UI_Paragraph($createProjectButton);
             }
             else {
                 $contents[] = new UI_Paragraph($createProjectButton);
@@ -1357,6 +1358,7 @@ abstract class UI {
                     $contents[] = $heading;
                     $contents[] = $actionsForm;
                     $contents[] = $languageTable;
+                    $contents[] = $actionsForm;
                 }
                 else {
                     $mayMovePhrases = Repository::isRoleAllowedToMovePhrases($role);
