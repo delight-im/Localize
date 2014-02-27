@@ -102,7 +102,7 @@ class UI_Table extends UI {
             $headHTML .= '<tr><td colspan="'.intval($this->columnCount).'">';
             $headHTML .= '<form role="form">';
             $headHTML .= '<label class="sr-only" for="filter-'.$this->uniqueViewID.'">Filter:</label>';
-            $headHTML .= '<input onkeyup="filterTable(\''.$this->uniqueViewID.'\', this.value);"  type="text" class="form-control" id="filter-'.$this->uniqueViewID.'" placeholder="Type here to filter the table ...">';
+            $headHTML .= '<input onkeyup="filterTable(\''.$this->uniqueViewID.'\', \''.$this->getPaginationClass().'\', this.value);"  type="text" class="form-control" id="filter-'.$this->uniqueViewID.'" placeholder="Type here to filter the table ...">';
             $headHTML .= '</form>';
             $headHTML .= '</td></tr>';
         }
@@ -127,16 +127,20 @@ class UI_Table extends UI {
         return $out;
     }
 
+    protected function getPaginationClass() {
+        return 'pagination-'.$this->uniqueViewID;
+    }
+
     protected function getPagination($pageCount) {
-        $out = '<div class="text-center"><ul class="pagination pagination-lg" id="pagination-'.$this->uniqueViewID.'">';
+        $out = '<div class="text-center"><ul class="pagination pagination-lg '.$this->getPaginationClass().'">';
         for ($p = 1; $p <= $pageCount; $p++) {
             $out .= '<li';
             if ($p == 1) {
                 $out .= ' class="active"';
             }
-            $out .= '><a href="#" onclick="openTablePage(\''.$this->uniqueViewID.'\', '.($p-1).'); return false;">'.$p.'</a></li>';
+            $out .= '><a href="#" onclick="openTablePage(\''.$this->uniqueViewID.'\', \''.$this->getPaginationClass().'\', '.($p-1).'); return false;">'.$p.'</a></li>';
         }
-        $out .= '<li><a href="#" onclick="openTablePage(\''.$this->uniqueViewID.'\', -1); return false;">Show all</a></li>';
+        $out .= '<li><a href="#" onclick="openTablePage(\''.$this->uniqueViewID.'\', \''.$this->getPaginationClass().'\', -1); return false;">Show all</a></li>';
         $out .= '</ul></div>';
         return $out;
     }

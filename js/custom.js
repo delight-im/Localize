@@ -74,85 +74,96 @@ function chooseTimezoneByCountry(countryCode) {
         }
     }
 }
-function openTablePage(tableID, pageToOpen) {
+function openTablePage(tableID, paginationClass, pageToOpen) {
     if (typeof(tableID) !== 'undefined' && tableID !== null) {
         if (typeof(pageToOpen) !== 'undefined' && pageToOpen !== null) {
             var table = document.getElementById(tableID); // get the actual table DOM element
-            var pagination = document.getElementById('pagination-'+tableID); // get the pagination bar DOM element
+            var paginations = document.getElementsByClassName(paginationClass); // get the pagination bar DOM element
             if (typeof(table) !== 'undefined' && table !== null) { // make sure the actual table exists
-                if (typeof(pagination) !== 'undefined' && pagination !== null) { // make sure the pagination bar exists
-                    // show the requested page of the table
-                    var pages = table.getElementsByClassName('table-page');
-                    var pageToOpenClass = pageToOpen >= 0 ? 'table-page table-page-'+pageToOpen : null;
-                    for (var i = 0; i < pages.length; i++) {
-                        if (pages[i].className == pageToOpenClass || pageToOpenClass === null) {
-                            pages[i].style.display = 'table-row-group';
+                var counter;
+                var c;
+                // iterate backwards over the pagination bars because we may delete them
+                for (var p = paginations.length-1; p >= 0; p--) {
+                    if (typeof(paginations[p]) !== 'undefined' && paginations[p] !== null) { // make sure the pagination bar exists
+                        if (pageToOpen >= 0) {
+                            // mark the correct page in the pagination bar
+                            counter = 0;
+                            for (c = 0; c < paginations[p].childNodes.length; c++) {
+                                if (paginations[p].childNodes[c].tagName == 'LI') {
+                                    if (counter == pageToOpen) {
+                                        paginations[p].childNodes[c].className = 'active';
+                                    }
+                                    else {
+                                        paginations[p].childNodes[c].className = '';
+                                    }
+                                    counter++;
+                                }
+                            }
                         }
                         else {
-                            pages[i].style.display = 'none';
+                            // remove the pagination bar
+                            paginations[p].parentNode.removeChild(paginations[p]);
                         }
                     }
-					
-					if (pageToOpen >= 0) {
-						// mark the correct page in the pagination bar
-						var counter = 0;
-						for (var c = 0; c < pagination.childNodes.length; c++) {
-							if (pagination.childNodes[c].tagName == 'LI') {
-								if (counter == pageToOpen) {
-									pagination.childNodes[c].className = 'active';
-								}
-								else {
-									pagination.childNodes[c].className = '';
-								}
-								counter++;
-							}
-						}					
-					}
-					else {
-						// remove the pagination bar
-						pagination.parentNode.removeChild(pagination);
-					}
+                }
 
-                    // scroll back to the top of the page
-                    try {
-                        $('html, body').animate({ scrollTop: 0 }, 'slow');
+                // show the requested page of the table
+                var pages = table.getElementsByClassName('table-page');
+                var pageToOpenClass = pageToOpen >= 0 ? 'table-page table-page-'+pageToOpen : null;
+                for (var i = 0; i < pages.length; i++) {
+                    if (pages[i].className == pageToOpenClass || pageToOpenClass === null) {
+                        pages[i].style.display = 'table-row-group';
                     }
-                    catch (e) {
-                        window.scrollTo(0, 0);
+                    else {
+                        pages[i].style.display = 'none';
                     }
+                }
+
+                // scroll back to the top of the page
+                try {
+                    $('html, body').animate({ scrollTop: 0 }, 'slow');
+                }
+                catch (e) {
+                    window.scrollTo(0, 0);
                 }
             }
         }
     }
 }
-function filterTable(tableID, filterPhrase) {
+function filterTable(tableID, paginationClass, filterPhrase) {
     if (typeof(tableID) !== 'undefined' && tableID !== null) {
-        if (typeof(filterPhrase) !== 'undefined' && filterPhrase !== null) {
-            var table = document.getElementById(tableID); // get the actual table DOM element
-            var pagination = document.getElementById('pagination-'+tableID); // get the pagination bar DOM element
-            if (typeof(table) !== 'undefined' && table !== null) { // make sure the actual table exists
-                if (typeof(pagination) !== 'undefined' && pagination !== null) { // make sure the pagination bar exists
-                    // remove the pagination bar
-                    pagination.parentNode.removeChild(pagination);
-                }
-
-                // show all pages of the table
-                var pages = table.getElementsByClassName('table-page');
-                for (var i = 0; i < pages.length; i++) {
-                    pages[i].style.display = 'table-row-group';
-                }
-
-                // filter the table rows
-                filterPhrase = filterPhrase.toLocaleLowerCase();
-                var tableBodies = table.getElementsByTagName('tbody');
-                for (var b = 0; b < tableBodies.length; b++) {
-                    var rows = tableBodies[b].getElementsByTagName('tr');
-                    for (var r = 0; r < rows.length; r++) {
-                        if (rows[r].innerHTML.toLocaleLowerCase().indexOf(filterPhrase) == -1) {
-                            rows[r].style.display = 'none';
+        if (typeof(paginationClass) !== 'undefined' && paginationClass !== null) {
+            if (typeof(filterPhrase) !== 'undefined' && filterPhrase !== null) {
+                var table = document.getElementById(tableID); // get the actual table DOM element
+                var paginations = document.getElementsByClassName(paginationClass); // get the pagination bar DOM element
+                if (typeof(table) !== 'undefined' && table !== null) { // make sure the actual table exists
+                    // iterate backwards over the pagination bars because we may delete them
+                    for (var p = paginations.length-1; p >= 0; p--) {
+                        if (typeof(paginations[p]) !== 'undefined' && paginations[p] !== null) { // make sure the pagination bar exists
+                            // remove the pagination bar
+                            paginations[p].parentNode.removeChild(paginations[p]);
                         }
-                        else {
-                            rows[r].style.display = '';
+                    }
+
+                    // show all pages of the table
+                    var pages = table.getElementsByClassName('table-page');
+                    for (var i = 0; i < pages.length; i++) {
+                        pages[i].style.display = 'table-row-group';
+                    }
+
+                    // filter the table rows
+                    filterPhrase = filterPhrase.toLocaleLowerCase();
+                    var tableBodies = table.getElementsByTagName('tbody');
+                    var r;
+                    for (var b = 0; b < tableBodies.length; b++) {
+                        var rows = tableBodies[b].getElementsByTagName('tr');
+                        for (r = 0; r < rows.length; r++) {
+                            if (rows[r].innerHTML.toLocaleLowerCase().indexOf(filterPhrase) == -1) {
+                                rows[r].style.display = 'none';
+                            }
+                            else {
+                                rows[r].style.display = '';
+                            }
                         }
                     }
                 }
