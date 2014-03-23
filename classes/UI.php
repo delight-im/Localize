@@ -990,7 +990,7 @@ abstract class UI {
                     $actionTypeSelection = new UI_Form_Select('Operation', 'phraseChange[action]');
                     $actionTypeSelection->addOption('— Please choose —', '');
                     $actionTypeSelection->addOption('Untranslate: Remove all translations of this phrase only', 'untranslate');
-                    $actionTypeSelection->addOption('Delete: Completly remove this phrase from the project', 'delete');
+                    $actionTypeSelection->addOption('Delete: Completely remove this phrase from the project', 'delete');
                     $formChange->addContent($actionTypeSelection);
 
                     $formButtonList = array(
