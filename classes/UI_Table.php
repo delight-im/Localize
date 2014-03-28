@@ -81,7 +81,7 @@ class UI_Table extends UI {
         $out = '';
 
         if ($pageCount > 1) {
-            $out .= $this->getPagination($pageCount);
+            $out .= $this->getPagination($pageCount, true);
         }
 
         $out .= '<div class="table-responsive">';
@@ -122,7 +122,7 @@ class UI_Table extends UI {
         $out .= '</div>';
 
         if ($pageCount > 1) {
-            $out .= $this->getPagination($pageCount);
+            $out .= $this->getPagination($pageCount, false);
         }
         return $out;
     }
@@ -131,16 +131,16 @@ class UI_Table extends UI {
         return 'pagination-'.$this->uniqueViewID;
     }
 
-    protected function getPagination($pageCount) {
+    protected function getPagination($pageCount, $isTopPagination) {
         $out = '<div class="text-center"><ul class="pagination pagination-lg '.$this->getPaginationClass().'">';
         for ($p = 1; $p <= $pageCount; $p++) {
             $out .= '<li';
             if ($p == 1) {
                 $out .= ' class="active"';
             }
-            $out .= '><a href="#" onclick="openTablePage(\''.$this->uniqueViewID.'\', \''.$this->getPaginationClass().'\', '.($p-1).'); return false;">'.$p.'</a></li>';
+            $out .= '><a href="#" onclick="openTablePage(\''.$this->uniqueViewID.'\', \''.$this->getPaginationClass().'\', '.($p-1).', '.($isTopPagination ? 'false' : 'true').'); return false;">'.$p.'</a></li>';
         }
-        $out .= '<li><a href="#" onclick="openTablePage(\''.$this->uniqueViewID.'\', \''.$this->getPaginationClass().'\', -1); return false;">Show all</a></li>';
+        $out .= '<li><a href="#" onclick="openTablePage(\''.$this->uniqueViewID.'\', \''.$this->getPaginationClass().'\', -1, '.($isTopPagination ? 'false' : 'true').'); return false;">Show all</a></li>';
         $out .= '</ul></div>';
         return $out;
     }

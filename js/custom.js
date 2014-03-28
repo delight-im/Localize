@@ -74,7 +74,7 @@ function chooseTimezoneByCountry(countryCode) {
         }
     }
 }
-function openTablePage(tableID, paginationClass, pageToOpen) {
+function openTablePage(tableID, paginationClass, pageToOpen, doScrollUp) {
     if (typeof(tableID) !== 'undefined' && tableID !== null) {
         if (typeof(pageToOpen) !== 'undefined' && pageToOpen !== null) {
             var table = document.getElementById(tableID); // get the actual table DOM element
@@ -119,12 +119,14 @@ function openTablePage(tableID, paginationClass, pageToOpen) {
                     }
                 }
 
-                // scroll back to the top of the page
-                try {
-                    $('html, body').animate({ scrollTop: 0 }, 'slow');
-                }
-                catch (e) {
-                    window.scrollTo(0, 0);
+                if (typeof doScrollUp !== 'undefined' && doScrollUp !== null && doScrollUp) {
+                    // scroll back to the top of the page
+                    try {
+                        $('html, body').animate({ scrollTop: 0 }, 'slow');
+                    }
+                    catch (e) {
+                        window.scrollTo(0, 0);
+                    }
                 }
             }
         }
