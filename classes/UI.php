@@ -1325,32 +1325,19 @@ abstract class UI {
                     Authentication::setCachedLanguageProgress($repositoryID, $newCachedLanguageProgress);
 
                     $actionsForm = new UI_Form(URL::toProject($repositoryID), false);
-                    $buttonExport = new UI_Link('Export XML', URL::toExport($repositoryID), UI_Form_Button::TYPE_SUCCESS);
-                    $buttonImport = new UI_Link('Import XML', URL::toImport($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
-                    $buttonEdit = new UI_Link('Edit project', URL::toEditProject($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
-                    $buttonWatch = new UI_Link('Watch', URL::toWatchProject($repositoryID), UI_Form_Button::TYPE_INFO);
                     $actionsForm->addContent(new UI_Form_Hidden('exportXML', 1));
 
-                    $isAdmin = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_ADMINISTRATOR);
-                    $isDev = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_DEVELOPER);
-                    if ($isAdmin) {
-                        $actionButtons = array(
-                            $buttonExport,
-                            $buttonImport,
-                            $buttonEdit,
-                            $buttonWatch
-                        );
+                    $actionButtons = array();
+                    if (Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_DEVELOPER)) {
+                        $actionButtons[] = new UI_Link('Export XML', URL::toExport($repositoryID), UI_Form_Button::TYPE_SUCCESS);
+                        $actionButtons[] = new UI_Link('Import XML', URL::toImport($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
+                        if (Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_ADMINISTRATOR)) {
+                            $actionButtons[] = new UI_Link('Edit project', URL::toEditProject($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
+                        }
+                        $actionButtons[] = new UI_Link('Add phrase', URL::toAddPhrase($repositoryID, $defaultLanguage->getID()), UI_Form_Button::TYPE_UNIMPORTANT);
+                        $actionButtons[] = new UI_Link('Watch', URL::toWatchProject($repositoryID), UI_Form_Button::TYPE_INFO);
                     }
-                    elseif ($isDev) {
-                        $actionButtons = array(
-                            $buttonExport,
-                            $buttonImport,
-                            $buttonWatch
-                        );
-                    }
-                    else {
-                        $actionButtons = array();
-                    }
+
                     if (!empty($actionButtons)) {
                         $actionsForm->addContent(new UI_Form_ButtonGroup($actionButtons, true));
                     }
