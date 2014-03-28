@@ -1398,7 +1398,7 @@ abstract class UI {
                                     $value = Authentication::getCachedEdit($repositoryID, $languageID, URL::encodeID($defaultPhrase->getID()), $subKey, $value);
 
                                     $valuePrevious = new UI_Form_Hidden(str_replace('[edits]', '[previous]', $phraseFormKey), $value);
-                                    $valueEdit = new UI_Form_Textarea('', $phraseFormKey, $value, '', true, htmlspecialchars($value), UI_Form_Textarea::getOptimalRowCount($value, 2), $defaultLanguage->isRTL());
+                                    $valueEdit = new UI_Form_Textarea('', $phraseFormKey, $value, '', true, htmlspecialchars($value), UI_Form_Textarea::getOptimalRowCount($value, 2), $defaultLanguage->isRTL(), 'setUnsavedChanges(true);');
 
                                     $phraseKeyLink = new UI_Link($phraseKeyName, URL::toPhraseDetails($repositoryID, $languageID, $defaultPhrase->getID()));
 
@@ -1421,7 +1421,7 @@ abstract class UI {
                                     $valuesRight[$subKey] = Authentication::getCachedEdit($repositoryID, $languageID, URL::encodeID($defaultPhrase->getID()), $subKey, $valuesRight[$subKey]);
 
                                     $valuePrevious = new UI_Form_Hidden(str_replace('[edits]', '[previous]', $phraseKey), $valuesRight[$subKey]);
-                                    $valueEdit = new UI_Form_Textarea('', $phraseKey, $valuesRight[$subKey], '', true, htmlspecialchars($valuesRight[$subKey]), UI_Form_Textarea::getOptimalRowCount($valueLeft), $language->isRTL());
+                                    $valueEdit = new UI_Form_Textarea('', $phraseKey, $valuesRight[$subKey], '', true, htmlspecialchars($valuesRight[$subKey]), UI_Form_Textarea::getOptimalRowCount($valueLeft), $language->isRTL(), 'setUnsavedChanges(true);');
 
                                     $phrasesTable->addRow(array(
                                         $valueLeft,
@@ -1434,15 +1434,17 @@ abstract class UI {
 
                     $formTargetURL = URL::toLanguage($repositoryID, $languageID);
                     $addPhraseURL = URL::toAddPhrase($repositoryID, $languageID);
+                    $saveButton = new UI_Form_Button('Save changes', UI_Form_Button::TYPE_SUCCESS, UI_Form_Button::ACTION_SUBMIT, '', '', 'setUnsavedChanges(false);');
+
                     if ($mayMovePhrases) {
                         $formButtonList = array(
-                            new UI_Form_Button('Save changes'),
+                            $saveButton,
                             new UI_Link('Add phrase', $addPhraseURL, UI_Link::TYPE_UNIMPORTANT)
                         );
                     }
                     else {
                         $formButtonList = array(
-                            new UI_Form_Button('Save changes')
+                            $saveButton
                         );
                     }
                     $formButtons = new UI_Form_ButtonGroup($formButtonList, true);

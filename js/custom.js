@@ -1,3 +1,12 @@
+var hasUnsavedChanges = false;
+function setUnsavedChanges(state) {
+    hasUnsavedChanges = state;
+}
+window.onbeforeunload = function(e) {
+    if (hasUnsavedChanges) {
+        return 'You have unsaved changes. Do you want to leave without saving?';
+    }
+}
 function addPhraseTypeSelect(selectedClass) {
     if (typeof(selectedClass) !== 'undefined' && selectedClass !== null) {
         var availableClasses = [ "addPhraseGroup_String", "addPhraseGroup_StringArray", "addPhraseGroup_Plurals" ];
