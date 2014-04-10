@@ -648,7 +648,7 @@ abstract class UI {
                         $form = new UI_Form(htmlspecialchars($currentPageURL), false);
                         $table = new UI_Table(array('', ''));
                         $table->setColumnPriorities(3, 9);
-                        $contributorName = empty($editData[0]['real_name']) ? '<span class="text-muted">'.$editData[0]['username'].'</span>' : $editData[0]['real_name'].'<span class="text-muted"> ('.$editData[0]['username'].')</span>';
+                        $contributorName = empty($editData[0]['real_name']) ? '<span class="text-muted">'.htmlspecialchars($editData[0]['username']).'</span>' : htmlspecialchars($editData[0]['real_name']).' <span class="text-muted">('.htmlspecialchars($editData[0]['username']).')</span>';
 
                         $buttonApprove = new UI_Form_Button('Approve', UI_Form_Button::TYPE_SUCCESS, UI_Form_Button::ACTION_SUBMIT, 'review[action]', 'approve');
                         $buttonReviewLater = new UI_Form_Button('Review later', UI_Form_Button::TYPE_UNIMPORTANT, UI_Form_Button::ACTION_SUBMIT, 'review[action]', 'reviewLater');
