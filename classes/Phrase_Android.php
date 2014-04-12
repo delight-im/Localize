@@ -35,23 +35,47 @@ abstract class Phrase_Android extends Phrase implements PhraseImplementation {
      * Encodes the content of a translation from internal text representation to raw output
      *
      * @param string $text the internal text representation to encode
-	 * @param bool $escapeHTML whether to escape HTML or not
+	 * @param int $format the format (constant) to consider for escaping
      * @return string the raw output
      */
-    public static function writeToRaw($text, $escapeHTML) {
-        $text = preg_replace(self::NEWLINE_REGEX, "\n", $text); // replace all newline control characters to the same representation
-
+    public static function writeToRaw($text, $format) {
+        $text = preg_replace(self::NEWLINE_REGEX, "\n", $text); // replace all newline control characters with one consistent representation
         $text = str_replace("\n", '\n', $text); // replace <newline control character> with <newline literal>
-        $text = str_replace('\'', '\\\'', $text); // replace <single quote> with <escaped single quote>
-        $text = str_replace('"', '\\"', $text); // replace <double quote> with <escaped double quote>
 
-        // convert ampersand as the first item in the following group because it must not be treated as a special entity for the other three conversions
-		$text = str_replace('&', '&#38;', $text); // replace <ampersand> with <ampersand entity>
-		if ($escapeHTML) {
+        // backslash (JSON)
+        if ($format == File_IO::FORMAT_JSON) {
+            // the order is important (must be AFTER newline character but BEFORE all other characters whose escape sequences include a backslash again)
+            $text = str_replace('\\', '\\\\', $text); // replace <double quote> with <escaped double quote>
+        }
+        // single quote (XML)
+        if ($format == File_IO::FORMAT_ANDROID_XML || $format == File_IO::FORMAT_ANDROID_XML_ESCAPED_HTML) {
+            $text = str_replace('\'', '\\\'', $text); // replace <single quote> with <escaped single quote>
+        }
+        // double quote (XML + JSON)
+        if ($format == File_IO::FORMAT_ANDROID_XML || $format == File_IO::FORMAT_ANDROID_XML_ESCAPED_HTML || $format == File_IO::FORMAT_JSON) {
+            $text = str_replace('"', '\\"', $text); // replace <double quote> with <escaped double quote>
+        }
+        if ($format == File_IO::FORMAT_ANDROID_XML || $format == File_IO::FORMAT_ANDROID_XML_ESCAPED_HTML) {
+            // the order is important (must be BEFORE the other special entities whose escape sequences include an ampersand again)
+            $text = str_replace('&', '&#38;', $text); // replace <ampersand> with <ampersand entity>
+        }
+		if ($format == File_IO::FORMAT_ANDROID_XML_ESCAPED_HTML) {
 			$text = str_replace('<', '&#60;', $text); // replace <less-than> with <less-than entity>
 			$text = str_replace('>', '&#62;', $text); // replace <greater-than> with <greater-than entity>
 		}
-        $text = str_replace('...', '&#8230;', $text); // replace <three dots> that people can edit more easily with <ellipsis entity>
+        if ($format == File_IO::FORMAT_ANDROID_XML || $format == File_IO::FORMAT_ANDROID_XML_ESCAPED_HTML) {
+            $text = str_replace('...', '&#8230;', $text); // replace <three dots> that people can edit more easily with <ellipsis entity>
+        }
+        // semicolon or double quote (plaintext)
+        if ($format == File_IO::FORMAT_PLAINTEXT) {
+            // escape double quotes with another double quote
+            $text = str_replace('"', '""', $text);
+            // if the text contains a double quote or a semicolon
+            if (stripos($text, '"') !== false || stripos($text, ';') !== false) {
+                // wrap the whole text in double quotes
+                $text = '"'.$text.'"';
+            }
+        }
 
         return $text;
     }

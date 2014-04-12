@@ -13,13 +13,32 @@ abstract class Phrase {
     protected $isEmpty;
 
     /**
-     * Returns the output of this phrase for the specific platform and type of phrase
+     * Returns the output of this phrase for the specific platform and type of phrase in Android XML format
      *
-	 * @param bool $escapeHTML whether to escape HTML or not
-     * @param int $groupID the group ID to get the output for (or Phrase::GROUP_ALL)
      * @return string output of this phrase
      */
-    abstract public function output($escapeHTML, $groupID);
+    abstract public function outputAndroidXML();
+
+    /**
+     * Returns the output of this phrase for the specific platform and type of phrase in Android XML format with escaped HTML
+     *
+     * @return string output of this phrase
+     */
+    abstract public function outputAndroidXMLEscapedHTML();
+
+    /**
+     * Returns the output of this phrase for the specific platform and type of phrase in JSON format
+     *
+     * @return string output of this phrase
+     */
+    abstract public function outputJSON();
+
+    /**
+     * Returns the output of this phrase for the specific platform and type of phrase in plaintext format
+     *
+     * @return string output of this phrase
+     */
+    abstract public function outputPlaintext();
 
     /**
      * Returns the the number of complete values and total values for this phrase

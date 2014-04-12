@@ -11,8 +11,10 @@ class File_IO {
     const UPLOAD_ERROR_XML_INVALID = 4;
     const UPLOAD_ERROR_NO_TRANSLATIONS_FOUND = 5;
     const FILENAME_REGEX = '/^[a-z]+[a-z0-9_.]*$/';
-	const HTML_ESCAPING_GETTEXT = 1;
-	const HTML_ESCAPING_HTML_FROMHTML = 2;
+	const FORMAT_ANDROID_XML = 1;
+	const FORMAT_ANDROID_XML_ESCAPED_HTML = 2;
+    const FORMAT_JSON = 3;
+    const FORMAT_PLAINTEXT = 4;
 
     public static function getMaxFileSize() {
         return self::MAX_FILE_SIZE;
@@ -96,15 +98,14 @@ class File_IO {
      * @param Repository $repository the Repository instance to export
      * @param string $filename the output file name inside each language folder
      * @param int $groupID the group to get the output for (or Phrase::GROUP_ALL)
-     * @param bool $escapeHTML whether to escape HTML tags inside the content or not
+     * @param int $format the format (constant) to use for this export
      * @param int $minCompletion the minimum percentage of completion for languages to be eligible for exporting
      * @throws Exception if the repository could not be exported
      */
-    public static function exportRepository($repository, $filename, $groupID, $escapeHTML = false, $minCompletion = 0) {
-        $filename = str_replace('.xml', '', $filename); // drop file extension (will be appended automatically)
+    public static function exportRepository($repository, $filename, $groupID, $format, $minCompletion = 0) {
         if (self::isFilenameValid($filename)) {
             if ($repository instanceof Repository) {
-                $export_success = true;
+                $exportSuccess = true;
                 $randomDir = mt_rand(1000000, 9999999);
                 $savePath = URL::getTempPath(false).URL::encodeID($repository->getID());
                 self::deleteDirectoryRecursively($savePath); // delete all old output files from output directory first
@@ -114,26 +115,43 @@ class File_IO {
                     foreach ($languages as $language) {
                         $languageObject = $repository->getLanguage($language);
                         $languageKey = $languageObject->getKey();
-                        $xmlOutput = $languageObject->output($escapeHTML, $groupID);
-                        if ($xmlOutput->getCompleteness() >= $minCompletion) {
+
+                        if ($format == self::FORMAT_ANDROID_XML_ESCAPED_HTML) {
+                            $languageOutput = $languageObject->outputAndroidXMLEscapedHTML($groupID);
+                            $fileExtension = '.xml';
+                        }
+                        elseif ($format == self::FORMAT_JSON) {
+                            $languageOutput = $languageObject->outputJSON($groupID);
+                            $fileExtension = '.json';
+                        }
+                        elseif ($format == self::FORMAT_PLAINTEXT) {
+                            $languageOutput = $languageObject->outputPlaintext($groupID);
+                            $fileExtension = '.txt';
+                        }
+                        else {
+                            $languageOutput = $languageObject->outputAndroidXML($groupID);
+                            $fileExtension = '.xml';
+                        }
+
+                        if ($languageOutput->getCompleteness() >= $minCompletion) {
                             if (mkdir($savePath.'/'.$languageKey.'/', 0755, true)) {
-                                    if (file_put_contents($savePath.'/'.$languageKey.'/'.$filename.'.xml', $xmlOutput->getContent())) {
-                                        $export_success = true;
+                                    if (file_put_contents($savePath.'/'.$languageKey.'/'.$filename.$fileExtension, $languageOutput->getContent()) !== false) {
+                                        $exportSuccess = true;
                                     }
                                     else { // output file could not be written
-                                        $export_success = false;
+                                        $exportSuccess = false;
                                     }
                             }
                             else { // sub-directory for language could not be created
-                                $export_success = false;
+                                $exportSuccess = false;
                             }
                         }
                     }
                 }
                 else { // output folder could not be created
-                    $export_success = false;
+                    $exportSuccess = false;
                 }
-                if ($export_success) {
+                if ($exportSuccess) {
                     $outputPath = URL::getTempPath(true).URL::encodeID($repository->getID()).'/'.$randomDir;
                     if (self::zipFolder($savePath, $savePath.'/Export.zip')) {
                         header('Location: '.$outputPath.'/Export.zip');

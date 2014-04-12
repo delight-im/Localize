@@ -10,26 +10,6 @@ class Language_Android extends Language {
     }
 
     /**
-     * Constructs the platform-specific output for this Language object
-     *
-     * @param bool $escapeHTML whether to escape HTML (true) or not (false)
-     * @param int $groupID the group ID to get the output for (or Phrase::GROUP_ALL)
-     * @return OutputContainer the output object containing both data and completeness in percent
-     */
-    public function output($escapeHTML, $groupID) {
-        $container = new OutputContainer();
-        $out = '<?xml version="1.0" encoding="utf-8"?>'."\n";
-        $out .= '<resources>'."\n";
-        foreach ($this->phrases as $phrase) {
-            $container->newPhrase($phrase->isEmpty());
-            $out .= $phrase->output($escapeHTML, $groupID);
-        }
-        $out .= '</resources>';
-        $container->setContent($out);
-        return $container;
-    }
-
-    /**
      * Returns the platform-specific key (string) for the given language
      *
      * @param int $languageID the language ID to get the key for
@@ -245,4 +225,94 @@ class Language_Android extends Language {
         return self::getLanguageKey($this->id);
     }
 
+    /**
+     * Constructs the platform-specific output for this Language object in Android XML format
+     *
+     * @param int $groupID the group ID to get the output for (or Phrase::GROUP_ALL)
+     * @return OutputContainer the output object containing both data and completeness in percent
+     */
+    public function outputAndroidXML($groupID) {
+        $container = new OutputContainer();
+        $phraseEntries = array();
+
+        foreach ($this->phrases as $phrase) {
+            // if we want all groups or if the phrase is in the selected group
+            if ($groupID == Phrase::GROUP_ALL || $phrase->getGroupID() == $groupID) {
+                $container->newPhrase($phrase->isEmpty());
+                $phraseEntries[] = $phrase->outputAndroidXML($groupID);
+            }
+        }
+
+        $container->setContent('<?xml version="1.0" encoding="utf-8"?>'."\n".'<resources>'."\n" . implode("\n", $phraseEntries) . "\n".'</resources>');
+        return $container;
+    }
+
+    /**
+     * Constructs the platform-specific output for this Language object in Android XML format with escaped HTML
+     *
+     * @param int $groupID the group ID to get the output for (or Phrase::GROUP_ALL)
+     * @return OutputContainer the output object containing both data and completeness in percent
+     */
+    public function outputAndroidXMLEscapedHTML($groupID) {
+        $container = new OutputContainer();
+        $phraseEntries = array();
+
+        foreach ($this->phrases as $phrase) {
+            // if we want all groups or if the phrase is in the selected group
+            if ($groupID == Phrase::GROUP_ALL || $phrase->getGroupID() == $groupID) {
+                $container->newPhrase($phrase->isEmpty());
+                $phraseEntries[] = $phrase->outputAndroidXMLEscapedHTML($groupID);
+            }
+        }
+
+        $container->setContent('<?xml version="1.0" encoding="utf-8"?>'."\n".'<resources>'."\n" . implode("\n", $phraseEntries) . "\n".'</resources>');
+        return $container;
+    }
+
+    /**
+     * Constructs the platform-specific output for this Language object in JSON format
+     *
+     * @param int $groupID the group ID to get the output for (or Phrase::GROUP_ALL)
+     * @return OutputContainer the output object containing both data and completeness in percent
+     */
+    public function outputJSON($groupID) {
+        $container = new OutputContainer();
+        $phraseEntries = array();
+
+        foreach ($this->phrases as $phrase) {
+            // if we want all groups or if the phrase is in the selected group
+            if ($groupID == Phrase::GROUP_ALL || $phrase->getGroupID() == $groupID) {
+                $container->newPhrase($phrase->isEmpty());
+                $phraseEntries[] = $phrase->outputJSON($groupID);
+            }
+        }
+
+        $container->setContent('{'."\n" . implode(",\n", $phraseEntries) . "\n".'}');
+        return $container;
+    }
+
+    /**
+     * Constructs the platform-specific output for this Language object in plaintext format
+     *
+     * @param int $groupID the group ID to get the output for (or Phrase::GROUP_ALL)
+     * @return OutputContainer the output object containing both data and completeness in percent
+     */
+    public function outputPlaintext($groupID) {
+        $container = new OutputContainer();
+        $phraseEntries = array();
+
+        foreach ($this->phrases as $phrase) {
+            // if we want all groups or if the phrase is in the selected group
+            if ($groupID == Phrase::GROUP_ALL || $phrase->getGroupID() == $groupID) {
+                $container->newPhrase($phrase->isEmpty());
+                $phraseEntries[] = $phrase->outputPlaintext($groupID);
+            }
+        }
+
+        $container->setContent(implode("\n", $phraseEntries));
+        return $container;
+    }
+
 }
+
+?>

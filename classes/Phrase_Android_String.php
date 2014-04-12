@@ -18,21 +18,6 @@ class Phrase_Android_String extends Phrase_Android {
     }
 
     /**
-     * Returns the output of this phrase for the specific platform and type of phrase
-     *
-	 * @param bool $escapeHTML whether to escape HTML or not
-     * @param int $groupID the group ID to get the output for (or Phrase::GROUP_ALL)
-     * @return string output of this phrase
-     */
-    public function output($escapeHTML, $groupID) {
-        if ($this->getGroupID() != $groupID && $groupID != Phrase::GROUP_ALL) {
-            return '';
-        }
-        $out = "\t".'<string name="'.$this->phraseKey.'">'.self::writeToRaw($this->value, $escapeHTML).'</string>'."\n";
-        return $out;
-    }
-
-    /**
      * Gets the phrase's payload in form of JSON data
      *
      * @return string payload as JSON data
@@ -112,6 +97,42 @@ class Phrase_Android_String extends Phrase_Android {
     public function getCompleteness() {
         $complete = empty($this->value) ? 0 : 1;
         return array($complete, 1);
+    }
+
+    /**
+     * Returns the output of this phrase for the specific platform and type of phrase in Android XML format
+     *
+     * @return string output of this phrase
+     */
+    public function outputAndroidXML() {
+        return "\t".'<string name="'.$this->phraseKey.'">'.self::writeToRaw($this->value, File_IO::FORMAT_ANDROID_XML).'</string>';
+    }
+
+    /**
+     * Returns the output of this phrase for the specific platform and type of phrase in Android XML format with escaped HTML
+     *
+     * @return string output of this phrase
+     */
+    public function outputAndroidXMLEscapedHTML() {
+        return "\t".'<string name="'.$this->phraseKey.'">'.self::writeToRaw($this->value, File_IO::FORMAT_ANDROID_XML_ESCAPED_HTML).'</string>';
+    }
+
+    /**
+     * Returns the output of this phrase for the specific platform and type of phrase in JSON format
+     *
+     * @return string output of this phrase
+     */
+    public function outputJSON() {
+        return "\t".'"'.$this->phraseKey.'" : { "type" : "string", "content" : "'.self::writeToRaw($this->value, File_IO::FORMAT_JSON).'" }';
+    }
+
+    /**
+     * Returns the output of this phrase for the specific platform and type of phrase in plaintext format
+     *
+     * @return string output of this phrase
+     */
+    public function outputPlaintext() {
+        return $this->phraseKey.';string;;'.self::writeToRaw($this->value, File_IO::FORMAT_PLAINTEXT);
     }
 
 }

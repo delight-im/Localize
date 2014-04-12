@@ -13,13 +13,10 @@ class OutputContainer {
     }
 
     public function newPhrase($isEmpty = false) {
-        if ($isEmpty) {
-            $this->phrasesTotal++;
-        }
-        else {
+        if (!$isEmpty) {
             $this->phrasesCount++;
-            $this->phrasesTotal++;
         }
+        $this->phrasesTotal++;
     }
 
     public function setContent($content) {
@@ -27,7 +24,12 @@ class OutputContainer {
     }
 
     public function getCompleteness() {
-        return intval($this->phrasesCount/$this->phrasesTotal*100);
+        if ($this->phrasesTotal <= 0) {
+            return 0;
+        }
+        else {
+            return intval($this->phrasesCount / $this->phrasesTotal * 100);
+        }
     }
 
     public function getContent() {

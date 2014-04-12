@@ -116,13 +116,36 @@ abstract class Language {
     protected $phrases;
 
     /**
-     * Constructs the platform-specific output for this Language object
+     * Constructs the platform-specific output for this Language object in Android XML format
      *
-     * @param bool $escapeHTML whether to escape HTML (true) or not (false)
      * @param int $groupID the group ID to get the output for (or Phrase::GROUP_ALL)
      * @return OutputContainer the output object containing both data and completeness in percent
      */
-    abstract public function output($escapeHTML, $groupID);
+    abstract public function outputAndroidXML($groupID);
+
+    /**
+     * Constructs the platform-specific output for this Language object in Android XML format with escaped HTML
+     *
+     * @param int $groupID the group ID to get the output for (or Phrase::GROUP_ALL)
+     * @return OutputContainer the output object containing both data and completeness in percent
+     */
+    abstract public function outputAndroidXMLEscapedHTML($groupID);
+
+    /**
+     * Constructs the platform-specific output for this Language object in JSON format
+     *
+     * @param int $groupID the group ID to get the output for (or Phrase::GROUP_ALL)
+     * @return OutputContainer the output object containing both data and completeness in percent
+     */
+    abstract public function outputJSON($groupID);
+
+    /**
+     * Constructs the platform-specific output for this Language object in plaintext format
+     *
+     * @param int $groupID the group ID to get the output for (or Phrase::GROUP_ALL)
+     * @return OutputContainer the output object containing both data and completeness in percent
+     */
+    abstract public function outputPlaintext($groupID);
 
     /**
      * Returns the platform-specific key (string) for this language

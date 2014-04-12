@@ -34,25 +34,6 @@ class Phrase_Android_Plurals extends Phrase_Android {
     }
 
     /**
-     * Returns the output of this phrase for the specific platform and type of phrase
-     *
-	 * @param bool $escapeHTML whether to escape HTML or not
-     * @param int $groupID the group ID to get the output for (or Phrase::GROUP_ALL)
-     * @return string output of this phrase
-     */
-    public function output($escapeHTML, $groupID) {
-        if ($this->getGroupID() != $groupID && $groupID != Phrase::GROUP_ALL) {
-            return '';
-        }
-        $out = "\t".'<plurals name="'.$this->phraseKey.'">'."\n";
-        foreach ($this->values as $quantity => $value) {
-            $out .= "\t\t".'<item quantity="'.$quantity.'">'.self::writeToRaw($value, $escapeHTML).'</item>'."\n";
-        }
-        $out .= "\t".'</plurals>'."\n";
-        return $out;
-    }
-
-    /**
      * Gets the phrase's payload in form of JSON data
      *
      * @return string payload as JSON data
@@ -168,6 +149,62 @@ class Phrase_Android_Plurals extends Phrase_Android {
             $total++;
         }
         return array($complete, $total);
+    }
+
+    /**
+     * Returns the output of this phrase for the specific platform and type of phrase in Android XML format
+     *
+     * @return string output of this phrase
+     */
+    public function outputAndroidXML() {
+        $valueEntries = array();
+        foreach ($this->values as $quantity => $value) {
+            $valueEntries[] = "\t\t".'<item quantity="'.$quantity.'">'.self::writeToRaw($value, File_IO::FORMAT_ANDROID_XML).'</item>';
+        }
+
+        return "\t".'<plurals name="'.$this->phraseKey.'">'. "\n" . implode("\n", $valueEntries) . "\n"."\t".'</plurals>';
+    }
+
+    /**
+     * Returns the output of this phrase for the specific platform and type of phrase in Android XML format with escaped HTML
+     *
+     * @return string output of this phrase
+     */
+    public function outputAndroidXMLEscapedHTML() {
+        $valueEntries = array();
+        foreach ($this->values as $quantity => $value) {
+            $valueEntries[] = "\t\t".'<item quantity="'.$quantity.'">'.self::writeToRaw($value, File_IO::FORMAT_ANDROID_XML_ESCAPED_HTML).'</item>';
+        }
+
+        return "\t".'<plurals name="'.$this->phraseKey.'">'. "\n" . implode("\n", $valueEntries) . "\n"."\t".'</plurals>';
+    }
+
+    /**
+     * Returns the output of this phrase for the specific platform and type of phrase in JSON format
+     *
+     * @return string output of this phrase
+     */
+    public function outputJSON() {
+        $valueEntries = array();
+        foreach ($this->values as $quantity => $value) {
+            $valueEntries[] = "\t\t".'"'.$quantity.'" : "'.self::writeToRaw($value, File_IO::FORMAT_JSON).'"';
+        }
+
+        return "\t".'"'.$this->phraseKey.'" : { "type" : "plurals", "content" : {'. "\n" . implode(",\n", $valueEntries) . "\n"."\t".'} }';
+    }
+
+    /**
+     * Returns the output of this phrase for the specific platform and type of phrase in plaintext format
+     *
+     * @return string output of this phrase
+     */
+    public function outputPlaintext() {
+        $valueEntries = array();
+        foreach ($this->values as $quantity => $value) {
+            $valueEntries[] = $this->phraseKey.';plurals;'.$quantity.';'.self::writeToRaw($value, File_IO::FORMAT_PLAINTEXT);
+        }
+
+        return implode("\n", $valueEntries);
     }
 
 }

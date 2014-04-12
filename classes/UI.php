@@ -1180,12 +1180,12 @@ abstract class UI {
                 }
                 elseif ($isExportMode) {
                     $formTargetURL = URL::toExport($repositoryID);
-                    self::addBreadcrumbItem($formTargetURL, 'Export XML');
+                    self::addBreadcrumbItem($formTargetURL, 'Export');
 
                     $form = new UI_Form($formTargetURL, false);
 
-                    $textFilename = new UI_Form_Text('Filename', 'export[filename]', 'strings.xml', false, 'Please choose a name for the XML files that will be exported inside each language folder.');
-                    $textFilename->setDefaultValue('strings.xml');
+                    $textFilename = new UI_Form_Text('Filename', 'export[filename]', 'strings', false, 'Please choose a filename (without extension) for the output files that will be exported inside each language folder.');
+                    $textFilename->setDefaultValue('strings');
                     $form->addContent($textFilename);
 
                     $selectGroupID = new UI_Form_Select('Phrase groups', 'export[groupID]', 'Do you want to export all phrases or only a single group?');
@@ -1207,15 +1207,16 @@ abstract class UI {
                     $selectMinCompletion->addOption('100% completion or more', 100);
                     $form->addContent($selectMinCompletion);
 
-                    $selectHtmlEscaping = new UI_Form_Select('HTML Escaping', 'export[htmlEscaping]', 'Which Java method do you want to use to get HTML-styled strings from your translations? (<a href="'.URL::toPage('help').'">Help</a>)');
-                    $selectHtmlEscaping->addOption('I don\'t care', File_IO::HTML_ESCAPING_GETTEXT);
-                    $selectHtmlEscaping->addOption('getText(...)', File_IO::HTML_ESCAPING_GETTEXT);
-                    $selectHtmlEscaping->addOption('Html.fromHtml(getString(...))', File_IO::HTML_ESCAPING_HTML_FROMHTML);
-                    $form->addContent($selectHtmlEscaping);
+                    $selectFormat = new UI_Form_Select('Output format', 'export[format]', 'Which output format do you want to export in? When developing for Android, you should usually keep the default choice.');
+                    $selectFormat->addOption('Android XML', File_IO::FORMAT_ANDROID_XML);
+                    $selectFormat->addOption('Android XML with escaped HTML', File_IO::FORMAT_ANDROID_XML_ESCAPED_HTML);
+                    $selectFormat->addOption('JSON', File_IO::FORMAT_JSON);
+                    $selectFormat->addOption('Plaintext', File_IO::FORMAT_PLAINTEXT);
+                    $form->addContent($selectFormat);
 
                     $isAdmin = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_ADMINISTRATOR);
 
-                    $buttonSubmit = new UI_Form_Button('Export XML', UI_Form_Button::TYPE_SUCCESS);
+                    $buttonSubmit = new UI_Form_Button('Export', UI_Form_Button::TYPE_SUCCESS);
                     $buttonManageGroups = new UI_Link('Manage groups', URL::toEditProject($repositoryID, true), UI_Form_Button::TYPE_UNIMPORTANT);
                     $buttonCancel = new UI_Link('Cancel', URL::toProject($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
                     if ($isAdmin) {
@@ -1232,7 +1233,7 @@ abstract class UI {
                         )));
                     }
 
-                    $contents[] = new UI_Heading('Export XML', true);
+                    $contents[] = new UI_Heading('Export', true);
                     $contents[] = $form;
                 }
                 elseif ($isImportMode) {
@@ -1329,7 +1330,7 @@ abstract class UI {
 
                     $actionButtons = array();
                     if (Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_DEVELOPER)) {
-                        $actionButtons[] = new UI_Link('Export XML', URL::toExport($repositoryID), UI_Form_Button::TYPE_SUCCESS);
+                        $actionButtons[] = new UI_Link('Export', URL::toExport($repositoryID), UI_Form_Button::TYPE_SUCCESS);
                         $actionButtons[] = new UI_Link('Import XML', URL::toImport($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
                         if (Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_ADMINISTRATOR)) {
                             $actionButtons[] = new UI_Link('Edit project', URL::toEditProject($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);

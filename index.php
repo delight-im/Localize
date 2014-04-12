@@ -361,33 +361,16 @@ elseif (UI::isPage('export')) {
                 if (File_IO::isFilenameValid($filename)) {
                     $groupID = intval(trim($data['groupID']));
                     $minCompletion = intval(trim($data['minCompletion']));
-					$htmlEscaping = intval(trim($data['htmlEscaping']));
-					$htmlEscapingEnabled = FALSE;
-					if ($htmlEscaping == File_IO::HTML_ESCAPING_GETTEXT) {
-						$htmlEscapingEnabled = FALSE;
-						$htmlEscapingValid = TRUE;
-					}
-					elseif ($htmlEscaping == File_IO::HTML_ESCAPING_HTML_FROMHTML) {
-						$htmlEscapingEnabled = TRUE;
-						$htmlEscapingValid = TRUE;
-					}
-					else {
-						$htmlEscapingValid = FALSE;
-					}
-					if ($htmlEscapingValid) {
-						$repository = new Repository($repositoryID, $repositoryData['name'], $repositoryData['visibility'], $repositoryData['defaultLanguage']);
-						$repository->loadLanguages(true, Repository::SORT_ALL_LANGUAGES, Repository::LOAD_ALL_LANGUAGES);
-						File_IO::exportRepository($repository, $filename, $groupID, $htmlEscapingEnabled, $minCompletion);
-						exit;
-					}
-					else {
-						$alert = new UI_Alert('<p>Please choose your preferred way of HTML escaping.</p>', UI_Alert::TYPE_WARNING);
-					}
+					$format = intval(trim($data['format']));
+
+                    $repository = new Repository($repositoryID, $repositoryData['name'], $repositoryData['visibility'], $repositoryData['defaultLanguage']);
+                    $repository->loadLanguages(true, Repository::SORT_ALL_LANGUAGES, Repository::LOAD_ALL_LANGUAGES);
+                    File_IO::exportRepository($repository, $filename, $groupID, $format, $minCompletion);
+                    exit;
                 }
                 else {
                     $alert = new UI_Alert('<p>Please enter a valid filename.</p>', UI_Alert::TYPE_WARNING);
                 }
-
             }
             else {
                 $alert = new UI_Alert('<p>You are not allowed to export files from this project.</p>', UI_Alert::TYPE_WARNING);
