@@ -20,6 +20,10 @@ All configuration is done in `config.php` in the root directory.
 
 We welcome any contribution, no matter how small or large. Please fork this repository, apply your changes, and submit your contributions by sending a pull request.
 
+## Security
+
+[Disclose bugs and vulnerabilities](http://www.localize.io/go/security) or read more about [security](SECURITY.md).
+
 ## License
 
 ```
