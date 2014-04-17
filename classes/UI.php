@@ -57,6 +57,7 @@ abstract class UI {
         header('Content-type: text/html; charset=utf-8');
         header('Expires: Mon, 24 Mar 2008 00:00:00 GMT'); // prevent caching
         header('Cache-Control: no-cache'); // prevent caching
+        header('X-Frame-Options: sameorigin'); // prevent clickjacking
 
         if (self::ERROR_REPORTING_ON) {
             error_reporting(E_ALL);
