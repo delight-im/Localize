@@ -23,6 +23,17 @@ class Authentication {
         @session_start();
     }
 
+    private static function createCSRFToken($recreateIfExists = false) {
+        if (!isset($_SESSION['CSRFToken']) || $recreateIfExists) {
+            $_SESSION['CSRFToken'] = base64_encode(uniqid(rand(), true));
+        }
+    }
+
+    public static function getCSRFToken() {
+        self::createCSRFToken();
+        return $_SESSION['CSRFToken'];
+    }
+
     public static function isAllowSignUpDevelopers() {
         return self::ALLOW_SIGN_UP_DEVELOPERS;
     }
@@ -129,6 +140,9 @@ class Authentication {
         if ($user instanceof User) {
             session_regenerate_id(true);
             self::updateUserInfo($user);
+
+            // force new token for CSRF attack prevention
+            self::createCSRFToken(true);
         }
         else {
             throw new Exception('User must be an instance of class User');
