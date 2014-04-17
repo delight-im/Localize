@@ -113,6 +113,10 @@ abstract class UI {
 
     protected static function getHeader($isSignedIn) {
         $headerHTML = file_get_contents($isSignedIn ? 'templates/header_signed_in.html' : 'templates/header_signed_out.html');
+
+        // prepare hidden field for CSRF attack prevention
+        $csrfToken = new UI_Form_Hidden(UI_Form::FIELD_CSRF_TOKEN, Authentication::getCSRFToken());
+
         return sprintf(
             $headerHTML,
             CONFIG_ASSETS_CDN === '' ? URL::toResource('css/') : CONFIG_ASSETS_CDN.'css/',
@@ -121,7 +125,8 @@ abstract class UI {
             URL::toDashboard(),
             URL::toPage('settings'),
             URL::toPage('sign_out'),
-            self::isGzipSupported() ? '.gz' : ''
+            self::isGzipSupported() ? '.gz' : '',
+            $csrfToken->getHTML()
         );
     }
 
