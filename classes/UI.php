@@ -318,7 +318,7 @@ abstract class UI {
             else {
                 $listRecentlyVisited = new UI_List();
                 foreach ($recentRepositories as $recentRepositoryID => $recentRepositoryName) {
-                    $listRecentlyVisited->addItem(new UI_Link($recentRepositoryName, URL::toProject($recentRepositoryID)));
+                    $listRecentlyVisited->addItem(new UI_Link(htmlspecialchars($recentRepositoryName), URL::toProject($recentRepositoryID)));
                 }
                 $contents[] = $listRecentlyVisited;
             }
@@ -336,7 +336,7 @@ abstract class UI {
             else {
                 $listRecentlyVisited = new UI_List();
                 foreach ($contributedRepositories as $contributedRepository) {
-                    $listRecentlyVisited->addItem(new UI_Link($contributedRepository['name'], URL::toProject($contributedRepository['repositoryID'])));
+                    $listRecentlyVisited->addItem(new UI_Link(htmlspecialchars($contributedRepository['name']), URL::toProject($contributedRepository['repositoryID'])));
                 }
                 $contents[] = $listRecentlyVisited;
             }
