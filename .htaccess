@@ -1,4 +1,9 @@
+# Security (Prevent information disclosure)
 Header unset X-Powered-By
+<Files ".gitignore">
+Order allow,deny
+Deny from all
+</Files>
 
 RewriteEngine On
 
