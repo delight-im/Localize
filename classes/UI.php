@@ -742,7 +742,7 @@ abstract class UI {
 
                             $discussionEntries = Database::getDiscussionEntries($editData[0]['id']);
                             foreach ($discussionEntries as $discussionEntry) {
-                                $contents[] = new UI_Paragraph('<strong>'.$discussionEntry['username'].'</strong> ('.Time::getTimeAgo($discussionEntry['timeSent']).'):<br />'.$discussionEntry['content']);
+                                $contents[] = new UI_Paragraph('<strong>'.htmlspecialchars($discussionEntry['username']).'</strong> ('.Time::getTimeAgo($discussionEntry['timeSent']).'):<br />'.htmlspecialchars($discussionEntry['content']));
                             }
                         }
                     }
