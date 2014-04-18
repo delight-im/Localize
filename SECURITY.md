@@ -39,6 +39,7 @@ We are currently **not** interested in reports of the following weaknesses:
  * Denial of Service (DoS)
  * Brute force attacks
  * Missing SSL/TLS
+ * Missing `autocomplete="off"` for passwords
 
 # Public disclosure
 
