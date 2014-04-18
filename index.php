@@ -310,7 +310,7 @@ elseif (UI::isPage('invitations')) {
                 $data_userID = UI::validateID($data['userID'], true);
                 $data_accept = isset($data['accept']) && is_string($data['accept']) ? intval(trim($data['accept'])) : 0;
                 $data_role = isset($data['role']) && is_string($data['role']) ? intval(trim($data['role'])) : 0;
-                if ($data_userID > 0 && ($data_accept == 1 || $data_accept == -1) && $data_role > 0) {
+                if ($data_userID > 0 && ($data_accept == 1 || $data_accept == -1) && Repository::isRoleValid($data_role)) {
                     Database::reviewInvitation($repositoryID, $data_userID, $data_accept == 1, $data_role);
                 }
             }

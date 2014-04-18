@@ -320,6 +320,10 @@ class Repository {
         }
     }
 
+    public static function isRoleValid($roleID) {
+        return $roleID == self::ROLE_ADMINISTRATOR || $roleID == self::ROLE_DEVELOPER || $roleID == self::ROLE_MODERATOR || $roleID == self::ROLE_CONTRIBUTOR || $roleID == self::ROLE_NONE;
+    }
+
 }
 
 class RepositoryPermissions {
@@ -354,13 +358,10 @@ class RepositoryPermissions {
             elseif ($this->role == Repository::ROLE_NONE) {
                 return true;
             }
-            else {
-                throw new Exception('Unknown role '.$this->role);
-            }
         }
-        else {
-            throw new Exception('Unknown visibility ID '.$this->repositoryVisibility);
-        }
+
+        // unknown role or unknown visibility ID
+        return true;
     }
 
 }
