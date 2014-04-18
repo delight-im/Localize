@@ -34,7 +34,11 @@ We are interested in all (security-related) bugs on our website at [www.localize
  * Email injection
  * Data theft
 
-We are *not* interested in reports of Denial of Service attacks and ask you please not to test them on our services.
+We are currently **not** interested in reports of the following weaknesses:
+
+ * Denial of Service (DoS)
+ * Brute force attacks
+ * Missing SSL/TLS
 
 # Public disclosure
 
