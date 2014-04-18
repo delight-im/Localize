@@ -16,6 +16,7 @@ class UI_Form_Text extends UI {
     protected $isRTL;
     protected $defaultValue;
     protected $readOnly;
+    protected $jsOnKeyUp;
 
     function __construct($label, $key, $placeholder, $isPassword = false, $helpText = '', $cssClasses = '', $cssStyles = '', $hasUniqueID = true, $isInline = false, $isRTL = false) {
         $this->label = $label;
@@ -30,6 +31,11 @@ class UI_Form_Text extends UI {
         $this->isRTL = $isRTL;
         $this->defaultValue = NULL;
         $this->readOnly = false;
+        $this->jsOnKeyUp = '';
+    }
+
+    public function setJSOnKeyUp($js) {
+        $this->jsOnKeyUp = $js;
     }
 
     public function setReadOnly($readOnly) {
@@ -74,6 +80,9 @@ class UI_Form_Text extends UI {
         }
         if ($this->readOnly) {
             $out .= ' readonly="readonly"';
+        }
+        if (!empty($this->jsOnKeyUp)) {
+            $out .= ' onkeyup="'.htmlspecialchars($this->jsOnKeyUp).'"';
         }
         $out .= ' name="'.htmlspecialchars($this->key).'" placeholder="'.htmlspecialchars($this->placeholder).'">';
         if (!$this->isInline) {
