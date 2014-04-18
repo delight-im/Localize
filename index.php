@@ -610,6 +610,7 @@ elseif (UI::isPage('create_project') && Authentication::isSignedIn()) {
                         if ($data_editRepositoryID > 0) { // edit project
                             Database::update("UPDATE repositories SET name = ".Database::escape($data_name).", visibility = ".intval($data_visibility).", defaultLanguage = ".intval($data_defaultLanguage)." WHERE id = ".intval($data_editRepositoryID));
                             header('Location: '.URL::toProject($data_editRepositoryID));
+                            exit;
                         }
                         else { // create project
                             Database::insert("INSERT INTO repositories (name, visibility, defaultLanguage, creation_date) VALUES (".Database::escape($data_name).", ".intval($data_visibility).", ".intval($data_defaultLanguage).", ".time().")");
@@ -617,6 +618,7 @@ elseif (UI::isPage('create_project') && Authentication::isSignedIn()) {
                             if ($newProjectID > 0) {
                                 Database::insert("INSERT INTO roles (userID, repositoryID, role) VALUES (".intval(Authentication::getUser()->getID()).", ".intval($newProjectID).", ".Repository::ROLE_ADMINISTRATOR.")");
                                 header('Location: '.URL::toProject($newProjectID));
+                                exit;
                             }
                             else {
                                 throw new Exception('Project could not be created');
