@@ -150,7 +150,7 @@ abstract class UI {
     }
 
     protected static function isGzipSupported() {
-        return CONFIG_USE_GZIP_FILES && stripos($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') !== false;
+        return CONFIG_USE_GZIP_FILES && isset($_SERVER['HTTP_ACCEPT_ENCODING']) && stripos($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') !== false;
     }
 
     protected static function showBreadcrumb() {
