@@ -354,7 +354,7 @@ abstract class UI {
             else {
                 $listInvitationRequests = new UI_List();
                 foreach ($invitationRequests as $invitationRequest) {
-                    $projectLink = new UI_Link($invitationRequest['name'], URL::toProject($invitationRequest['repositoryID']));
+                    $projectLink = new UI_Link(htmlspecialchars($invitationRequest['name']), URL::toProject($invitationRequest['repositoryID']));
                     $listInvitationRequests->addItem($projectLink->getHTML().' ('.date('d.m.Y H:i', $invitationRequest['request_time']).') &raquo; <strong>'.Repository::getInvitationStatus($invitationRequest['accepted']).'</strong>');
                 }
                 $contents[] = $listInvitationRequests;
