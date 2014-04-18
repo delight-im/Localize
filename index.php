@@ -86,35 +86,40 @@ elseif (UI::isPage('help')) {
 elseif (UI::isPage('settings')) {
     $alert = NULL;
     if (UI::isAction('settings')) {
-        $data = UI::getDataPOST('settings');
-        $realName = isset($data['realName']) ? trim($data['realName']) : '';
-        $nativeLanguages = isset($data['nativeLanguage']) ? $data['nativeLanguage'] : array();
-        $localeCountry = isset($data['country']) ? trim($data['country']) : '';
-        $localeTimezone = isset($data['timezone'][$localeCountry]) ? trim($data['timezone'][$localeCountry]) : '';
-        $email = isset($data['email']) ? trim($data['email']) : '';
-        Database::updateSettings(Authentication::getUserID(), $realName, $nativeLanguages, $localeCountry, $localeTimezone, $email);
-        $userObject = Authentication::getUser();
-        if (!empty($userObject)) {
-            $userObject->setRealName($realName);
-            $userObject->setCountry($localeCountry);
-            $userObject->setTimezone($localeTimezone);
-            if (!empty($email)) {
-                if (User::isEmailValid($email)) {
-                    if (Database::updateEmail(Authentication::getUserID(), $email)) {
-                        Authentication::askForEmailVerification($email, $userObject);
+        if (UI_Form::isCSRFTokenValid($_POST)) {
+            $data = UI::getDataPOST('settings');
+            $realName = isset($data['realName']) ? trim($data['realName']) : '';
+            $nativeLanguages = isset($data['nativeLanguage']) ? $data['nativeLanguage'] : array();
+            $localeCountry = isset($data['country']) ? trim($data['country']) : '';
+            $localeTimezone = isset($data['timezone'][$localeCountry]) ? trim($data['timezone'][$localeCountry]) : '';
+            $email = isset($data['email']) ? trim($data['email']) : '';
+            Database::updateSettings(Authentication::getUserID(), $realName, $nativeLanguages, $localeCountry, $localeTimezone, $email);
+            $userObject = Authentication::getUser();
+            if (!empty($userObject)) {
+                $userObject->setRealName($realName);
+                $userObject->setCountry($localeCountry);
+                $userObject->setTimezone($localeTimezone);
+                if (!empty($email)) {
+                    if (User::isEmailValid($email)) {
+                        if (Database::updateEmail(Authentication::getUserID(), $email)) {
+                            Authentication::askForEmailVerification($email, $userObject);
 
-                        $userObject->setEmail($email);
+                            $userObject->setEmail($email);
+                        }
                     }
                 }
+                else {
+                    Database::updateEmail(Authentication::getUserID(), '');
+                    $userObject->setEmail('');
+                    $userObject->setEmail_lastVerificationAttempt(0);
+                }
+                Authentication::updateUserInfo($userObject);
             }
-            else {
-                Database::updateEmail(Authentication::getUserID(), '');
-                $userObject->setEmail('');
-                $userObject->setEmail_lastVerificationAttempt(0);
-            }
-            Authentication::updateUserInfo($userObject);
+            $alert = new UI_Alert('<p>Your settings have been updated.</p>', UI_Alert::TYPE_SUCCESS);
         }
-        $alert = new UI_Alert('<p>Your settings have been updated.</p>', UI_Alert::TYPE_SUCCESS);
+        else {
+            $alert = new UI_Alert('<p>Oops, that didn\'t work! Please try again!</p>', UI_Alert::TYPE_WARNING);
+        }
     }
     else {
         $verificationToken = UI::getDataGET('verify');
