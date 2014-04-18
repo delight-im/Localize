@@ -487,16 +487,20 @@ abstract class UI {
         }
 
 
-        $textUsername = new UI_Form_Text('Username', 'sign_up[username]', 'Choose your username', false, 'You will need to enter your username when you want to sign in.');
+        $textUsername = new UI_Form_Text('Username', 'sign_up[username]', 'Choose your username', false, 'Please choose your username that you\'ll need to sign in with later.');
         $form->addContent($textUsername);
 
-        $textPassword1 = new UI_Form_Text('Password', 'sign_up[password1]', 'Type a strong password', true, 'You will need this password for signing in, along with your username.');
+        $textPassword1 = new UI_Form_Text('Password', 'sign_up[password1]', 'Type a strong password', true, 'Please choose a password of at least 8 characters. Include letters (A-Z) and numbers (0-9).');
+        $textPassword1->setJSOnKeyUp('document.getElementById(\'sign_up[submit]\').disabled = !Authentication.isPasswordAllowed(this, document.getElementById(\'sign_up[password2]\'));');
         $form->addContent($textPassword1);
 
-        $textPassword2 = new UI_Form_Text('Password', 'sign_up[password2]', 'Repeat your password', true, 'Just to make sure you did not make any typing errors.');
+        $textPassword2 = new UI_Form_Text('Password', 'sign_up[password2]', 'Repeat your password', true, 'Please verify your password by typing it again. This is to prevent any typing errors.');
+        $textPassword2->setJSOnKeyUp('document.getElementById(\'sign_up[submit]\').disabled = !Authentication.isPasswordAllowed(document.getElementById(\'sign_up[password1]\'), this);');
         $form->addContent($textPassword2);
 
         $buttonSubmit = new UI_Form_Button('Sign up', UI_Form_Button::TYPE_SUCCESS);
+        $buttonSubmit->setID('sign_up[submit]');
+        $buttonSubmit->setEnabled(false);
         $buttonCancel = new UI_Link('Cancel', URL::toDashboard(), UI_Link::TYPE_UNIMPORTANT);
         $form->addContent(new UI_Form_ButtonGroup(array(
             $buttonSubmit,

@@ -37,36 +37,31 @@ elseif (UI::isPage('sign_up')) {
             $data_password1 = isset($data['password1']) && is_string($data['password1']) ? trim($data['password1']) : '';
             $data_password2 = isset($data['password2']) && is_string($data['password2']) ? trim($data['password2']) : '';
 
-            if ($data_password1 == $data_password2) {
-                if (mb_strlen($data_password1) >= 6) {
-                    if (mb_strlen($data_username) >= 3) {
-                        if ($data_type == User::TYPE_TRANSLATOR || $data_type == User::TYPE_DEVELOPER) {
-                            $data_password = password_hash($data_password1, PASSWORD_BCRYPT);
-                            try {
-                                Database::insert("INSERT INTO users (username, password, type, join_date) VALUES (".Database::escape($data_username).", ".Database::escape($data_password).", ".intval($data_type).", ".time().")");
-                                // show password as a hidden value masked by asterisks which can be clicked to expose the password
-                                // the password variable needs double escaping (once for onClick listener and once for potentially malicious HTML)
-                                $passwordShowable = '<code onclick="this.innerHTML = \''.htmlspecialchars(htmlspecialchars($data_password1)).'\';" style="cursor:pointer;">'.str_repeat('*', mb_strlen($data_password1)).'</code>';
-                                $alert = new UI_Alert('<p>Your free account has been created!</p><p>Please sign in by entering your username and password in the top-right corner.</p><p>Username: <code>'.htmlspecialchars($data_username).'</code></p><p>Password: '.$passwordShowable.' (click to show)</p><p>Please remember your password as we won\'t be able to recover access to your account in case you forget it.</p>', UI_Alert::TYPE_SUCCESS);
-                            }
-                            catch (Exception $e) {
-                                $alert = new UI_Alert('<p>It seems this username is already taken. Please try another one.</p>', UI_Alert::TYPE_WARNING);
-                            }
+            if (Authentication::isPasswordAllowed($data_password1, $data_password2)) {
+                if (mb_strlen($data_username) >= 3) {
+                    if ($data_type == User::TYPE_TRANSLATOR || $data_type == User::TYPE_DEVELOPER) {
+                        $data_password = password_hash($data_password1, PASSWORD_BCRYPT);
+                        try {
+                            Database::insert("INSERT INTO users (username, password, type, join_date) VALUES (".Database::escape($data_username).", ".Database::escape($data_password).", ".intval($data_type).", ".time().")");
+                            // show password as a hidden value masked by asterisks which can be clicked to expose the password
+                            // the password variable needs double escaping (once for onClick listener and once for potentially malicious HTML)
+                            $passwordShowable = '<code onclick="this.innerHTML = \''.htmlspecialchars(htmlspecialchars($data_password1)).'\';" style="cursor:pointer;">'.str_repeat('*', mb_strlen($data_password1)).'</code>';
+                            $alert = new UI_Alert('<p>Your free account has been created!</p><p>Please sign in by entering your username and password in the top-right corner.</p><p>Username: <code>'.htmlspecialchars($data_username).'</code></p><p>Password: '.$passwordShowable.' (click to show)</p><p>Please remember your password as we won\'t be able to recover access to your account in case you forget it.</p>', UI_Alert::TYPE_SUCCESS);
                         }
-                        else {
-                            $alert = new UI_Alert('<p>Please choose one of the account types!</p>', UI_Alert::TYPE_WARNING);
+                        catch (Exception $e) {
+                            $alert = new UI_Alert('<p>It seems this username is already taken. Please try another one.</p>', UI_Alert::TYPE_WARNING);
                         }
                     }
                     else {
-                        $alert = new UI_Alert('<p>Your username must be at least 3 characters long!</p>', UI_Alert::TYPE_WARNING);
+                        $alert = new UI_Alert('<p>Please choose one of the account types!</p>', UI_Alert::TYPE_WARNING);
                     }
                 }
                 else {
-                    $alert = new UI_Alert('<p>Your password must be at least 6 characters long!</p>', UI_Alert::TYPE_WARNING);
+                    $alert = new UI_Alert('<p>Your username must be at least 3 characters long!</p>', UI_Alert::TYPE_WARNING);
                 }
             }
             else {
-                $alert = new UI_Alert('<p>The two passwords did not match!</p>', UI_Alert::TYPE_WARNING);
+                $alert = new UI_Alert('<p>Please check the requirements for your password and make sure to re-type it correctly!</p>', UI_Alert::TYPE_WARNING);
             }
         }
         else {

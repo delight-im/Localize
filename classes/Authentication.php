@@ -296,6 +296,20 @@ class Authentication {
         return self::bin2hex_custom($raw); // convert random data to custom HEX
     }
 
+    /**
+     * Check whether the given password (with verification) is allowed (must be in sync with JavaScript implementation)
+     *
+     * @param string $passwordOriginal the original password
+     * @param string $passwordVerification the verification of the password
+     * @return boolean whether the password is allowed or not
+     */
+    public static function isPasswordAllowed($passwordOriginal, $passwordVerification) {
+        $containsLetter = '/[a-zA-Z]+/';
+        $containsNumber = '/[0-9]+/';
+        $originalIsValid = mb_strlen($passwordOriginal) >= 8 && preg_match($containsLetter, $passwordOriginal) && preg_match($containsNumber, $passwordOriginal);
+        return $originalIsValid && $passwordOriginal == $passwordVerification;
+    }
+
 }
 
 ?>

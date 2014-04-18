@@ -182,3 +182,16 @@ function filterTable(tableID, paginationClass, filterPhrase) {
         }
     }
 }
+var Authentication = new function() {
+    this.isPasswordAllowed = function(originalField, verificationField) {
+        if (typeof originalField !== 'undefined' && originalField !== null) {
+            if (typeof verificationField !== 'undefined' && verificationField !== null) {
+                var containsLetter = /[a-zA-Z]+/;
+                var containsNumber = /[0-9]+/;
+                var originalIsValid = originalField.value.length >= 8 && containsLetter.test(originalField.value) && containsNumber.test(originalField.value);
+                return originalIsValid && originalField.value == verificationField.value;
+            }
+        }
+        return false;
+    }
+};
