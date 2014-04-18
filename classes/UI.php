@@ -806,8 +806,8 @@ abstract class UI {
                     $invitationRoleSelect->addOption(Repository::getRoleName(Repository::ROLE_ADMINISTRATOR), Repository::ROLE_ADMINISTRATOR);
 
                     $table->addRow(array('<strong>Assigned role</strong>', $invitationRoleSelect->getHTML()));
-                    $table->addRow(array('<strong>Username</strong>', $invitationData[0]['username']));
-                    $table->addRow(array('<strong>Real name</strong>', (empty($invitationData[0]['real_name']) ? '&mdash;' : $invitationData[0]['real_name'])));
+                    $table->addRow(array('<strong>Username</strong>', htmlspecialchars($invitationData[0]['username'])));
+                    $table->addRow(array('<strong>Real name</strong>', (empty($invitationData[0]['real_name']) ? '&mdash;' : htmlspecialchars($invitationData[0]['real_name']))));
                     $table->addRow(array('<strong>Country</strong>', (empty($invitationData[0]['localeCountry']) ? '&mdash;' : Time::getCountryName($invitationData[0]['localeCountry'], '&mdash;'))));
                     $table->addRow(array('<strong>Request date</strong>', date('d.m.Y H:i', $invitationData[0]['request_time'])));
                     $table->addRow(array('<strong>Sign-up date</strong>', date('d.m.Y H:i', $invitationData[0]['join_date'])));
