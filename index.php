@@ -588,57 +588,62 @@ elseif (UI::isPage('add_phrase')) {
 }
 elseif (UI::isPage('create_project') && Authentication::isSignedIn()) {
     if (UI::isAction('create_project')) {
-        $data = UI::getDataPOST('create_project');
+        if (UI_Form::isCSRFTokenValid($_POST)) {
+            $data = UI::getDataPOST('create_project');
 
-        $data_visibility = isset($data['visibility']) ? intval($data['visibility']) : 0;
-        $data_name = isset($data['name']) && is_string($data['name']) ? trim($data['name']) : '';
-        $data_defaultLanguage = isset($data['defaultLanguage']) ? intval($data['defaultLanguage']) : 0;
-        $data_editRepositoryID = isset($data['editRepositoryID']) ? UI::validateID($data['editRepositoryID'], true) : 0;
-        if ($data_editRepositoryID > 0) {
-            $repositoryData = Database::getRepositoryData($data_editRepositoryID);
-            $isAllowed = Repository::hasUserPermissions(Authentication::getUserID(), $data_editRepositoryID, $repositoryData, Repository::ROLE_ADMINISTRATOR);
-        }
-        else {
-            $isAllowed = true;
-        }
+            $data_visibility = isset($data['visibility']) ? intval($data['visibility']) : 0;
+            $data_name = isset($data['name']) && is_string($data['name']) ? trim($data['name']) : '';
+            $data_defaultLanguage = isset($data['defaultLanguage']) ? intval($data['defaultLanguage']) : 0;
+            $data_editRepositoryID = isset($data['editRepositoryID']) ? UI::validateID($data['editRepositoryID'], true) : 0;
+            if ($data_editRepositoryID > 0) {
+                $repositoryData = Database::getRepositoryData($data_editRepositoryID);
+                $isAllowed = Repository::hasUserPermissions(Authentication::getUserID(), $data_editRepositoryID, $repositoryData, Repository::ROLE_ADMINISTRATOR);
+            }
+            else {
+                $isAllowed = true;
+            }
 
-        if ($data_visibility == Repository::VISIBILITY_PUBLIC || $data_visibility == Repository::VISIBILITY_PRIVATE) {
-            $allLanguages = Language::getList();
-            if (in_array($data_defaultLanguage, $allLanguages)) {
-                if (mb_strlen($data_name) >= 3) {
-                    if ($data_editRepositoryID <= 0 || $isAllowed) {
-                        if ($data_editRepositoryID > 0) { // edit project
-                            Database::update("UPDATE repositories SET name = ".Database::escape($data_name).", visibility = ".intval($data_visibility).", defaultLanguage = ".intval($data_defaultLanguage)." WHERE id = ".intval($data_editRepositoryID));
-                            header('Location: '.URL::toProject($data_editRepositoryID));
-                            exit;
-                        }
-                        else { // create project
-                            Database::insert("INSERT INTO repositories (name, visibility, defaultLanguage, creation_date) VALUES (".Database::escape($data_name).", ".intval($data_visibility).", ".intval($data_defaultLanguage).", ".time().")");
-                            $newProjectID = Database::getLastInsertID(Database::TABLE_REPOSITORIES_SEQUENCE);
-                            if ($newProjectID > 0) {
-                                Database::insert("INSERT INTO roles (userID, repositoryID, role) VALUES (".intval(Authentication::getUser()->getID()).", ".intval($newProjectID).", ".Repository::ROLE_ADMINISTRATOR.")");
-                                header('Location: '.URL::toProject($newProjectID));
+            if ($data_visibility == Repository::VISIBILITY_PUBLIC || $data_visibility == Repository::VISIBILITY_PRIVATE) {
+                $allLanguages = Language::getList();
+                if (in_array($data_defaultLanguage, $allLanguages)) {
+                    if (mb_strlen($data_name) >= 3) {
+                        if ($data_editRepositoryID <= 0 || $isAllowed) {
+                            if ($data_editRepositoryID > 0) { // edit project
+                                Database::update("UPDATE repositories SET name = ".Database::escape($data_name).", visibility = ".intval($data_visibility).", defaultLanguage = ".intval($data_defaultLanguage)." WHERE id = ".intval($data_editRepositoryID));
+                                header('Location: '.URL::toProject($data_editRepositoryID));
                                 exit;
                             }
-                            else {
-                                throw new Exception('Project could not be created');
+                            else { // create project
+                                Database::insert("INSERT INTO repositories (name, visibility, defaultLanguage, creation_date) VALUES (".Database::escape($data_name).", ".intval($data_visibility).", ".intval($data_defaultLanguage).", ".time().")");
+                                $newProjectID = Database::getLastInsertID(Database::TABLE_REPOSITORIES_SEQUENCE);
+                                if ($newProjectID > 0) {
+                                    Database::insert("INSERT INTO roles (userID, repositoryID, role) VALUES (".intval(Authentication::getUser()->getID()).", ".intval($newProjectID).", ".Repository::ROLE_ADMINISTRATOR.")");
+                                    header('Location: '.URL::toProject($newProjectID));
+                                    exit;
+                                }
+                                else {
+                                    throw new Exception('Project could not be created');
+                                }
                             }
+                        }
+                        else {
+                            $alert = new UI_Alert('<p>You are not allowed to edit this project!</p>', UI_Alert::TYPE_WARNING);
                         }
                     }
                     else {
-                        $alert = new UI_Alert('<p>You are not allowed to edit this project!</p>', UI_Alert::TYPE_WARNING);
+                        $alert = new UI_Alert('<p>Your project\'s name must be at least 3 characters long!</p>', UI_Alert::TYPE_WARNING);
                     }
                 }
                 else {
-                    $alert = new UI_Alert('<p>Your project\'s name must be at least 3 characters long!</p>', UI_Alert::TYPE_WARNING);
+                    $alert = new UI_Alert('<p>Please choose one of the languages from the list!</p>', UI_Alert::TYPE_WARNING);
                 }
             }
             else {
-                $alert = new UI_Alert('<p>Please choose one of the languages from the list!</p>', UI_Alert::TYPE_WARNING);
+                $alert = new UI_Alert('<p>Please choose one of the visibility levels from the list!</p>', UI_Alert::TYPE_WARNING);
             }
         }
         else {
-            $alert = new UI_Alert('<p>Please choose one of the visibility levels from the list!</p>', UI_Alert::TYPE_WARNING);
+            $alert = new UI_Alert('<p>Oops, that didn\'t work! Please try again!</p>', UI_Alert::TYPE_WARNING);
         }
 
         echo UI::getPage(UI::PAGE_CREATE_PROJECT, array($alert));
