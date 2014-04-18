@@ -68,7 +68,7 @@ abstract class UI {
             ini_set('display_errors', 'stderr');
         }
 
-        self::$page = isset($_GET['p']) ? trim($_GET['p']) : '';
+        self::$page = isset($_GET['p']) && is_string($_GET['p']) ? trim($_GET['p']) : '';
         self::$actionPOST = isset($_POST) ? $_POST : array();
         self::$actionGET = isset($_GET) ? $_GET : array();
         self::$breadcrumbPath = array();
@@ -687,9 +687,9 @@ abstract class UI {
                         }
 
                         $valuesReference = $referencedPhrase->getPhraseValues();
-                        $valueReference = isset($valuesReference[$editData[0]['phraseSubKey']]) ? trim($valuesReference[$editData[0]['phraseSubKey']]) : '';
+                        $valueReference = isset($valuesReference[$editData[0]['phraseSubKey']]) && is_string($valuesReference[$editData[0]['phraseSubKey']]) ? trim($valuesReference[$editData[0]['phraseSubKey']]) : '';
                         $valuesPrevious = $previousPhrase->getPhraseValues();
-                        $valuePrevious = isset($valuesPrevious[$editData[0]['phraseSubKey']]) ? trim($valuesPrevious[$editData[0]['phraseSubKey']]) : '';
+                        $valuePrevious = isset($valuesPrevious[$editData[0]['phraseSubKey']]) && is_string($valuesPrevious[$editData[0]['phraseSubKey']]) ? trim($valuesPrevious[$editData[0]['phraseSubKey']]) : '';
 
                         $placeholdersReference = Phrase_Android::getPlaceholders($valueReference);
 

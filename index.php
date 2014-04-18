@@ -33,9 +33,9 @@ elseif (UI::isPage('sign_up')) {
             if (!Authentication::isAllowSignUpDevelopers()) {
                 $data_type = User::TYPE_TRANSLATOR;
             }
-            $data_username = isset($data['username']) ? trim($data['username']) : '';
-            $data_password1 = isset($data['password1']) ? trim($data['password1']) : '';
-            $data_password2 = isset($data['password2']) ? trim($data['password2']) : '';
+            $data_username = isset($data['username']) && is_string($data['username']) ? trim($data['username']) : '';
+            $data_password1 = isset($data['password1']) && is_string($data['password1']) ? trim($data['password1']) : '';
+            $data_password2 = isset($data['password2']) && is_string($data['password2']) ? trim($data['password2']) : '';
 
             if ($data_password1 == $data_password2) {
                 if (mb_strlen($data_password1) >= 6) {
@@ -90,11 +90,11 @@ elseif (UI::isPage('settings')) {
     if (UI::isAction('settings')) {
         if (UI_Form::isCSRFTokenValid($_POST)) {
             $data = UI::getDataPOST('settings');
-            $realName = isset($data['realName']) ? trim($data['realName']) : '';
+            $realName = isset($data['realName']) && is_string($data['realName']) ? trim($data['realName']) : '';
             $nativeLanguages = isset($data['nativeLanguage']) ? $data['nativeLanguage'] : array();
-            $localeCountry = isset($data['country']) ? trim($data['country']) : '';
-            $localeTimezone = isset($data['timezone'][$localeCountry]) ? trim($data['timezone'][$localeCountry]) : '';
-            $email = isset($data['email']) ? trim($data['email']) : '';
+            $localeCountry = isset($data['country']) && is_string($data['country']) ? trim($data['country']) : '';
+            $localeTimezone = isset($data['timezone'][$localeCountry]) && is_string($data['timezone'][$localeCountry]) ? trim($data['timezone'][$localeCountry]) : '';
+            $email = isset($data['email']) && is_string($data['email']) ? trim($data['email']) : '';
             Database::updateSettings(Authentication::getUserID(), $realName, $nativeLanguages, $localeCountry, $localeTimezone, $email);
             $userObject = Authentication::getUser();
             if (!empty($userObject)) {
@@ -177,7 +177,7 @@ elseif (UI::isPage('language')) {
         $repositoryData = Database::getRepositoryData($repositoryID);
         if (!empty($repositoryData)) {
             $data = UI::getDataPOST('updatePhrases');
-            if (isset($data['secret']) && isset($data['translatorID'])) {
+            if (isset($data['secret']) && is_string($data['secret']) && isset($data['translatorID']) && is_string($data['translatorID'])) {
                 $translatorID = intval(trim($data['translatorID']));
                 if (Database::finishTranslationSession($repositoryID, $languageID, $translatorID, trim($data['secret']), time())) {
                     if (isset($data['edits']) && is_array($data['edits']) && isset($data['previous']) && is_array($data['previous'])) {
@@ -237,14 +237,14 @@ elseif (UI::isPage('review')) {
             $isAllowed = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_MODERATOR);
             if ($isAllowed) {
                 $data = UI::getDataPOST('review');
-                $data_action = isset($data['action']) ? trim($data['action']) : '';
+                $data_action = isset($data['action']) && is_string($data['action']) ? trim($data['action']) : '';
                 $data_editID = isset($data['editID']) ? UI::validateID($data['editID'], true) : '';
                 $data_phraseObject = isset($data['phraseObject']) ? unserialize(base64_decode($data['phraseObject'])) : NULL;
-                $data_phraseKey = isset($data['phraseKey']) ? trim($data['phraseKey']) : '';
-                $data_phraseSubKey = isset($data['phraseSubKey']) ? trim($data['phraseSubKey']) : '';
+                $data_phraseKey = isset($data['phraseKey']) && is_string($data['phraseKey']) ? trim($data['phraseKey']) : '';
+                $data_phraseSubKey = isset($data['phraseSubKey']) && is_string($data['phraseSubKey']) ? trim($data['phraseSubKey']) : '';
                 $data_contributorID = isset($data['contributorID']) ? UI::validateID($data['contributorID'], true) : '';
-                $data_newValue = isset($data['newValue']) ? trim($data['newValue']) : '';
-                $data_referenceValue = isset($data['referenceValue']) ? trim($data['referenceValue']) : '';
+                $data_newValue = isset($data['newValue']) && is_string($data['newValue']) ? trim($data['newValue']) : '';
+                $data_referenceValue = isset($data['referenceValue']) && is_string($data['referenceValue']) ? trim($data['referenceValue']) : '';
                 if (!empty($data_phraseObject)) {
                     switch ($data_action) {
                         case 'approve':
@@ -287,7 +287,7 @@ elseif (UI::isPage('review')) {
     elseif (UI::isAction('discussion')) {
         $data = UI::getDataPOST('discussion');
         $data_editID = isset($data['editID']) ? UI::validateID($data['editID'], true) : '';
-        $data_message = isset($data['message']) ? trim($data['message']) : '';
+        $data_message = isset($data['message']) && is_string($data['message']) ? trim($data['message']) : '';
         Database::saveDiscussionEntry($data_editID, Authentication::getUserID(), time(), $data_message);
         $alert = new UI_Alert('<p>Your message has been saved to the discussion on this page.</p>', UI_Alert::TYPE_SUCCESS);
     }
@@ -308,8 +308,8 @@ elseif (UI::isPage('invitations')) {
             if ($isAllowed) {
                 $data = UI::getDataPOST('invitations');
                 $data_userID = UI::validateID($data['userID'], true);
-                $data_accept = isset($data['accept']) ? intval(trim($data['accept'])) : 0;
-                $data_role = isset($data['role']) ? intval(trim($data['role'])) : 0;
+                $data_accept = isset($data['accept']) && is_string($data['accept']) ? intval(trim($data['accept'])) : 0;
+                $data_role = isset($data['role']) && is_string($data['role']) ? intval(trim($data['role'])) : 0;
                 if ($data_userID > 0 && ($data_accept == 1 || $data_accept == -1) && $data_role > 0) {
                     Database::reviewInvitation($repositoryID, $data_userID, $data_accept == 1, $data_role);
                 }
@@ -369,7 +369,7 @@ elseif (UI::isPage('export')) {
             $isAllowed = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_DEVELOPER);
             if ($isAllowed) {
                 $data = UI::getDataPOST('export');
-                $filename = isset($data['filename']) ? trim($data['filename']) : '';
+                $filename = isset($data['filename']) && is_string($data['filename']) ? trim($data['filename']) : '';
                 if (File_IO::isFilenameValid($filename)) {
                     $groupID = intval(trim($data['groupID']));
                     $minCompletion = intval(trim($data['minCompletion']));
@@ -409,9 +409,9 @@ elseif (UI::isPage('import')) {
             $isAllowed = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_DEVELOPER);
             if ($isAllowed) {
                 $data = UI::getDataPOST('import');
-                $groupID = isset($data['groupID']) ? intval(trim($data['groupID'])) : Phrase::GROUP_NONE;
+                $groupID = isset($data['groupID']) && is_string($data['groupID']) ? intval(trim($data['groupID'])) : Phrase::GROUP_NONE;
                 $overwriteMode = isset($data['overwrite']) ? intval(trim($data['overwrite'])) : 0;
-                $languageID = isset($data['languageID']) ? intval(trim($data['languageID'])) : 0;
+                $languageID = isset($data['languageID']) && is_string($data['languageID']) ? intval(trim($data['languageID'])) : 0;
                 if ($overwriteMode == 0 || $overwriteMode == 1) {
                     if ($languageID > 0) {
                         try {
@@ -483,11 +483,11 @@ elseif (UI::isPage('add_phrase')) {
             $isAllowed = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_DEVELOPER);
             if ($isAllowed) {
                 $data = UI::getDataPOST('add_phrase');
-                $phraseType = isset($data['type']) ? intval(trim($data['type'])) : 0;
-                $phraseKey = isset($data['key']) ? trim($data['key']) : '';
+                $phraseType = isset($data['type']) && is_string($data['type']) ? intval(trim($data['type'])) : 0;
+                $phraseKey = isset($data['key']) && is_string($data['key']) ? trim($data['key']) : '';
                 if (Phrase_Android::isPhraseKeyValid($phraseKey)) {
                     if ($phraseType == 1) { // string
-                        $phraseValue = isset($data['string']) ? trim($data['string']) : '';
+                        $phraseValue = isset($data['string']) && is_string($data['string']) ? trim($data['string']) : '';
                         if (!empty($phraseValue)) {
                             $phrasePayload = Phrase_Android_String::getPayloadFromValue($phraseValue);
                             try {
@@ -591,7 +591,7 @@ elseif (UI::isPage('create_project') && Authentication::isSignedIn()) {
         $data = UI::getDataPOST('create_project');
 
         $data_visibility = isset($data['visibility']) ? intval($data['visibility']) : 0;
-        $data_name = isset($data['name']) ? trim($data['name']) : '';
+        $data_name = isset($data['name']) && is_string($data['name']) ? trim($data['name']) : '';
         $data_defaultLanguage = isset($data['defaultLanguage']) ? intval($data['defaultLanguage']) : 0;
         $data_editRepositoryID = isset($data['editRepositoryID']) ? UI::validateID($data['editRepositoryID'], true) : 0;
         if ($data_editRepositoryID > 0) {
@@ -744,10 +744,10 @@ else {
         if (UI_Form::isCSRFTokenValid($_POST)) {
             $data = UI::getDataPOST('sign_in');
 
-            $data_username = isset($data['username']) ? trim($data['username']) : '';
-            $data_password = isset($data['password']) ? trim($data['password']) : '';
+            $data_username = isset($data['username']) && is_string($data['username']) ? trim($data['username']) : '';
+            $data_password = isset($data['password']) && is_string($data['password']) ? trim($data['password']) : '';
             $data_returnURL = '';
-            $data_returnURL_Base64 = isset($data['returnURL']) ? trim($data['returnURL']) : '';
+            $data_returnURL_Base64 = isset($data['returnURL']) && is_string($data['returnURL']) ? trim($data['returnURL']) : '';
             if ($data_returnURL_Base64 != '') {
                 $temp = base64_decode($data_returnURL_Base64);
                 if ($temp !== false) {
