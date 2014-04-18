@@ -449,7 +449,7 @@ abstract class UI {
             foreach ($phraseGroups as $phraseGroup) {
                 $linkDelete = new UI_Form_Button('Delete', UI_Form_Button::TYPE_DANGER, UI_Form_Button::ACTION_SUBMIT, 'deleteGroup[id]', $phraseGroup['id'], 'return confirm(\'Are you sure you want to delete this group? All phrases will be moved to the default group.\');');
                 $table->addRow(array(
-                    $phraseGroup['name'], $phraseGroup['phraseCount'].' phrases', $linkDelete->getHTML()
+                    htmlspecialchars($phraseGroup['name']), $phraseGroup['phraseCount'].' phrases', $linkDelete->getHTML()
                 ));
             }
             $formList->addContent($table);
