@@ -842,7 +842,7 @@ abstract class UI {
             $contents[] = new UI_Heading('Settings', true);
             $form = new UI_Form($currentPageURL, false);
 
-            $form->addContent(new UI_Form_StaticText('Username', Authentication::getUserName()));
+            $form->addContent(new UI_Form_StaticText('Username', htmlspecialchars(Authentication::getUserName())));
             $textRealName = new UI_Form_Text('Real name', 'settings[realName]', 'Enter your name here', false, 'Let others know who you are, so that they know who is contributing to their projects.');
             $textRealName->setDefaultValue(Authentication::getUserRealName());
             $form->addContent($textRealName);
