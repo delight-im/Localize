@@ -18,6 +18,8 @@ class UI_Form_Button extends UI {
     protected $type;
     protected $action;
     protected $jsEvents;
+    protected $enabled;
+    protected $id;
 
     function __construct($label, $type = self::TYPE_SUCCESS, $action = self::ACTION_SUBMIT, $key = '', $value = '', $jsEvents = '') {
         $this->label = $label;
@@ -26,6 +28,16 @@ class UI_Form_Button extends UI {
         $this->type = $type;
         $this->action = $action;
         $this->jsEvents = $jsEvents;
+        $this->enabled = true;
+        $this->id = '';
+    }
+
+    public function setID($id) {
+        $this->id = $id;
+    }
+
+    public function setEnabled($state) {
+        $this->enabled = $state;
     }
 
     public function getHTML() {
@@ -42,6 +54,12 @@ class UI_Form_Button extends UI {
             if (!empty($this->value)) {
                 $out .= ' value="'.htmlspecialchars($this->value).'"';
             }
+        }
+        if (!$this->enabled) {
+            $out .= ' disabled="disabled"';
+        }
+        if (!empty($this->id)) {
+            $out .= ' id="'.htmlspecialchars($this->id).'"';
         }
         if (!empty($this->jsEvents)) {
             $out .= ' onclick="'.$this->jsEvents.'"';
