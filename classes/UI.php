@@ -1542,6 +1542,23 @@ abstract class UI {
         catch (Exception $e) { }
     }
 
+    /**
+     * Escapes HTML for use in JavaScript statements
+     *
+     * @param string $text the unescaped text
+     * @param boolean $useDoubleQuotes whether to use double quotes (true) or single quotes (false) in JavaScript
+     * @return string the escaped HTML for use in JavaScript
+     */
+    public static function htmlspecialcharsJS($text, $useDoubleQuotes = false) {
+        $doubleEscapedForJS = htmlspecialchars(htmlspecialchars($text));
+        if ($useDoubleQuotes) {
+            return str_replace('"', '\"', $doubleEscapedForJS);
+        }
+        else {
+            return str_replace("'", "\'", $doubleEscapedForJS);
+        }
+    }
+
 }
 
 ?>
