@@ -44,7 +44,9 @@ elseif (UI::isPage('sign_up')) {
                             $data_password = password_hash($data_password1, PASSWORD_BCRYPT);
                             try {
                                 Database::insert("INSERT INTO users (username, password, type, join_date) VALUES (".Database::escape($data_username).", ".Database::escape($data_password).", ".intval($data_type).", ".time().")");
-                                $passwordShowable = '<code onclick="this.innerHTML = \''.htmlspecialchars($data_password1).'\';" style="cursor:pointer;">'.str_repeat('*', mb_strlen($data_password1)).'</code>';
+                                // show password as a hidden value masked by asterisks which can be clicked to expose the password
+                                // the password variable needs double escaping (once for onClick listener and once for potentially malicious HTML)
+                                $passwordShowable = '<code onclick="this.innerHTML = \''.htmlspecialchars(htmlspecialchars($data_password1)).'\';" style="cursor:pointer;">'.str_repeat('*', mb_strlen($data_password1)).'</code>';
                                 $alert = new UI_Alert('<p>Your free account has been created!</p><p>Please sign in by entering your username and password in the top-right corner.</p><p>Username: <code>'.htmlspecialchars($data_username).'</code></p><p>Password: '.$passwordShowable.' (click to show)</p><p>Please remember your password as we won\'t be able to recover access to your account in case you forget it.</p>', UI_Alert::TYPE_SUCCESS);
                             }
                             catch (Exception $e) {
