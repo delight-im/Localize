@@ -129,8 +129,10 @@ elseif (UI::isPage('settings')) {
             $verificationUser = Database::getVerificationUser($verificationToken);
             if (isset($verificationUser['userID'])) {
                 $userObject = Authentication::getUser();
-                $userObject->setEmail_lastVerificationAttempt(0);
-                Authentication::updateUserInfo($userObject);
+                if (isset($userObject) && $userObject instanceof User) {
+                    $userObject->setEmail_lastVerificationAttempt(0);
+                    Authentication::updateUserInfo($userObject);
+                }
 
                 Database::verifyUserEmail($verificationUser['userID']);
                 $alert = new UI_Alert('Your email address has been verified.', UI_Alert::TYPE_SUCCESS);
