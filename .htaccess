@@ -1,3 +1,5 @@
+Header unset X-Powered-By
+
 RewriteEngine On
 
 # Page URLs
