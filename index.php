@@ -652,7 +652,12 @@ elseif (UI::isPage('create_project') && Authentication::isSignedIn()) {
             $alert = new UI_Alert('<p>Oops, that didn\'t work! Please try again!</p>', UI_Alert::TYPE_WARNING);
         }
 
-        echo UI::getPage(UI::PAGE_CREATE_PROJECT, array($alert));
+        if (isset($alert)) {
+            echo UI::getPage(UI::PAGE_CREATE_PROJECT, array($alert));
+        }
+        else {
+            echo UI::getPage(UI::PAGE_CREATE_PROJECT);
+        }
     }
     elseif (UI::isAction('addGroup')) {
         $data = UI::getDataPOST('addGroup');

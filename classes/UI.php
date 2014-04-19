@@ -1487,7 +1487,7 @@ abstract class UI {
     }
 
     public static function validateID($idString, $isEncoded = false) {
-        if (empty($idString)) {
+        if (empty($idString) || (!is_string($idString) && !is_int($idString))) {
             return 0;
         }
         else {
