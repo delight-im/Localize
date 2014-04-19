@@ -543,7 +543,28 @@ abstract class UI {
 		$contents[] = new UI_Paragraph('<strong>Approach B: Escape HTML and call Html.fromHtml(getText(...))</strong><br />If you escape your HTML by using CDATA sections or by escaping the single characters, you have to call <code>Html.fromHtml(getText(...))</code> from Java if you want to get the styled text.');
 		$contents[] = new UI_Paragraph('<strong>Which HTML tags can I use?</strong><br />You can only be sure about <code>&lt;b&gt;</code>, <code>&lt;i&gt;</code> and <code>&lt;u&gt;</code>. These will (almost) always work. Others may work on some devices, but usually they do not.');
 		$contents[] = new UI_Paragraph('<strong>What does that mean for me?</strong><br />Localize takes care of all the text processing and escaping for you. When exporting your translations to XML files, you can choose between approaches A (<code>getText(...)</code>) and B (<code>Html.fromHtml(getString(...))</code>) for your project.');
-		$contents[] = new UI_Paragraph('<img src="'.URL::toResource('img/android/html_in_resources.png').'" alt="Embedding HTML in Android String resources and using it from Java" title="Embedding HTML in Android String resources and using it from Java" width="666">');
+
+        $resourceValues = array(
+            '<b>Lorem</b> ipsum <button>dolor</button> sit',
+            '&lt;b&gt;Lorem&lt;/b&gt; ipsum &lt;button&gt;dolor&lt;/button&gt; sit',
+            '<![CDATA[<b>Lorem</b> ipsum <button>dolor</button> sit]]>'
+        );
+        $javaMethods = array(
+            self::makeCodeBlockHTML('getString(...)'),
+            self::makeCodeBlockHTML('getText(...)'),
+            self::makeCodeBlockHTML('Html.fromHtml(getString(...))')
+        );
+        $androidHTMLInXML = new UI_Table(array('Resource value', 'Java method', 'Displayed result'));
+        $androidHTMLInXML->addRow(array(self::makeCodeBlockHTML($resourceValues[0]), $javaMethods[0], 'Lorem ipsum dolor sit'));
+        $androidHTMLInXML->addRow(array(self::makeCodeBlockHTML($resourceValues[0]), $javaMethods[1], '<b>Lorem</b> ipsum dolor sit'));
+        $androidHTMLInXML->addRow(array(self::makeCodeBlockHTML($resourceValues[0]), $javaMethods[2], 'Lorem ipsum dolor sit'));
+        $androidHTMLInXML->addRow(array(self::makeCodeBlockHTML($resourceValues[1]), $javaMethods[0], htmlspecialchars($resourceValues[0])));
+        $androidHTMLInXML->addRow(array(self::makeCodeBlockHTML($resourceValues[1]), $javaMethods[1], htmlspecialchars($resourceValues[0])));
+        $androidHTMLInXML->addRow(array(self::makeCodeBlockHTML($resourceValues[1]), $javaMethods[2], '<b>Lorem</b> ipsum dolor sit'));
+        $androidHTMLInXML->addRow(array(self::makeCodeBlockHTML($resourceValues[2]), $javaMethods[0], htmlspecialchars($resourceValues[0])));
+        $androidHTMLInXML->addRow(array(self::makeCodeBlockHTML($resourceValues[2]), $javaMethods[1], htmlspecialchars($resourceValues[0])));
+        $androidHTMLInXML->addRow(array(self::makeCodeBlockHTML($resourceValues[2]), $javaMethods[2], '<b>Lorem</b> ipsum dolor sit'));
+        $contents[] = $androidHTMLInXML;
 
         // PREPARE HUMAN-READABLE AND MACHINE-READABLE LANGUAGE SELECION BEGIN
         $langList = Language::getList(Language::LANGUAGE_AFRIKAANS);
@@ -1562,6 +1583,10 @@ abstract class UI {
         else {
             return str_replace("'", "\'", $doubleEscapedForJS);
         }
+    }
+
+    public static function makeCodeBlockHTML($code) {
+        return '<code>'.htmlspecialchars($code).'</code>';
     }
 
 }
