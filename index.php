@@ -407,7 +407,7 @@ elseif (UI::isPage('import')) {
                 if (isset($_FILES['importFileXML'])) {
                     $data = UI::getDataPOST('import');
                     $groupID = isset($data['groupID']) && is_string($data['groupID']) ? intval(trim($data['groupID'])) : Phrase::GROUP_NONE;
-                    $overwriteMode = isset($data['overwrite']) ? intval(trim($data['overwrite'])) : 0;
+                    $overwriteMode = isset($data['overwrite']) && is_string($data['overwrite']) ? intval(trim($data['overwrite'])) : -1;
                     $languageID = isset($data['languageID']) && is_string($data['languageID']) ? intval(trim($data['languageID'])) : 0;
                     if ($overwriteMode == 0 || $overwriteMode == 1) {
                         if ($languageID > 0) {
