@@ -235,7 +235,7 @@ elseif (UI::isPage('review')) {
                 $data = UI::getDataPOST('review');
                 $data_action = isset($data['action']) && is_string($data['action']) ? trim($data['action']) : '';
                 $data_editID = isset($data['editID']) ? UI::validateID($data['editID'], true) : '';
-                $data_phraseObject = isset($data['phraseObject']) ? unserialize(base64_decode($data['phraseObject'])) : NULL;
+                $data_phraseObject = isset($data['phraseObject']) ? @unserialize(base64_decode($data['phraseObject'])) : NULL;
                 $data_phraseKey = isset($data['phraseKey']) && is_string($data['phraseKey']) ? trim($data['phraseKey']) : '';
                 $data_phraseSubKey = isset($data['phraseSubKey']) && is_string($data['phraseSubKey']) ? trim($data['phraseSubKey']) : '';
                 $data_contributorID = isset($data['contributorID']) ? UI::validateID($data['contributorID'], true) : '';
