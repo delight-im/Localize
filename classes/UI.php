@@ -7,6 +7,7 @@ require_once('UI_Row.php');
 require_once('UI_Cell.php');
 require_once('UI_Heading.php');
 require_once('UI_Paragraph.php');
+require_once('UI_Blockquote.php');
 require_once('UI_List.php');
 require_once('UI_Form.php');
 require_once('UI_Form_Radio.php');
@@ -231,11 +232,11 @@ abstract class UI {
 
     public static function getPage_Index($contents, $containers) {
         self::setBreadcrumbDisabled(true);
-        $contents[] = new UI_Heading('Android&trade; Localization for Everyone');
-        $contents[] = new UI_Paragraph('The free platform for the translation of Android apps.');
-        $contents[] = new UI_Paragraph('Optimized for collaborative work &mdash; invite users to help you and manage contributions conveniently.');
-        $contents[] = new UI_Paragraph('While Localize takes care of all the background work, you can concentrate on great apps and perfect translations.');
-        $contents[] = new UI_Paragraph('Completely free, simple and open-source.');
+        $contents[] = new UI_Heading('Collaborative Translation for Android');
+        $contents[] = new UI_Paragraph('We believe that everybody should be able to use software in their own language.');
+        $contents[] = new UI_Paragraph('Localize takes care of all the background work. You can concentrate on great apps and perfect translations.');
+        $contents[] = new UI_Paragraph('Invite staff members to collaborate with assigned roles, let users contribute and export translations in seconds.');
+        $contents[] = new UI_Blockquote('&quot;If you talk to a man in a language he understands, that goes to his head. If you talk to him in his language, that goes to his heart.&quot;', 'Nelson Mandela');
         $contents[] = new UI_Paragraph('<a class="btn btn-success btn-lg" href="'.URL::toPage('sign_up').'">Create free account &raquo;</a>');
         $landingView = new UI_Container($contents, true);
 
