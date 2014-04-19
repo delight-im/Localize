@@ -659,7 +659,7 @@ elseif (UI::isPage('create_project') && Authentication::isSignedIn()) {
         $repositoryID = UI::validateID(UI::getDataGET('project'), true);
 
         $groupSuccessFullyAdded = true;
-        $data['name'] = Phrase::validateGroupName($data['name']);
+        $data['name'] = Phrase::validateGroupName(isset($data['name']) ? $data['name'] : '');
         if (mb_strlen($data['name']) >= 3) {
             try {
                 Database::addGroup($repositoryID, $data['name']);

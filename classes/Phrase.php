@@ -210,8 +210,13 @@ abstract class Phrase {
     abstract public function addValue($value, $subKey = NULL);
 
     public static function validateGroupName($name) {
-        $name = trim($name);
-        return preg_replace('/[\(\)\[\]\{\}]/s', '', $name);
+        if (is_string($name)) {
+            $name = trim($name);
+            return preg_replace('/[\(\)\[\]\{\}]/s', '', $name);
+        }
+        else {
+            return '';
+        }
     }
 
 }
