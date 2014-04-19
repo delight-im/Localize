@@ -55,9 +55,13 @@ abstract class UI {
             @date_default_timezone_set($timezone);
         }
         header('Content-type: text/html; charset=utf-8');
-        header('Expires: Mon, 24 Mar 2008 00:00:00 GMT'); // prevent caching/storage of sensitive data
-        header('Cache-Control: no-cache, no-store'); // prevent caching/storage of sensitive data
-        header('X-Frame-Options: sameorigin'); // prevent clickjacking
+        // prevent caching/storage of sensitive data
+        header('Expires: Mon, 24 Mar 2008 00:00:00 GMT');
+        header('Cache-Control: no-cache, no-store');
+        // prevent clickjacking
+        header('X-Frame-Options: sameorigin');
+        // prevent content sniffing (MIME sniffing)
+        header('X-Content-Type-Options: nosniff');
 
         if (self::ERROR_REPORTING_ON) {
             error_reporting(E_ALL);
