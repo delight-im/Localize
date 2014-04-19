@@ -404,54 +404,59 @@ elseif (UI::isPage('import')) {
             $repositoryDefaultLanguage = $repositoryData['defaultLanguage'];
             $isAllowed = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_DEVELOPER);
             if ($isAllowed) {
-                $data = UI::getDataPOST('import');
-                $groupID = isset($data['groupID']) && is_string($data['groupID']) ? intval(trim($data['groupID'])) : Phrase::GROUP_NONE;
-                $overwriteMode = isset($data['overwrite']) ? intval(trim($data['overwrite'])) : 0;
-                $languageID = isset($data['languageID']) && is_string($data['languageID']) ? intval(trim($data['languageID'])) : 0;
-                if ($overwriteMode == 0 || $overwriteMode == 1) {
-                    if ($languageID > 0) {
-                        try {
-                            $languageNameFull = Language::getLanguageNameFull($languageID);
-                            $importResult = File_IO::importXML($repositoryID, $_FILES['importFileXML']);
-                            if (isset($importResult) && is_array($importResult)) {
-                                Database::addPhrases($repositoryID, $languageID, $importResult, $groupID, $overwriteMode == 1);
-                                Authentication::setCachedLanguageProgress($repositoryID, NULL); // unset cached version of this repository's progress
-                                $alert = new UI_Alert('<p>You have imported '.count($importResult).' phrases to '.$languageNameFull.'.</p>', UI_Alert::TYPE_SUCCESS);
+                if (isset($_FILES['importFileXML'])) {
+                    $data = UI::getDataPOST('import');
+                    $groupID = isset($data['groupID']) && is_string($data['groupID']) ? intval(trim($data['groupID'])) : Phrase::GROUP_NONE;
+                    $overwriteMode = isset($data['overwrite']) ? intval(trim($data['overwrite'])) : 0;
+                    $languageID = isset($data['languageID']) && is_string($data['languageID']) ? intval(trim($data['languageID'])) : 0;
+                    if ($overwriteMode == 0 || $overwriteMode == 1) {
+                        if ($languageID > 0) {
+                            try {
+                                $languageNameFull = Language::getLanguageNameFull($languageID);
+                                $importResult = File_IO::importXML($repositoryID, $_FILES['importFileXML']);
+                                if (isset($importResult) && is_array($importResult)) {
+                                    Database::addPhrases($repositoryID, $languageID, $importResult, $groupID, $overwriteMode == 1);
+                                    Authentication::setCachedLanguageProgress($repositoryID, NULL); // unset cached version of this repository's progress
+                                    $alert = new UI_Alert('<p>You have imported '.count($importResult).' phrases to '.$languageNameFull.'.</p>', UI_Alert::TYPE_SUCCESS);
 
-                                Repository::sendNotificationToWatchers($repositoryID, Repository::WATCH_EVENT_UPDATED_PHRASES, $repositoryData['name']);
-                            }
-                            else {
-                                switch ($importResult) {
-                                    case File_IO::UPLOAD_ERROR_NO_TRANSLATIONS_FOUND:
-                                        $alert = new UI_Alert('<p>No translations were found in the uploaded XML file.</p>', UI_Alert::TYPE_WARNING);
-                                        break;
-                                    case File_IO::UPLOAD_ERROR_COULD_NOT_OPEN:
-                                        $alert = new UI_Alert('<p>Could not open the XML file. Please try again!</p>', UI_Alert::TYPE_WARNING);
-                                        break;
-                                    case File_IO::UPLOAD_ERROR_COULD_NOT_PROCESS:
-                                        $alert = new UI_Alert('<p>Could not process the XML file. Please try again!</p>', UI_Alert::TYPE_WARNING);
-                                        break;
-                                    case File_IO::UPLOAD_ERROR_TOO_LARGE:
-                                        $alert = new UI_Alert('<p>The XML file that you tried to upload was too large.</p>', UI_Alert::TYPE_WARNING);
-                                        break;
-                                    case File_IO::UPLOAD_ERROR_XML_INVALID:
-                                        $alert = new UI_Alert('<p>Invalid XML in the uploaded file.</p>', UI_Alert::TYPE_WARNING);
-                                        break;
-                                    default:
-                                        $alert = new UI_Alert('<p>Unknown error. Please try again!</p>', UI_Alert::TYPE_WARNING);
+                                    Repository::sendNotificationToWatchers($repositoryID, Repository::WATCH_EVENT_UPDATED_PHRASES, $repositoryData['name']);
+                                }
+                                else {
+                                    switch ($importResult) {
+                                        case File_IO::UPLOAD_ERROR_NO_TRANSLATIONS_FOUND:
+                                            $alert = new UI_Alert('<p>No translations were found in the uploaded XML file.</p>', UI_Alert::TYPE_WARNING);
+                                            break;
+                                        case File_IO::UPLOAD_ERROR_COULD_NOT_OPEN:
+                                            $alert = new UI_Alert('<p>Could not open the XML file. Please try again!</p>', UI_Alert::TYPE_WARNING);
+                                            break;
+                                        case File_IO::UPLOAD_ERROR_COULD_NOT_PROCESS:
+                                            $alert = new UI_Alert('<p>Could not process the XML file. Please try again!</p>', UI_Alert::TYPE_WARNING);
+                                            break;
+                                        case File_IO::UPLOAD_ERROR_TOO_LARGE:
+                                            $alert = new UI_Alert('<p>The XML file that you tried to upload was too large.</p>', UI_Alert::TYPE_WARNING);
+                                            break;
+                                        case File_IO::UPLOAD_ERROR_XML_INVALID:
+                                            $alert = new UI_Alert('<p>Invalid XML in the uploaded file.</p>', UI_Alert::TYPE_WARNING);
+                                            break;
+                                        default:
+                                            $alert = new UI_Alert('<p>Unknown error. Please try again!</p>', UI_Alert::TYPE_WARNING);
+                                    }
                                 }
                             }
+                            catch (Exception $e) {
+                                $alert = new UI_Alert('<p>Could not find the language that you have selected.</p>', UI_Alert::TYPE_WARNING);
+                            }
                         }
-                        catch (Exception $e) {
-                            $alert = new UI_Alert('<p>Could not find the language that you have selected.</p>', UI_Alert::TYPE_WARNING);
+                        else {
+                            $alert = new UI_Alert('<p>Please choose one of the languages from the list.</p>', UI_Alert::TYPE_WARNING);
                         }
                     }
                     else {
-                        $alert = new UI_Alert('<p>Please choose one of the languages from the list.</p>', UI_Alert::TYPE_WARNING);
+                        $alert = new UI_Alert('<p>Please choose if you want to overwrite existing phrases or not.</p>', UI_Alert::TYPE_WARNING);
                     }
                 }
                 else {
-                    $alert = new UI_Alert('<p>Please choose if you want to overwrite existing phrases or not.</p>', UI_Alert::TYPE_WARNING);
+                    $alert = new UI_Alert('<p>Please select an XML file to import.</p>', UI_Alert::TYPE_WARNING);
                 }
             }
             else {
