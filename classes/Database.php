@@ -334,7 +334,7 @@ class Database {
     }
 
     public static function deleteGroup($repositoryID, $groupID) {
-        self::update("UPDATE phrases SET groupID = 0 WHERE groupID = ".intval($groupID));
+        self::update("UPDATE phrases SET groupID = 0 WHERE groupID = ".intval($groupID)." AND repositoryID = ".intval($repositoryID));
         self::delete("DELETE FROM groups WHERE id = ".intval($groupID)." AND repositoryID = ".intval($repositoryID));
     }
 
