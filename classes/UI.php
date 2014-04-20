@@ -1282,7 +1282,7 @@ abstract class UI {
 
                     $selectLanguage = new UI_Form_Select('Language', 'import[languageID]', 'Which language do you want to import the phrases for?', false, '', '', 'if (this.value === \''.$repositoryData['defaultLanguage'].'\') { $(\'.import-group-id\').show(400); } else { $(\'.import-group-id\').hide(400); }');
                     $selectLanguage->addOption('— Please choose —', 0);
-                    $languageIDs = Language::getList();
+                    $languageIDs = Language::getList($repositoryData['defaultLanguage']);
                     foreach ($languageIDs as $languageID) {
                         $selectLanguage->addOption(Language::getLanguageNameFull($languageID), $languageID);
                     }
