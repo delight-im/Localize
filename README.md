@@ -1,16 +1,15 @@
 # Localize
 
-**Android Localization Platform for Collaborative Translation of Applications**
+We believe that everybody should be able to use software in their own language.
 
-A simple platform for collaborative translation of Android applications. It can be used in the web browser, where users may sign up as a translator or developer. Developers may host their own projects and let translators contribute.
+Localize takes care of all the background work. You can concentrate on great apps and perfect translations.
 
-You can either use the tool on www.localize.io or download the source and use it as a self-hosted platform.
+Invite staff members to collaborate with assigned roles, let users contribute and export translations in seconds.
 
-Developers may review contributions and export a ZIP file containing all translations with just a few clicks. The translations are exported as Android XML resources so they are ready for deployment right away.
+> If you talk to a man in a language he understands, that goes to his head. If you talk to him in his language, that goes to his heart.
+> — *Nelson Mandela*
 
-Hopefully, this will speed-up the development and localization process for you, especially if you work for a small company or if you are a single developer.
-
-**Live Demo:** www.localize.io
+**Live website:** www.localize.io
 
 ## Configuration
 
