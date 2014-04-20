@@ -595,15 +595,15 @@ elseif (UI::isPage('add_phrase')) {
 elseif (UI::isPage('create_project') && Authentication::isSignedIn()) {
     if (UI::isAction('create_project')) {
         if (UI_Form::isCSRFTokenValid($_POST)) {
+            $repositoryID = UI::validateID(UI::getDataGET('project'), true);
             $data = UI::getDataPOST('create_project');
 
             $data_visibility = isset($data['visibility']) ? intval($data['visibility']) : 0;
             $data_name = isset($data['name']) && is_string($data['name']) ? trim($data['name']) : '';
             $data_defaultLanguage = isset($data['defaultLanguage']) ? intval($data['defaultLanguage']) : 0;
-            $data_editRepositoryID = isset($data['editRepositoryID']) ? UI::validateID($data['editRepositoryID'], true) : 0;
-            if ($data_editRepositoryID > 0) {
-                $repositoryData = Database::getRepositoryData($data_editRepositoryID);
-                $isAllowed = Repository::hasUserPermissions(Authentication::getUserID(), $data_editRepositoryID, $repositoryData, Repository::ROLE_ADMINISTRATOR);
+            if ($repositoryID > 0) {
+                $repositoryData = Database::getRepositoryData($repositoryID);
+                $isAllowed = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_ADMINISTRATOR);
             }
             else {
                 $isAllowed = true;
@@ -613,10 +613,10 @@ elseif (UI::isPage('create_project') && Authentication::isSignedIn()) {
                 $allLanguages = Language::getList();
                 if (in_array($data_defaultLanguage, $allLanguages)) {
                     if (mb_strlen($data_name) >= 3) {
-                        if ($data_editRepositoryID <= 0 || $isAllowed) {
-                            if ($data_editRepositoryID > 0) { // edit project
-                                Database::update("UPDATE repositories SET name = ".Database::escape($data_name).", visibility = ".intval($data_visibility).", defaultLanguage = ".intval($data_defaultLanguage)." WHERE id = ".intval($data_editRepositoryID));
-                                header('Location: '.URL::toProject($data_editRepositoryID));
+                        if ($isAllowed) {
+                            if ($repositoryID > 0) { // edit project
+                                Database::update("UPDATE repositories SET name = ".Database::escape($data_name).", visibility = ".intval($data_visibility).", defaultLanguage = ".intval($data_defaultLanguage)." WHERE id = ".intval($repositoryID));
+                                header('Location: '.URL::toProject($repositoryID));
                                 exit;
                             }
                             else { // create project

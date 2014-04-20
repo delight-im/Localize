@@ -431,9 +431,6 @@ abstract class UI {
 
         $buttonSubmit = new UI_Form_Button((empty($repositoryData) ? 'Create project' : 'Edit project'), UI_Form_Button::TYPE_SUCCESS);
         $buttonCancel = new UI_Link('Cancel', (empty($repositoryData) ? URL::toDashboard() : URL::toProject($repositoryID)), UI_Form_Button::TYPE_UNIMPORTANT);
-        if (!empty($repositoryData)) {
-            $form->addContent(new UI_Form_Hidden('create_project[editRepositoryID]', URL::encodeID($repositoryID)));
-        }
         $form->addContent(new UI_Form_ButtonGroup(array($buttonSubmit, $buttonCancel)));
 
         $contents[] = new UI_Heading((empty($repositoryData) ? 'Create project' : 'Edit project'), true);
