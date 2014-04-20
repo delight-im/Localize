@@ -1,13 +1,20 @@
-# Security (Prevent information disclosure)
+# Disallow all HTTP methods other than GET, POST and HEAD
+RewriteCond %{REQUEST_METHOD} !^(GET|POST|HEAD)
+RewriteRule .* - [R=405,L]
+
+# Remove unnecessary HTTP headers
 Header unset X-Powered-By
+
+# Prevent access to private/internal files
 <Files ".gitignore">
 Order allow,deny
 Deny from all
 </Files>
 
+# Enable URL rewriting
 RewriteEngine On
 
-# Page URLs
+# Internal page URLs
 RewriteRule ^projects/([a-zA-Z0-9_-]+)$ index.php?p=project&project=$1
 RewriteRule ^projects/([a-zA-Z0-9_-]+)/languages/([a-zA-Z0-9_-]+)$ index.php?p=language&project=$1&language=$2
 RewriteRule ^pages/([a-zA-Z0-9_-]+)$ index.php?p=$1
@@ -24,10 +31,10 @@ RewriteRule ^watch/([a-zA-Z0-9_-]+)$ index.php?p=watch&project=$1
 RewriteRule ^verify/([a-zA-Z0-9_-]+)$ index.php?p=settings&verify=$1
 RewriteRule ^settings/action/([a-zA-Z0-9_-]+)$ index.php?p=settings&action=$1
 
-# Redirects (internal links)
+# Internal redirects
 RewriteRule ^v/([a-zA-Z0-9_-]+)$ /projects/$1 [L,R=301]
 
-# Redirects (external links)
+# External redirects
 RewriteRule ^go/source$ https://github.com/delight-im/Localize [L,R=301]
 RewriteRule ^go/issues$ https://github.com/delight-im/Localize/issues [L,R=301]
 RewriteRule ^go/license$ https://github.com/delight-im/Localize/blob/master/LICENSE [L,R=301]
