@@ -154,8 +154,7 @@ class File_IO {
                 if ($exportSuccess) {
                     $outputPath = URL::getTempPath(true).URL::encodeID($repository->getID()).'/'.$randomDir;
                     if (self::zipFolder($savePath, $savePath.'/Export.zip')) {
-                        header('Location: '.$outputPath.'/Export.zip');
-                        exit;
+                        UI::redirectToURL($outputPath.'/Export.zip');
                     }
                 }
             }
