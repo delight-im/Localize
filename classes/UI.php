@@ -28,7 +28,8 @@ require_once(__DIR__.'/../config.php');
 
 abstract class UI {
 
-    const ERROR_REPORTING_ON = CONFIG_ERROR_REPORTING_ON;
+    const FORCE_HTTPS = CONFIG_FORCE_SSL; // bool from config.php in root directory
+    const ERROR_REPORTING_ON = CONFIG_ERROR_REPORTING_ON; // bool from config.php in root directory
     const PAGE_INDEX = 1;
     const PAGE_DASHBOARD = 2;
     const PAGE_SIGN_UP = 3;
@@ -63,6 +64,10 @@ abstract class UI {
         header('X-Frame-Options: sameorigin');
         // prevent content sniffing (MIME sniffing)
         header('X-Content-Type-Options: nosniff');
+        if (self::FORCE_HTTPS) {
+            // use HTTP Strict Transport Security (HSTS) with a period of 14 days
+            header('Strict-Transport-Security: max-age=1209600');
+        }
 
         if (self::ERROR_REPORTING_ON) {
             error_reporting(E_ALL);
