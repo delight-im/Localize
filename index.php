@@ -297,27 +297,33 @@ elseif (UI::isPage('review')) {
 elseif (UI::isPage('invitations')) {
     $alert = NULL;
     if (UI::isAction('invitations')) {
-        $repositoryID = UI::validateID(UI::getDataGET('project'), true);
-        $repositoryData = Database::getRepositoryData($repositoryID);
-        if (!empty($repositoryData)) {
-            $isAllowed = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_ADMINISTRATOR);
-            if ($isAllowed) {
-                $data = UI::getDataPOST('invitations');
-                $data_userID = UI::validateID($data['userID'], true);
-                $data_accept = isset($data['accept']) && is_string($data['accept']) ? intval(trim($data['accept'])) : 0;
-                $data_role = isset($data['role']) && is_string($data['role']) ? intval(trim($data['role'])) : 0;
-                if ($data_userID > 0 && ($data_accept == 1 || $data_accept == -1) && Repository::isRoleValid($data_role)) {
-                    Database::reviewInvitation($repositoryID, $data_userID, $data_accept == 1, $data_role);
+        if (UI_Form::isCSRFTokenValid($_POST)) {
+            $repositoryID = UI::validateID(UI::getDataGET('project'), true);
+            $repositoryData = Database::getRepositoryData($repositoryID);
+            if (!empty($repositoryData)) {
+                $isAllowed = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_ADMINISTRATOR);
+                if ($isAllowed) {
+                    $data = UI::getDataPOST('invitations');
+                    $data_userID = UI::validateID($data['userID'], true);
+                    $data_accept = isset($data['accept']) && is_string($data['accept']) ? intval(trim($data['accept'])) : 0;
+                    $data_role = isset($data['role']) && is_string($data['role']) ? intval(trim($data['role'])) : 0;
+                    if ($data_userID > 0 && ($data_accept == 1 || $data_accept == -1) && Repository::isRoleValid($data_role)) {
+                        Database::reviewInvitation($repositoryID, $data_userID, $data_accept == 1, $data_role);
+                    }
+                }
+                else {
+                    $alert = new UI_Alert('<p>You are not allowed to review invitation requests for this project.</p>', UI_Alert::TYPE_WARNING);
                 }
             }
             else {
-                $alert = new UI_Alert('<p>You are not allowed to review invitation requests for this project.</p>', UI_Alert::TYPE_WARNING);
+                $alert = new UI_Alert('<p>The project could not be found.</p>', UI_Alert::TYPE_WARNING);
             }
         }
         else {
-            $alert = new UI_Alert('<p>The project could not be found.</p>', UI_Alert::TYPE_WARNING);
+            $alert = new UI_Alert('<p>Oops, that didn\'t work! Please try again!</p>', UI_Alert::TYPE_WARNING);
         }
     }
+
     if (empty($alert)) {
         echo UI::getPage(UI::PAGE_INVITATIONS);
     }
@@ -829,19 +835,25 @@ else {
         if (Authentication::isSignedIn()) {
             $alert = NULL;
             if (UI::isAction('requestInvitation')) {
-                $data = UI::getDataPOST('requestInvitation');
-                $data_repositoryID = isset($data['repositoryID']) ? UI::validateID($data['repositoryID'], true) : 0;
-                $data_userID = Authentication::getUserID();
-                if ($data_repositoryID > 0 && $data_userID > 0) {
-                    try {
-                        Database::requestInvitation($data_repositoryID, $data_userID);
-                        $alert = new UI_Alert('<p>Your request for an invitation has been sent.</p>', UI_Alert::TYPE_SUCCESS);
-                    }
-                    catch (Exception $e) {
-                        $alert = new UI_Alert('<p>You have already requested an invitation. Please check the status on your dashboard.</p>', UI_Alert::TYPE_WARNING);
+                if (UI_Form::isCSRFTokenValid($_POST)) {
+                    $data = UI::getDataPOST('requestInvitation');
+                    $data_repositoryID = isset($data['repositoryID']) ? UI::validateID($data['repositoryID'], true) : 0;
+                    $data_userID = Authentication::getUserID();
+                    if ($data_repositoryID > 0 && $data_userID > 0) {
+                        try {
+                            Database::requestInvitation($data_repositoryID, $data_userID);
+                            $alert = new UI_Alert('<p>Your request for an invitation has been sent.</p>', UI_Alert::TYPE_SUCCESS);
+                        }
+                        catch (Exception $e) {
+                            $alert = new UI_Alert('<p>You have already requested an invitation. Please check the status on your dashboard.</p>', UI_Alert::TYPE_WARNING);
+                        }
                     }
                 }
+                else {
+                    $alert = new UI_Alert('<p>Oops, that didn\'t work! Please try again!</p>', UI_Alert::TYPE_WARNING);
+                }
             }
+
             if (empty($alert)) {
                 echo UI::getPage(UI::PAGE_DASHBOARD);
             }
