@@ -658,51 +658,62 @@ elseif (UI::isPage('create_project') && Authentication::isSignedIn()) {
         }
     }
     elseif (UI::isAction('addGroup')) {
-        $data = UI::getDataPOST('addGroup');
-        $repositoryID = UI::validateID(UI::getDataGET('project'), true);
-        $repositoryData = Database::getRepositoryData($repositoryID);
-        $isAllowed = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_DEVELOPER);
-        if ($isAllowed) {
-            $groupSuccessFullyAdded = true;
-            $data['name'] = Phrase::validateGroupName(isset($data['name']) ? $data['name'] : '');
-            if (mb_strlen($data['name']) >= 3) {
-                try {
-                    Database::addGroup($repositoryID, $data['name']);
-                }
-                catch (Exception $e) {
-                    $groupSuccessFullyAdded = false;
-                }
+        if (UI_Form::isCSRFTokenValid($_POST)) {
+            $data = UI::getDataPOST('addGroup');
+            $repositoryID = UI::validateID(UI::getDataGET('project'), true);
+            $repositoryData = Database::getRepositoryData($repositoryID);
+            $isAllowed = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_DEVELOPER);
+            if ($isAllowed) {
+                $groupSuccessFullyAdded = true;
+                $data['name'] = Phrase::validateGroupName(isset($data['name']) ? $data['name'] : '');
+                if (mb_strlen($data['name']) >= 3) {
+                    try {
+                        Database::addGroup($repositoryID, $data['name']);
+                    }
+                    catch (Exception $e) {
+                        $groupSuccessFullyAdded = false;
+                    }
 
-                if ($groupSuccessFullyAdded) {
-                    $alert = new UI_Alert('<p>The new group has successfully been added!</p>', UI_Alert::TYPE_SUCCESS);
+                    if ($groupSuccessFullyAdded) {
+                        $alert = new UI_Alert('<p>The new group has successfully been added!</p>', UI_Alert::TYPE_SUCCESS);
+                    }
+                    else {
+                        $alert = new UI_Alert('<p>A group with the given name does already exist!</p>', UI_Alert::TYPE_WARNING);
+                    }
                 }
                 else {
-                    $alert = new UI_Alert('<p>A group with the given name does already exist!</p>', UI_Alert::TYPE_WARNING);
+                    $alert = new UI_Alert('<p>Group names must consist of 3 or more characters</p><p>They must not contain any brackets!</p>', UI_Alert::TYPE_WARNING);
                 }
             }
             else {
-                $alert = new UI_Alert('<p>Group names must consist of 3 or more characters</p><p>They must not contain any brackets!</p>', UI_Alert::TYPE_WARNING);
+                $alert = new UI_Alert('<p>You are not allowed to add groups to this project!</p>', UI_Alert::TYPE_WARNING);
             }
         }
         else {
-            $alert = new UI_Alert('<p>You are not allowed to add groups to this project!</p>', UI_Alert::TYPE_WARNING);
+            $alert = new UI_Alert('<p>Oops, that didn\'t work! Please try again!</p>', UI_Alert::TYPE_WARNING);
         }
 
         echo UI::getPage(UI::PAGE_CREATE_PROJECT, array($alert));
     }
     elseif (UI::isAction('deleteGroup')) {
-        $data = UI::getDataPOST('deleteGroup');
-        $repositoryID = UI::validateID(UI::getDataGET('project'), true);
-        $repositoryData = Database::getRepositoryData($repositoryID);
-        $isAllowed = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_DEVELOPER);
-        if ($isAllowed) {
-            Database::deleteGroup($repositoryID, $data['id']);
+        if (UI_Form::isCSRFTokenValid($_POST)) {
+            $data = UI::getDataPOST('deleteGroup');
+            $repositoryID = UI::validateID(UI::getDataGET('project'), true);
+            $repositoryData = Database::getRepositoryData($repositoryID);
+            $isAllowed = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_DEVELOPER);
+            if ($isAllowed) {
+                Database::deleteGroup($repositoryID, $data['id']);
 
-            $alert = new UI_Alert('<p>The selected group has been deleted!</p><p>All phrases that were in this group have been moved to the default group.</p>', UI_Alert::TYPE_SUCCESS);
+                $alert = new UI_Alert('<p>The selected group has been deleted!</p><p>All phrases that were in this group have been moved to the default group.</p>', UI_Alert::TYPE_SUCCESS);
+            }
+            else {
+                $alert = new UI_Alert('<p>You are not allowed to remove groups from this project!</p>', UI_Alert::TYPE_WARNING);
+            }
         }
         else {
-            $alert = new UI_Alert('<p>You are not allowed to remove groups from this project!</p>', UI_Alert::TYPE_WARNING);
+            $alert = new UI_Alert('<p>Oops, that didn\'t work! Please try again!</p>', UI_Alert::TYPE_WARNING);
         }
+
         echo UI::getPage(UI::PAGE_CREATE_PROJECT, array($alert));
     }
     else {
