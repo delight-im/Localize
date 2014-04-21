@@ -301,6 +301,15 @@ class Database {
         return self::selectCount("SELECT COUNT(*) FROM invitations AS a JOIN users AS b ON a.userID = b.id WHERE a.repositoryID = ".intval($repositoryID)." AND a.accepted = 0");
     }
 
+    /**
+     * Either accepts or declines an invitation request by another user
+     *
+     * @param int $repositoryID the ID of the repository to which the user wants to be invited
+     * @param int $userID the ID of the user who wants to be invited
+     * @param boolean $accept whether to accept this request or decline it
+     * @param int $assignedRole one of the constants representing the desired role of the user
+     * @throws Exception if the user has already been invited before and thus does already have a role
+     */
     public static function reviewInvitation($repositoryID, $userID, $accept, $assignedRole) {
         if ($accept) {
             self::insert("INSERT INTO roles (userID, repositoryID, role) VALUES (".intval($userID).", ".intval($repositoryID).", ".intval($assignedRole).")");

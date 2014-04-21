@@ -308,7 +308,12 @@ elseif (UI::isPage('invitations')) {
                     $data_accept = isset($data['accept']) && is_string($data['accept']) ? intval(trim($data['accept'])) : 0;
                     $data_role = isset($data['role']) && is_string($data['role']) ? intval(trim($data['role'])) : 0;
                     if ($data_userID > 0 && ($data_accept == 1 || $data_accept == -1) && Repository::isRoleValid($data_role)) {
-                        Database::reviewInvitation($repositoryID, $data_userID, $data_accept == 1, $data_role);
+                        try {
+                            Database::reviewInvitation($repositoryID, $data_userID, $data_accept == 1, $data_role);
+                        }
+                        catch (Exception $e) {
+                            $alert = new UI_Alert('<p>This user does already have a role in your project. Please decline the invitation request.</p>', UI_Alert::TYPE_WARNING);
+                        }
                     }
                 }
                 else {
