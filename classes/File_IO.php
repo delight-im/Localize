@@ -168,6 +168,18 @@ class File_IO {
     }
 
     public static function importXML($repositoryID, $fileArrayValue) {
+        if (!isset($fileArrayValue['error'])) {
+            return self::UPLOAD_ERROR_COULD_NOT_PROCESS;
+        }
+        switch ($fileArrayValue['error']) {
+            case UPLOAD_ERR_FORM_SIZE:
+            case UPLOAD_ERR_INI_SIZE: return self::UPLOAD_ERROR_TOO_LARGE;
+            case UPLOAD_ERR_PARTIAL:
+            case UPLOAD_ERR_NO_FILE: return self::UPLOAD_ERROR_COULD_NOT_PROCESS;
+            case UPLOAD_ERR_NO_TMP_DIR:
+            case UPLOAD_ERR_CANT_WRITE:
+            case UPLOAD_ERR_EXTENSION: return self::UPLOAD_ERROR_COULD_NOT_OPEN;
+        }
         if ($fileArrayValue['size'] < self::getMaxFileSize()) {
             $newFileName = URL::getUploadPath(false).$repositoryID.'_'.mt_rand(1000000, 9999999).'.xml';
             if (move_uploaded_file($fileArrayValue['tmp_name'], $newFileName)) {
