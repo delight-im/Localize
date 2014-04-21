@@ -18,7 +18,7 @@ Tools that simplify localization of software can help make every program availab
 > If you talk to a man in a language he understands, that goes to his head. If you talk to him in his language, that goes to his heart.
 > — *Nelson Mandela*
 
-Localize is open-source and checking out [our GitHub repository](https://github.com/delight-im/Localize) may make finding and reporting bugs even easier.
+Localize is open-source and checking out [our GitHub repository](http://source.localize.im/) may make finding and reporting bugs even easier.
 
 # Scope of bugs
 
