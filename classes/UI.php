@@ -142,19 +142,11 @@ abstract class UI {
 
     protected static function getFooter() {
         $footerHTML = file_get_contents('templates/footer.html');
-        if (defined('CONFIG_PAYMENTS_FLATTR_DATA') && CONFIG_PAYMENTS_FLATTR_DATA !== '') {
-            $flattrLink = ' &middot; <a href="/go/donate?'.CONFIG_PAYMENTS_FLATTR_DATA.'">Donate</a>';
-        }
-        else {
-            $flattrLink = '';
-        }
         return sprintf(
             $footerHTML,
             URL::toPage('help'),
 			URL::toPage('contact'),
             CONFIG_ASSETS_CDN === '' ? URL::toResource('js/') : CONFIG_ASSETS_CDN.'js/',
-            $flattrLink,
-            date('Y'),
             self::isGzipSupported() ? '.gz' : ''
         );
     }

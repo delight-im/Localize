@@ -9,7 +9,7 @@ Invite staff members to collaborate with assigned roles, let users contribute an
 > If you talk to a man in a language he understands, that goes to his head. If you talk to him in his language, that goes to his heart.
 > — *Nelson Mandela*
 
-**Live website:** www.localize.io
+**Live website:** [www.localize.im](https://www.localize.im/)
 
 ## Configuration
 
@@ -21,7 +21,7 @@ We welcome any contribution, no matter how small or large. Please fork this repo
 
 ## Security
 
-[Disclose bugs and vulnerabilities](http://www.localize.io/go/security) or read more about [security](SECURITY.md).
+[Disclose bugs and vulnerabilities](http://security.localize.im/) or read more about [security](SECURITY.md).
 
 ## License
 

@@ -2,7 +2,7 @@
 
 ## Vulnerability disclosure
 
-[Disclose bugs and vulnerabilities for Localize](http://www.localize.io/go/security)
+[Disclose bugs and vulnerabilities for Localize](http://security.localize.im/)
 
 ## Project description
 
@@ -22,7 +22,7 @@ Localize is open-source and checking out [our GitHub repository](https://github.
 
 # Scope of bugs
 
-We are interested in all (security-related) bugs on our website at [www.localize.io](http://www.localize.io/). The following three categories show what's most important to us and our users:
+We are interested in all (security-related) bugs on our website at [www.localize.im](https://www.localize.im/). The following three categories show what's most important to us and our users:
 
  * SQL injection
  * Session hijacking/fixation

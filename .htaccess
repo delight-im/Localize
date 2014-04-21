@@ -33,10 +33,3 @@ RewriteRule ^settings/action/([a-zA-Z0-9_-]+)$ index.php?p=settings&action=$1
 
 # Internal redirects
 RewriteRule ^v/([a-zA-Z0-9_-]+)$ /projects/$1 [L,R=301]
-
-# External redirects
-RewriteRule ^go/source$ https://github.com/delight-im/Localize [L,R=301]
-RewriteRule ^go/issues$ https://github.com/delight-im/Localize/issues [L,R=301]
-RewriteRule ^go/license$ https://github.com/delight-im/Localize/blob/master/LICENSE [L,R=301]
-RewriteRule ^go/donate$ https://flattr.com/submit/auto [QSA,NE,L,R=301]
-RewriteRule ^go/security$ https://hackerone.com/localize [L,R=301]

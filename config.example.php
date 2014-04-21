@@ -5,7 +5,7 @@ define('CONFIG_DB_USERNAME', 'root'); // username for database authorization
 define('CONFIG_DB_PASSWORD', ''); // password for database authorization
 define('CONFIG_DB_REPOSITORIES_SEQUENCE', NULL); // needed on same DB systems (e.g. Postgres) for getLastInsertID()
 
-define('CONFIG_ROOT_URL', 'http://www.localize.io/'); // public base URL to the site (location of this folder) which must use <https://> if you want to use SSL/TLS and which must always end with a trailing slash
+define('CONFIG_ROOT_URL', 'http://www.localize.im/'); // public base URL to the site (location of this folder) which must use <https://> if you want to use SSL/TLS and which must always end with a trailing slash
 define('CONFIG_SITE_NAME', 'Localize'); // public site name
 define('CONFIG_SITE_EMAIL', 'info@example.org'); // public email address of site (used as sender of mails)
 define('CONFIG_BASE_PATH', '/path/to/this/file/'); // absolute local base path to the directory of this file (with trailing slash)
@@ -19,7 +19,5 @@ define('CONFIG_ASSETS_CDN', ''); // whether to use an external content delivery 
 define('CONFIG_TEMP_PATH', 'temp/'); // local directory where temporary files (e.g. during export) will be saved (with trailing slash)
 define('CONFIG_UPLOAD_PATH', 'uploads/'); // local directory where uploaded files will be saved (with trailing slash)
 define('CONFIG_MAX_FILE_SIZE', 1572864); // 1024 * 1024 * 1.5
-
-define('CONFIG_PAYMENTS_FLATTR_DATA', ''); // your personal Flattr.com account data: 'user_id=[USERNAME]&url=[URL]&title=[TITLE]&hidden=[HIDDEN]&category=[CATEGORY]' or an empty string
 
 ?>
