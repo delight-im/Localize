@@ -831,7 +831,6 @@ else {
                         $pendingEdits = Database::getPendingEditsByUser($userData['id']);
                         Authentication::restoreCachedEdits($pendingEdits);
                         Database::setLastLogin($userData['id'], time());
-                        Database::Throttling_increaseCounter(UI::getIPAddress(), 'sign_in');
 
                         if (empty($data_returnURL) || !URL::isProject($data_returnURL)) {
                             $alert = new UI_Alert('<p>You have successfully been signed in!</p>', UI_Alert::TYPE_SUCCESS);
@@ -841,10 +840,12 @@ else {
                         }
                     }
                     else {
+                        Database::Throttling_increaseCounter(UI::getIPAddress(), 'sign_in');
                         $alert = new UI_Alert('<p>Please check your password again!</p>', UI_Alert::TYPE_WARNING);
                     }
                 }
                 else {
+                    Database::Throttling_increaseCounter(UI::getIPAddress(), 'sign_in');
                     $alert = new UI_Alert('<p>We could not find any user with this name!</p>', UI_Alert::TYPE_WARNING);
                 }
             }

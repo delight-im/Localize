@@ -479,7 +479,6 @@ class Database {
         $timeout = time() - (3600 * 24 * $checkHours);
 
         $actionCount = self::selectCount("SELECT COUNT(*) FROM throttling WHERE ip_address = ".self::escape($ipAddress)." AND action_type = ".self::escape($actionType)." AND time_performed > ".intval($timeout));
-        echo $actionCount; // XXX remove
         return $actionCount <= $actionCountMax;
     }
 

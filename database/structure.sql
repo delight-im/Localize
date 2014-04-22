@@ -98,6 +98,15 @@ CREATE TABLE `roles` (
   KEY `repositoryID` (`repositoryID`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
+CREATE TABLE `throttling` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ip_address` varchar(46) NOT NULL,
+  `action_type` enum('sign_up','sign_in','create_project') NOT NULL,
+  `time_performed` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `selection` (`ip_address`,`action_type`,`time_performed`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
 CREATE TABLE `translationSessions` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `repositoryID` int(10) unsigned NOT NULL,
