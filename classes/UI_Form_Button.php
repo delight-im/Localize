@@ -40,6 +40,10 @@ class UI_Form_Button extends UI {
         $this->enabled = $state;
     }
 
+    public function setJSEvents($js) {
+        $this->jsEvents = $js;
+    }
+
     public function getHTML() {
         $out = '<button';
         if ($this->action == self::ACTION_CANCEL) {
