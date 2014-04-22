@@ -36,6 +36,10 @@ class UI_Alert extends UI {
         return $out;
     }
 
+    public static function forActionThrottled() {
+        return new UI_Alert('<p>Calm down! We\'ve seen too many requests from you. Please try again later!</p>', UI_Alert::TYPE_WARNING);
+    }
+
 }
 
 ?>

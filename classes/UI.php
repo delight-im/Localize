@@ -1583,6 +1583,10 @@ abstract class UI {
         return '<code>'.htmlspecialchars($code).'</code>';
     }
 
+    public static function getIPAddress() {
+        return isset($_SERVER['REMOTE_ADDR']) ? trim($_SERVER['REMOTE_ADDR']) : '0.0.0.0';
+    }
+
 }
 
 ?>

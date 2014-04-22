@@ -437,4 +437,50 @@ class Database {
         self::insert("INSERT INTO discussions (editID, userID, timeSent, content) VALUES (".intval($editID).", ".intval($userID).", ".intval($timeSent).", ".self::escape($content).")");
     }
 
+    /**
+     * Logs that the given IP address has performed the declared action so that one can check later if an action must be throttled or not for this IP address
+     *
+     * @param string $ipAddress the IP address that has performed the action
+     * @param string $actionType the action that has been performed (one of <sign_up>,<sign_in> and <create_project>)
+     * @throws Exception if the given action type does not exist
+     */
+    public static function Throttling_increaseCounter($ipAddress, $actionType) {
+        self::insert("INSERT INTO throttling (ip_address, action_type, time_performed) VALUES (".self::escape($ipAddress).", ".self::escape($actionType).", ".time().")");
+    }
+
+    /**
+     * Checks whether the given IP address is allowed to perform the declared action or if this request has to be throttled
+     *
+     * @param string $ipAddress the IP address that wants to perform the action
+     * @param string $actionType the action that is to be performed (one of <sign_up>,<sign_in> and <create_project>)
+     * @return boolean whether the action is allowed (true) or not (false)
+     * @throws Exception if the given action type does not exist
+     */
+    public static function Throttling_isAllowed($ipAddress, $actionType) {
+        switch ($actionType) {
+            case 'sign_up':
+                // permit no more than 5 accounts to be created by one person per 72 hours
+                $checkHours = 72;
+                $actionCountMax = 5;
+                break;
+            case 'sign_in':
+                // allow no more than 9 sign-in attempts by one person per 1 hour
+                $checkHours = 1;
+                $actionCountMax = 9;
+                break;
+            case 'create_project':
+                // one person may not create more than 7 new repositories per 24 hours
+                $checkHours = 24;
+                $actionCountMax = 7;
+                break;
+            default:
+                throw new Exception('Unknown action type: '.$actionType);
+        }
+        $timeout = time() - (3600 * 24 * $checkHours);
+
+        $actionCount = self::selectCount("SELECT COUNT(*) FROM throttling WHERE ip_address = ".self::escape($ipAddress)." AND action_type = ".self::escape($actionType)." AND time_performed > ".intval($timeout));
+        echo $actionCount; // XXX remove
+        return $actionCount <= $actionCountMax;
+    }
+
 }
