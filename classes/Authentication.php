@@ -297,17 +297,15 @@ class Authentication {
     }
 
     /**
-     * Check whether the given password (with verification) is allowed (must be in sync with JavaScript implementation)
+     * Check whether the given password is allowed (must be in sync with JavaScript implementation)
      *
-     * @param string $passwordOriginal the original password
-     * @param string $passwordVerification the verification of the password
+     * @param string $password the original password
      * @return boolean whether the password is allowed or not
      */
-    public static function isPasswordAllowed($passwordOriginal, $passwordVerification) {
+    public static function isPasswordAllowed($password) {
         $containsLetter = '/[a-zA-Z]+/';
         $containsNumber = '/[0-9]+/';
-        $originalIsValid = mb_strlen($passwordOriginal) >= 8 && preg_match($containsLetter, $passwordOriginal) && preg_match($containsNumber, $passwordOriginal);
-        return $originalIsValid && $passwordOriginal == $passwordVerification;
+        return mb_strlen($password) >= 8 && preg_match($containsLetter, $password) && preg_match($containsNumber, $password);
     }
 
 }

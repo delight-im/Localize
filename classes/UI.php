@@ -489,17 +489,12 @@ abstract class UI {
         $textUsername = new UI_Form_Text('Username', 'sign_up[username]', 'Choose your username', false, 'Please choose your username that you\'ll need to sign in with later.');
         $form->addContent($textUsername);
 
-        $textPassword1 = new UI_Form_Text('Password', 'sign_up[password1]', 'Type a strong password', true, 'Please choose a password of at least 8 characters. Include letters (A-Z) and numbers (0-9).');
-        $textPassword1->setJSOnKeyUp('document.getElementById(\'sign_up[submit]\').disabled = !Authentication.isPasswordAllowed(this, document.getElementById(\'sign_up[password2]\'));');
-        $form->addContent($textPassword1);
-
-        $textPassword2 = new UI_Form_Text('Password', 'sign_up[password2]', 'Repeat your password', true, 'Please verify your password by typing it again. This is to prevent any typing errors.');
-        $textPassword2->setJSOnKeyUp('document.getElementById(\'sign_up[submit]\').disabled = !Authentication.isPasswordAllowed(document.getElementById(\'sign_up[password1]\'), this);');
-        $form->addContent($textPassword2);
+        $textPassword = new UI_Form_Text('Password', 'sign_up[password]', 'Type a strong password', true, 'Please choose a password of at least 8 characters. Include letters (A-Z) and numbers (0-9).');
+        $form->addContent($textPassword);
 
         $buttonSubmit = new UI_Form_Button('Sign up', UI_Form_Button::TYPE_SUCCESS);
         $buttonSubmit->setID('sign_up[submit]');
-        $buttonSubmit->setEnabled(false);
+        $buttonSubmit->setJSEvents('if (Authentication.isPasswordAllowed(document.getElementById(\'sign_up[password]\'))) { return true; } else { alert(\'Please make sure to enter a valid password and to re-type the verification correctly!\'); return false; }');
         $buttonCancel = new UI_Link('Cancel', URL::toDashboard(), UI_Link::TYPE_UNIMPORTANT);
         $form->addContent(new UI_Form_ButtonGroup(array(
             $buttonSubmit,
@@ -1181,19 +1176,19 @@ abstract class UI {
                     $radioType->addOption('<abbr title="Resource type for quantity strings">plurals</abbr>', 3, 'addPhraseTypeSelect(\'addPhraseGroup_Plurals\');');
                     $form->addContent($radioType);
 
-                    $textUsername = new UI_Form_Text('Key', 'add_phrase[key]', 'Unique identifier', false, 'This is the short string that you\'ll identify the phrase(s) with later.');
-                    $form->addContent($textUsername);
+                    $textPhraseKey = new UI_Form_Text('Key', 'add_phrase[key]', 'Unique identifier', false, 'This is the short string that you\'ll identify the phrase(s) with later.');
+                    $form->addContent($textPhraseKey);
 
-                    $textUsername = new UI_Form_Textarea('String', 'add_phrase[string]', 'String for '.$defaultLanguage->getNameFull(), 'You can later translate this string to other languages.', false, '', 2, $defaultLanguage->isRTL(), '', 'addPhraseGroup_String');
-                    $form->addContent($textUsername);
+                    $textPhraseStringValue = new UI_Form_Textarea('String', 'add_phrase[string]', 'String for '.$defaultLanguage->getNameFull(), 'You can later translate this string to other languages.', false, '', 2, $defaultLanguage->isRTL(), '', 'addPhraseGroup_String');
+                    $form->addContent($textPhraseStringValue);
 
-                    $textPassword1 = new UI_Form_Textarea('Item', 'add_phrase[string_array][]', 'Item for '.$defaultLanguage->getNameFull(), 'You can later translate this item to other languages.', false, '', 2, $defaultLanguage->isRTL(), '', 'addPhraseGroup_StringArray', 'display:none;', false);
-                    $form->addContent($textPassword1);
+                    $textPhraseStringArrayValue = new UI_Form_Textarea('Item', 'add_phrase[string_array][]', 'Item for '.$defaultLanguage->getNameFull(), 'You can later translate this item to other languages.', false, '', 2, $defaultLanguage->isRTL(), '', 'addPhraseGroup_StringArray', 'display:none;', false);
+                    $form->addContent($textPhraseStringArrayValue);
 
                     $quantities = Phrase_Android_Plurals::getList();
                     foreach ($quantities as $quantity) {
-                        $textPassword2 = new UI_Form_Textarea($quantity, 'add_phrase[plurals]['.$quantity.']', 'Quantity for '.$defaultLanguage->getNameFull(), 'You can later translate this quantity to other languages.', false, '', 2, $defaultLanguage->isRTL(), '', 'addPhraseGroup_Plurals', 'display:none;');
-                        $form->addContent($textPassword2);
+                        $textPhrasePluralsValue = new UI_Form_Textarea($quantity, 'add_phrase[plurals]['.$quantity.']', 'Quantity for '.$defaultLanguage->getNameFull(), 'You can later translate this quantity to other languages.', false, '', 2, $defaultLanguage->isRTL(), '', 'addPhraseGroup_Plurals', 'display:none;');
+                        $form->addContent($textPhrasePluralsValue);
                     }
 
                     $buttonSubmit = new UI_Form_Button('Save phrase(s)', UI_Form_Button::TYPE_SUCCESS);

@@ -35,19 +35,18 @@ elseif (UI::isPage('sign_up')) {
                     $data_type = User::TYPE_TRANSLATOR;
                 }
                 $data_username = isset($data['username']) && is_string($data['username']) ? trim($data['username']) : '';
-                $data_password1 = isset($data['password1']) && is_string($data['password1']) ? trim($data['password1']) : '';
-                $data_password2 = isset($data['password2']) && is_string($data['password2']) ? trim($data['password2']) : '';
+                $data_passwordText = isset($data['password']) && is_string($data['password']) ? trim($data['password']) : '';
 
-                if (Authentication::isPasswordAllowed($data_password1, $data_password2)) {
+                if (Authentication::isPasswordAllowed($data_passwordText)) {
                     if (mb_strlen($data_username) >= 3) {
                         if ($data_type == User::TYPE_TRANSLATOR || $data_type == User::TYPE_DEVELOPER) {
-                            $data_password = password_hash($data_password1, PASSWORD_BCRYPT);
+                            $data_password = password_hash($data_passwordText, PASSWORD_BCRYPT);
                             try {
                                 Database::insert("INSERT INTO users (username, password, type, join_date) VALUES (".Database::escape($data_username).", ".Database::escape($data_password).", ".intval($data_type).", ".time().")");
                                 Database::Throttling_increaseCounter(UI::getIPAddress(), 'sign_up');
 
                                 // show password as a hidden value masked by asterisks which can be clicked to expose the password
-                                $passwordShowable = '<code onclick="this.innerHTML = \''.UI::htmlspecialcharsJS($data_password1).'\';" style="cursor:pointer;">'.str_repeat('*', mb_strlen($data_password1)).'</code>';
+                                $passwordShowable = '<code onclick="this.innerHTML = \''.UI::htmlspecialcharsJS($data_passwordText).'\';" style="cursor:pointer;">'.str_repeat('*', mb_strlen($data_passwordText)).'</code>';
                                 $alert = new UI_Alert('<p>Your free account has been created!</p><p>Please sign in by entering your username and password in the top-right corner.</p><p>Username: <code>'.htmlspecialchars($data_username).'</code></p><p>Password: '.$passwordShowable.' (click to show)</p><p>Please remember your password as we won\'t be able to recover access to your account in case you forget it.</p>', UI_Alert::TYPE_SUCCESS);
                             }
                             catch (Exception $e) {
