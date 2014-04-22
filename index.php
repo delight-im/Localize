@@ -795,40 +795,47 @@ elseif (UI::isPage('phrase')) {
 else {
     if (UI::isAction('sign_in')) {
         if (UI_Form::isCSRFTokenValid($_POST)) {
-            $data = UI::getDataPOST('sign_in');
+            if (Database::Throttling_isAllowed(UI::getIPAddress(), 'sign_in')) {
+                $data = UI::getDataPOST('sign_in');
 
-            $data_username = isset($data['username']) && is_string($data['username']) ? trim($data['username']) : '';
-            $data_password = isset($data['password']) && is_string($data['password']) ? trim($data['password']) : '';
-            $data_returnURL = '';
-            $data_returnURL_Base64 = isset($data['returnURL']) && is_string($data['returnURL']) ? trim($data['returnURL']) : '';
-            if ($data_returnURL_Base64 != '') {
-                $temp = base64_decode($data_returnURL_Base64);
-                if ($temp !== false) {
-                    $data_returnURL = $temp;
+                $data_username = isset($data['username']) && is_string($data['username']) ? trim($data['username']) : '';
+                $data_password = isset($data['password']) && is_string($data['password']) ? trim($data['password']) : '';
+                $data_returnURL = '';
+                $data_returnURL_Base64 = isset($data['returnURL']) && is_string($data['returnURL']) ? trim($data['returnURL']) : '';
+                if ($data_returnURL_Base64 != '') {
+                    $temp = base64_decode($data_returnURL_Base64);
+                    if ($temp !== false) {
+                        $data_returnURL = $temp;
+                    }
                 }
-            }
 
-            $userData = Database::selectFirst("SELECT id, username, password, real_name, localeCountry, localeTimezone, email, email_lastVerificationAttempt, type, join_date FROM users WHERE username = ".Database::escape($data_username));
-            if (!empty($userData)) {
-                if (isset($userData['password']) && password_verify($data_password, $userData['password'])) {
-                    $userObject = new User($userData['id'], $userData['type'], $userData['username'], $userData['real_name'], $userData['localeCountry'], $userData['localeTimezone'], $userData['email'], $userData['email_lastVerificationAttempt'], $userData['join_date']);
-                    Authentication::signIn($userObject);
-                    $pendingEdits = Database::getPendingEditsByUser($userData['id']);
-                    Authentication::restoreCachedEdits($pendingEdits);
-                    Database::setLastLogin($userData['id'], time());
-                    if (empty($data_returnURL) || !URL::isProject($data_returnURL)) {
-                        $alert = new UI_Alert('<p>You have successfully been signed in!</p>', UI_Alert::TYPE_SUCCESS);
+                $userData = Database::selectFirst("SELECT id, username, password, real_name, localeCountry, localeTimezone, email, email_lastVerificationAttempt, type, join_date FROM users WHERE username = ".Database::escape($data_username));
+                if (!empty($userData)) {
+                    if (isset($userData['password']) && password_verify($data_password, $userData['password'])) {
+                        $userObject = new User($userData['id'], $userData['type'], $userData['username'], $userData['real_name'], $userData['localeCountry'], $userData['localeTimezone'], $userData['email'], $userData['email_lastVerificationAttempt'], $userData['join_date']);
+                        Authentication::signIn($userObject);
+                        $pendingEdits = Database::getPendingEditsByUser($userData['id']);
+                        Authentication::restoreCachedEdits($pendingEdits);
+                        Database::setLastLogin($userData['id'], time());
+                        Database::Throttling_increaseCounter(UI::getIPAddress(), 'sign_in');
+
+                        if (empty($data_returnURL) || !URL::isProject($data_returnURL)) {
+                            $alert = new UI_Alert('<p>You have successfully been signed in!</p>', UI_Alert::TYPE_SUCCESS);
+                        }
+                        else {
+                            UI::redirectToURL($data_returnURL);
+                        }
                     }
                     else {
-                        UI::redirectToURL($data_returnURL);
+                        $alert = new UI_Alert('<p>Please check your password again!</p>', UI_Alert::TYPE_WARNING);
                     }
                 }
                 else {
-                    $alert = new UI_Alert('<p>Please check your password again!</p>', UI_Alert::TYPE_WARNING);
+                    $alert = new UI_Alert('<p>We could not find any user with this name!</p>', UI_Alert::TYPE_WARNING);
                 }
             }
             else {
-                $alert = new UI_Alert('<p>We could not find any user with this name!</p>', UI_Alert::TYPE_WARNING);
+                $alert = UI_Alert::forActionThrottled();
             }
         }
         else {
