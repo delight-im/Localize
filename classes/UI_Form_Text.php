@@ -86,8 +86,19 @@ class UI_Form_Text extends UI {
         }
         $out .= ' name="'.htmlspecialchars($this->key).'" placeholder="'.htmlspecialchars($this->placeholder).'">';
         if (!$this->isInline) {
-            if ($this->helpText != '') {
-                $out .= '<span class="help-block">'.$this->helpText.'</span>';
+            if ($this->helpText != '' || $this->isPassword) {
+                $out .= '<span class="help-block">'.$this->helpText;
+                if ($this->isPassword) {
+                    if ($this->helpText != '') {
+                        $out .= '<br />';
+                    }
+                    $out .= '<input type="checkbox" checked="checked"';
+                    $out .= ' id="pw_hide_'.htmlspecialchars($this->key).'"';
+                    $out .= ' name="pw_hide_'.htmlspecialchars($this->key).'"';
+                    $out .= ' onclick="this.parentNode.previousSibling.type = this.checked ? \'password\' : \'text\';"';
+                    $out .= '> <label for="pw_hide_'.htmlspecialchars($this->key).'">Hide password</label>';
+                }
+                echo '</span>';
             }
             $out .= '</div>';
             $out .= '</div>';
