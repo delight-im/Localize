@@ -8,6 +8,11 @@ Order allow,deny
 Deny from all
 </Files>
 
+# Cache media files for one week
+<FilesMatch "\.(js|css|gif|jpg|jpeg|png|ico)$">
+Header set Cache-Control "max-age=604800"
+</FilesMatch>
+
 # Enable URL rewriting
 RewriteEngine On
 
