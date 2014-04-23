@@ -870,15 +870,21 @@ else {
                 if (UI_Form::isCSRFTokenValid($_POST)) {
                     $data = UI::getDataPOST('requestInvitation');
                     $data_repositoryID = isset($data['repositoryID']) ? UI::validateID($data['repositoryID'], true) : 0;
-                    $data_userID = Authentication::getUserID();
-                    if ($data_repositoryID > 0 && $data_userID > 0) {
-                        try {
-                            Database::requestInvitation($data_repositoryID, $data_userID);
-                            $alert = new UI_Alert('<p>Your request for an invitation has been sent.</p>', UI_Alert::TYPE_SUCCESS);
+                    $repositoryData = Database::getRepositoryData($data_repositoryID);
+                    if (!empty($repositoryData)) {
+                        $data_userID = Authentication::getUserID();
+                        if ($data_repositoryID > 0 && $data_userID > 0) {
+                            try {
+                                Database::requestInvitation($data_repositoryID, $data_userID);
+                                $alert = new UI_Alert('<p>Your request for an invitation has been sent.</p>', UI_Alert::TYPE_SUCCESS);
+                            }
+                            catch (Exception $e) {
+                                $alert = new UI_Alert('<p>You have already requested an invitation. Please check the status on your dashboard.</p>', UI_Alert::TYPE_WARNING);
+                            }
                         }
-                        catch (Exception $e) {
-                            $alert = new UI_Alert('<p>You have already requested an invitation. Please check the status on your dashboard.</p>', UI_Alert::TYPE_WARNING);
-                        }
+                    }
+                    else {
+                        $alert = new UI_Alert('<p>The project could not be found.</p>', UI_Alert::TYPE_WARNING);
                     }
                 }
                 else {
