@@ -38,8 +38,10 @@ We are currently **not** interested in reports of the following weaknesses:
 
  * Denial of Service (DoS)
  * Brute force attacks
- * Missing SSL/TLS
- * Missing `autocomplete="off"` for passwords
+ * Information disclosure in HTTP headers `Server` and `Via`
+ * HTTP Strict Transport Security (HSTS): duration too short
+ * Apache/PHP: not the latest version
+ * Password fields: missing `autocomplete="off"`
 
 # Public disclosure
 
