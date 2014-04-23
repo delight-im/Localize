@@ -2,9 +2,6 @@
 RewriteCond %{REQUEST_METHOD} !^(GET|POST|HEAD)
 RewriteRule .* - [R=405,L]
 
-# Remove unnecessary HTTP headers
-Header unset X-Powered-By
-
 # Prevent access to private/internal files
 <Files ".gitignore">
 Order allow,deny

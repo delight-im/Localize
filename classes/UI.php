@@ -68,6 +68,8 @@ abstract class UI {
             // use HTTP Strict Transport Security (HSTS) with a period of three months
             header('Strict-Transport-Security: max-age=7884000');
         }
+        // remove unnecessary HTTP headers
+        header_remove('X-Powered-By');
 
         if (self::ERROR_REPORTING_ON) {
             error_reporting(E_ALL);
