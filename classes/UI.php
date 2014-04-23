@@ -65,8 +65,8 @@ abstract class UI {
         // prevent content sniffing (MIME sniffing)
         header('X-Content-Type-Options: nosniff');
         if (self::FORCE_HTTPS) {
-            // use HTTP Strict Transport Security (HSTS) with a period of 14 days
-            header('Strict-Transport-Security: max-age=1209600');
+            // use HTTP Strict Transport Security (HSTS) with a period of three months
+            header('Strict-Transport-Security: max-age=7884000');
         }
 
         if (self::ERROR_REPORTING_ON) {
