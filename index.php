@@ -188,7 +188,7 @@ elseif (UI::isPage('language')) {
                         $counter = 0;
                         foreach ($data['edits'] as $phraseID => $phraseSubKeys) {
                             foreach ($phraseSubKeys as $phraseSubKey => $phraseSuggestedValue) {
-                                $previousValue = isset($data['previous'][$phraseID][$phraseSubKey]) ? trim($data['previous'][$phraseID][$phraseSubKey]) : '';
+                                $previousValue = isset($data['previous'][$phraseID][$phraseSubKey]) && is_string($data['previous'][$phraseID][$phraseSubKey]) ? trim($data['previous'][$phraseID][$phraseSubKey]) : '';
                                 $phraseSuggestedValue = trim($phraseSuggestedValue);
                                 if ($phraseSuggestedValue != '' && $phraseSuggestedValue != $previousValue) {
                                     $editData[] = new Edit(URL::decodeID($phraseID), $phraseSubKey, $phraseSuggestedValue);
