@@ -173,7 +173,7 @@ class Authentication {
     }
 
     public static function getCachedEdit($repositoryID, $languageID, $phraseID, $phraseSubKey, $defaultValue = '') {
-        if (isset($_SESSION['edits'][$repositoryID][$languageID][$phraseID][$phraseSubKey])) {
+        if (isset($_SESSION['edits'][$repositoryID][$languageID][$phraseID][$phraseSubKey]) && is_string($_SESSION['edits'][$repositoryID][$languageID][$phraseID][$phraseSubKey])) {
             return trim($_SESSION['edits'][$repositoryID][$languageID][$phraseID][$phraseSubKey]);
         }
         else {
