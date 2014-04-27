@@ -22,7 +22,7 @@ Localize is open-source and checking out [our GitHub repository](http://source.l
 
 # Scope of bugs
 
-We are interested in all (security-related) bugs on our website at [www.localize.im](https://www.localize.im/). The following three categories show what's most important to us and our users:
+We are interested in all (security-related) bugs on our website at [www.localize.im](https://www.localize.im/). The following categories show what's most important to us and our users:
 
  * SQL injection
  * Session hijacking/fixation
