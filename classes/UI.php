@@ -137,7 +137,6 @@ abstract class UI {
             URL::toDashboard(),
             URL::toPage('settings'),
             URL::toPage('sign_out'),
-            self::isGzipSupported() ? '.gz' : '',
             $csrfToken->getHTML()
         );
     }
@@ -148,13 +147,8 @@ abstract class UI {
             $footerHTML,
             URL::toPage('help'),
 			URL::toPage('contact'),
-            CONFIG_ASSETS_CDN === '' ? URL::toResource('js/') : CONFIG_ASSETS_CDN.'js/',
-            self::isGzipSupported() ? '.gz' : ''
+            CONFIG_ASSETS_CDN === '' ? URL::toResource('js/') : CONFIG_ASSETS_CDN.'js/'
         );
-    }
-
-    protected static function isGzipSupported() {
-        return CONFIG_USE_GZIP_FILES && isset($_SERVER['HTTP_ACCEPT_ENCODING']) && stripos($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') !== false;
     }
 
     protected static function showBreadcrumb() {
