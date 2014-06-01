@@ -38,10 +38,11 @@ We are currently **not** interested in reports of the following weaknesses:
 
  * Denial of Service (DoS)
  * Brute force attacks
- * Information disclosure in HTTP headers `Server` and `Via`
+ * Information disclosure in HTTP headers `Server`, `X-Powered-By` or `Via`
  * HTTP Strict Transport Security (HSTS): duration too short
  * Apache/PHP: not the latest version
  * Password fields: missing `autocomplete="off"`
+ * username enumeration
 
 # Public disclosure
 
