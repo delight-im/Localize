@@ -70,6 +70,8 @@ abstract class UI {
         }
         // remove unnecessary HTTP headers
         header_remove('X-Powered-By');
+        // present a link to the project's bug bounty to people who check the HTTP headers
+        header('X-Bug-Bounty: http://security.localize.im/');
 
         if (self::ERROR_REPORTING_ON) {
             error_reporting(E_ALL);
