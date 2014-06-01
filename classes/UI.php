@@ -1385,20 +1385,47 @@ abstract class UI {
                     if (count($languageLeftPhrases) != count($languageRightPhrases)) {
                         throw new Exception('Count of left language\'s phrases does not match right language\'s count of phrases');
                     }
+
+                    $phrasesTableColumnNames = array('left' => '', 'right' => '');
                     if ($language->getID() == $defaultLanguage->getID()) { // viewing the default language itself
-                        $phrasesTable = new UI_Table(array('Unique key', $language->getNameFull()));
-                        $phrasesTable->setColumnPriorities(6, 6);
+                        $phrasesTableColumnNames['left'] = 'Unique key';
+                        $phrasesTableColumnNames['right'] = $language->getNameFull();
                     }
                     else { // viewing another language that will be compared to default language
-                        $phrasesTable = new UI_Table(array($defaultLanguage->getNameFull(), $language->getNameFull()));
+                        $phrasesTableColumnNames['left'] = $defaultLanguage->getNameFull();
+                        $phrasesTableColumnNames['right'] = $language->getNameFull();
+                    }
+                    if ($mayMovePhrases) {
+                        $phrasesTable = new UI_Table(array(
+                            '&nbsp;',
+                            $phrasesTableColumnNames['left'],
+                            $phrasesTableColumnNames['right'])
+                        );
+                        $phrasesTable->setColumnPriorities(1, 5, 6);
+                    }
+                    else {
+                        $phrasesTable = new UI_Table(array(
+                            $phrasesTableColumnNames['left'],
+                            $phrasesTableColumnNames['right'])
+                        );
                         $phrasesTable->setColumnPriorities(6, 6);
                     }
+
                     $translationSecret = Authentication::createSecret();
                     if (count($languageLeftPhrases) <= 0) {
-                        $phrasesTable->addRow(array(
-                            'No phrases yet',
-                            'No phrases yet'
-                        ));
+                        if ($mayMovePhrases) {
+                            $phrasesTable->addRow(array(
+                                '',
+                                'No phrases yet',
+                                'No phrases yet'
+                            ));
+                        }
+                        else {
+                            $phrasesTable->addRow(array(
+                                'No phrases yet',
+                                'No phrases yet'
+                            ));
+                        }
                     }
                     else {
                         Database::initTranslationSession($repositoryID, $languageID, Authentication::getUserID(), $translationSecret, time());
@@ -1422,12 +1449,20 @@ abstract class UI {
                                     $valuePrevious = new UI_Form_Hidden(str_replace('[edits]', '[previous]', $phraseFormKey), $value);
                                     $valueEdit = new UI_Form_Textarea('', $phraseFormKey, $value, '', true, htmlspecialchars($value), UI_Form_Textarea::getOptimalRowCount($value, 2), $defaultLanguage->isRTL(), 'setUnsavedChanges(true);');
 
-                                    $phraseKeyLink = new UI_Link($phraseKeyName, URL::toPhraseDetails($repositoryID, $languageID, $defaultPhrase->getID()));
-
-                                    $phrasesTable->addRow(array(
-                                        $phraseKeyLink->getHTML(),
-                                        $valuePrevious->getHTML().$valueEdit->getHTML()
-                                    ));
+                                    if ($mayMovePhrases) {
+                                        $editPhraseLink = new UI_Link('Edit', URL::toPhraseDetails($repositoryID, $languageID, $defaultPhrase->getID()), UI_Link::TYPE_UNIMPORTANT);
+                                        $phrasesTable->addRow(array(
+                                            $editPhraseLink->getHTML(),
+                                            $phraseKeyName,
+                                            $valuePrevious->getHTML().$valueEdit->getHTML()
+                                        ));
+                                    }
+                                    else {
+                                        $phrasesTable->addRow(array(
+                                            $phraseKeyName,
+                                            $valuePrevious->getHTML().$valueEdit->getHTML()
+                                        ));
+                                    }
                                 }
                             }
                         }
@@ -1438,17 +1473,27 @@ abstract class UI {
                                 $valuesLeft = $defaultPhrase->getPhraseValues();
                                 $valuesRight = $rightPhrase->getPhraseValues();
                                 foreach ($valuesLeft as $subKey => $valueLeft) {
-                                    $valueLeft = '<span dir="'.($defaultLanguage->isRTL() ? 'rtl' : 'ltr').'">'.nl2br(htmlspecialchars($valueLeft)).'</span>';
+                                    $valueLeft = '<span dir="'.($defaultLanguage->isRTL() ? 'rtl' : 'ltr').'" title="'.htmlspecialchars($defaultPhrase->getPhraseKey()).'">'.nl2br(htmlspecialchars($valueLeft)).'</span>';
                                     $phraseKey = 'updatePhrases[edits]['.URL::encodeID($defaultPhrase->getID()).']['.$subKey.']';
                                     $valuesRight[$subKey] = Authentication::getCachedEdit($repositoryID, $languageID, URL::encodeID($defaultPhrase->getID()), $subKey, $valuesRight[$subKey]);
 
                                     $valuePrevious = new UI_Form_Hidden(str_replace('[edits]', '[previous]', $phraseKey), $valuesRight[$subKey]);
                                     $valueEdit = new UI_Form_Textarea('', $phraseKey, $valuesRight[$subKey], '', true, htmlspecialchars($valuesRight[$subKey]), UI_Form_Textarea::getOptimalRowCount($valueLeft), $language->isRTL(), 'setUnsavedChanges(true);');
 
-                                    $phrasesTable->addRow(array(
-                                        $valueLeft,
-                                        $valuePrevious->getHTML().$valueEdit->getHTML()
-                                    ));
+                                    if ($mayMovePhrases) {
+                                        $editPhraseLink = new UI_Link('Edit', URL::toPhraseDetails($repositoryID, $languageID, $defaultPhrase->getID()), UI_Link::TYPE_UNIMPORTANT);
+                                        $phrasesTable->addRow(array(
+                                            $editPhraseLink->getHTML(),
+                                            $valueLeft,
+                                            $valuePrevious->getHTML().$valueEdit->getHTML()
+                                        ));
+                                    }
+                                    else {
+                                        $phrasesTable->addRow(array(
+                                            $valueLeft,
+                                            $valuePrevious->getHTML().$valueEdit->getHTML()
+                                        ));
+                                    }
                                 }
                             }
                         }
