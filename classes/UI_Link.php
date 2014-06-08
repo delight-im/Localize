@@ -18,6 +18,7 @@ class UI_Link extends UI {
     protected $cssClasses;
     protected $cssStyles;
     protected $jsEvents;
+    protected $tabIndex;
 
     function __construct($label, $target, $buttonType = self::TYPE_NONE, $cssClasses = '', $cssStyles = '', $jsEvents = '') {
         $this->label = $label;
@@ -26,6 +27,11 @@ class UI_Link extends UI {
         $this->cssClasses = $cssClasses;
         $this->cssStyles = $cssStyles;
         $this->jsEvents = $jsEvents;
+        $this->tabIndex = NULL;
+    }
+
+    public function setTabIndex($tabIndex) {
+        $this->tabIndex = $tabIndex;
     }
 
     public function getHTML() {
@@ -36,6 +42,9 @@ class UI_Link extends UI {
         }
         if (!empty($this->jsEvents)) {
             $out .= ' onclick="'.$this->jsEvents.'"';
+        }
+        if (isset($this->tabIndex)) {
+            $out .= ' tabindex="'.htmlspecialchars($this->tabIndex).'"';
         }
         $out .= '>'.$this->label.'</a>';
         return $out;

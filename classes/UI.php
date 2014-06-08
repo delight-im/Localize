@@ -1453,6 +1453,7 @@ abstract class UI {
 
                                     if ($mayMovePhrases) {
                                         $editPhraseLink = new UI_Link('Edit', URL::toPhraseDetails($repositoryID, $languageID, $defaultPhrase->getID()), UI_Link::TYPE_UNIMPORTANT);
+                                        $editPhraseLink->setTabIndex('-1');
                                         $phrasesTable->addRow(array(
                                             $editPhraseLink->getHTML(),
                                             $phraseKeyName,
@@ -1484,6 +1485,7 @@ abstract class UI {
 
                                     if ($mayMovePhrases) {
                                         $editPhraseLink = new UI_Link('Edit', URL::toPhraseDetails($repositoryID, $languageID, $defaultPhrase->getID()), UI_Link::TYPE_UNIMPORTANT);
+                                        $editPhraseLink->setTabIndex('-1');
                                         $phrasesTable->addRow(array(
                                             $editPhraseLink->getHTML(),
                                             $valueLeft,
