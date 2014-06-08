@@ -1436,15 +1436,6 @@ abstract class UI {
                             foreach ($languageLeftPhrases as $defaultPhrase) {
                                 $values = $defaultPhrase->getPhraseValues();
                                 foreach ($values as $subKey => $value) {
-                                    $phraseKey = $defaultPhrase->getPhraseKey();
-                                    $phraseKeyName = $phraseKey;
-                                    if ($defaultPhrase instanceof Phrase_Android_StringArray) {
-                                        $phraseKeyName .= ' » ['.$subKey.']';
-                                    }
-                                    elseif ($defaultPhrase instanceof Phrase_Android_Plurals) {
-                                        $phraseKeyName .= ' » '.$subKey;
-                                    }
-
                                     $phraseFormKey = 'updatePhrases[edits]['.URL::encodeID($defaultPhrase->getID()).']['.$subKey.']';
                                     $value = Authentication::getCachedEdit($repositoryID, $languageID, URL::encodeID($defaultPhrase->getID()), $subKey, $value);
 
@@ -1456,13 +1447,13 @@ abstract class UI {
                                         $editPhraseLink->setTabIndex('-1');
                                         $phrasesTable->addRow(array(
                                             $editPhraseLink->getHTML(),
-                                            $phraseKeyName,
+                                            Phrase_Android::getFullyQualifiedName($defaultPhrase, $subKey),
                                             $valuePrevious->getHTML().$valueEdit->getHTML()
                                         ));
                                     }
                                     else {
                                         $phrasesTable->addRow(array(
-                                            $phraseKeyName,
+                                            Phrase_Android::getFullyQualifiedName($defaultPhrase, $subKey),
                                             $valuePrevious->getHTML().$valueEdit->getHTML()
                                         ));
                                     }
@@ -1476,7 +1467,7 @@ abstract class UI {
                                 $valuesLeft = $defaultPhrase->getPhraseValues();
                                 $valuesRight = $rightPhrase->getPhraseValues();
                                 foreach ($valuesLeft as $subKey => $valueLeft) {
-                                    $valueLeft = '<span dir="'.($defaultLanguage->isRTL() ? 'rtl' : 'ltr').'" title="'.htmlspecialchars($defaultPhrase->getPhraseKey()).'">'.nl2br(htmlspecialchars($valueLeft)).'</span>';
+                                    $valueLeftHTML = '<span dir="'.($defaultLanguage->isRTL() ? 'rtl' : 'ltr').'">'.nl2br(htmlspecialchars($valueLeft)).'</span><span dir="ltr" class="small" style="display:block; color:#999; margin-top:4px;">'.Phrase_Android::getFullyQualifiedName($defaultPhrase, $subKey).'</span>';
                                     $phraseKey = 'updatePhrases[edits]['.URL::encodeID($defaultPhrase->getID()).']['.$subKey.']';
                                     $valuesRight[$subKey] = Authentication::getCachedEdit($repositoryID, $languageID, URL::encodeID($defaultPhrase->getID()), $subKey, $valuesRight[$subKey]);
 
@@ -1488,13 +1479,13 @@ abstract class UI {
                                         $editPhraseLink->setTabIndex('-1');
                                         $phrasesTable->addRow(array(
                                             $editPhraseLink->getHTML(),
-                                            $valueLeft,
+                                            $valueLeftHTML,
                                             $valuePrevious->getHTML().$valueEdit->getHTML()
                                         ));
                                     }
                                     else {
                                         $phrasesTable->addRow(array(
-                                            $valueLeft,
+                                            $valueLeftHTML,
                                             $valuePrevious->getHTML().$valueEdit->getHTML()
                                         ));
                                     }

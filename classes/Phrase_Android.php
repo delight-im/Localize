@@ -105,6 +105,21 @@ abstract class Phrase_Android extends Phrase implements PhraseImplementation {
         }
     }
 
+    public static function getFullyQualifiedName($defaultPhrase, $subKey) {
+        if ($defaultPhrase instanceof Phrase_Android_StringArray) {
+            return $defaultPhrase->getPhraseKey().' » ['.$subKey.']';
+        }
+        elseif ($defaultPhrase instanceof Phrase_Android_Plurals) {
+            return $defaultPhrase->getPhraseKey().' » '.$subKey;
+        }
+        elseif ($defaultPhrase instanceof Phrase_Android_String) {
+            return $defaultPhrase->getPhraseKey();
+        }
+        else {
+            return '';
+        }
+    }
+
 }
 
 ?>
