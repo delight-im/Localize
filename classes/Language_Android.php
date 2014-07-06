@@ -17,202 +17,222 @@ class Language_Android extends Language {
      * @throws Exception if the given language ID could not be found
      */
     public static function getLanguageKey($languageID) {
+        if ($languageID == Language::LANGUAGE_ENGLISH) {
+            return 'values';
+        }
+        else {
+            return 'values-'.self::getLanguageCode($languageID);
+        }
+    }
+
+    /**
+     * Returns the platform-specific code (string) for the given language
+     *
+     * @param int $languageID the language ID to get the key for
+     * @return string code for this language
+     * @throws Exception if the given language ID could not be found
+     */
+    public static function getLanguageCode($languageID) {
         switch ($languageID) {
             case self::LANGUAGE_ENGLISH:
-                return 'values';
+                return 'en';
             case self::LANGUAGE_AFRIKAANS:
-                return 'values-af';
+                return 'af';
             case self::LANGUAGE_AMHARIC:
-                return 'values-am';
+                return 'am';
             case self::LANGUAGE_ARABIC:
-                return 'values-ar';
+                return 'ar';
             case self::LANGUAGE_AZERBAIJANI:
-                return 'values-az';
+                return 'az';
             case self::LANGUAGE_BASHKIR:
-                return 'values-ba';
+                return 'ba';
             case self::LANGUAGE_BELARUSIAN:
-                return 'values-be';
+                return 'be';
             case self::LANGUAGE_BULGARIAN:
-                return 'values-bg';
+                return 'bg';
             case self::LANGUAGE_BENGALI:
-                return 'values-bn';
+                return 'bn';
             case self::LANGUAGE_BRETON:
-                return 'values-br';
+                return 'br';
             case self::LANGUAGE_BOSNIAN:
-                return 'values-bs';
+                return 'bs';
             case self::LANGUAGE_CATALAN:
-                return 'values-ca';
+                return 'ca';
             case self::LANGUAGE_CZECH:
-                return 'values-cs';
+                return 'cs';
             case self::LANGUAGE_CHUVASH:
-                return 'values-cv';
+                return 'cv';
             case self::LANGUAGE_WELSH:
-                return 'values-cy';
+                return 'cy';
             case self::LANGUAGE_DANISH:
-                return 'values-da';
+                return 'da';
             case self::LANGUAGE_GERMAN:
-                return 'values-de';
+                return 'de';
             case self::LANGUAGE_GREEK:
-                return 'values-el';
+                return 'el';
             case self::LANGUAGE_SPANISH:
-                return 'values-es';
+                return 'es';
             case self::LANGUAGE_ESTONIAN:
-                return 'values-et';
+                return 'et';
             case self::LANGUAGE_BASQUE:
-                return 'values-eu';
+                return 'eu';
             case self::LANGUAGE_PERSIAN:
-                return 'values-fa';
+                return 'fa';
             case self::LANGUAGE_FINNISH:
-                return 'values-fi';
+                return 'fi';
             case self::LANGUAGE_FRENCH:
-                return 'values-fr';
+                return 'fr';
             case self::LANGUAGE_WESTERN_FRISIAN:
-                return 'values-fy';
+                return 'fy';
             case self::LANGUAGE_IRISH:
-                return 'values-ga';
+                return 'ga';
             case self::LANGUAGE_GALICIAN:
-                return 'values-gl';
+                return 'gl';
             case self::LANGUAGE_GUJARATI:
-                return 'values-gu';
+                return 'gu';
             case self::LANGUAGE_HINDI:
-                return 'values-hi';
+                return 'hi';
             case self::LANGUAGE_HAITIAN:
-                return 'values-ht';
+                return 'ht';
             case self::LANGUAGE_CROATIAN:
-                return 'values-hr';
+                return 'hr';
             case self::LANGUAGE_HUNGARIAN:
-                return 'values-hu';
+                return 'hu';
             case self::LANGUAGE_ARMENIAN:
-                return 'values-hy';
+                return 'hy';
             case self::LANGUAGE_INDONESIAN:
-                return 'values-id';
+                return 'id';
             case self::LANGUAGE_ICELANDIC:
-                return 'values-is';
+                return 'is';
             case self::LANGUAGE_ITALIAN:
-                return 'values-it';
+                return 'it';
             case self::LANGUAGE_HEBREW:
-                return 'values-iw';
+                return 'iw';
             case self::LANGUAGE_JAPANESE:
-                return 'values-ja';
+                return 'ja';
             case self::LANGUAGE_JAVANESE:
-                return 'values-jv';
+                return 'jv';
             case self::LANGUAGE_GEORGIAN:
-                return 'values-ka';
+                return 'ka';
             case self::LANGUAGE_KANNADA:
-                return 'values-kn';
+                return 'kn';
             case self::LANGUAGE_KAZAKH:
-                return 'values-kk';
+                return 'kk';
             case self::LANGUAGE_KOREAN:
-                return 'values-ko';
+                return 'ko';
             case self::LANGUAGE_KURDISH:
-                return 'values-ku';
+                return 'ku';
             case self::LANGUAGE_KIRGHIZ:
-                return 'values-ky';
+                return 'ky';
             case self::LANGUAGE_LUXEMBOURGISH:
-                return 'values-lb';
+                return 'lb';
             case self::LANGUAGE_LITHUANIAN:
-                return 'values-lt';
+                return 'lt';
             case self::LANGUAGE_LATVIAN:
-                return 'values-lv';
+                return 'lv';
             case self::LANGUAGE_MALAGASY:
-                return 'values-mg';
+                return 'mg';
             case self::LANGUAGE_MACEDONIAN:
-                return 'values-mk';
+                return 'mk';
             case self::LANGUAGE_MALAYALAM:
-                return 'values-ml';
+                return 'ml';
             case self::LANGUAGE_MARATHI:
-                return 'values-mr';
+                return 'mr';
             case self::LANGUAGE_MALAY:
-                return 'values-ms';
+                return 'ms';
             case self::LANGUAGE_NEPALI:
-                return 'values-ne';
+                return 'ne';
             case self::LANGUAGE_NORWEGIAN_BOKMAL:
-                return 'values-nb';
+                return 'nb';
             case self::LANGUAGE_DUTCH:
-                return 'values-nl';
+                return 'nl';
             case self::LANGUAGE_NORWEGIAN_NYNORSK:
-                return 'values-nn';
+                return 'nn';
             case self::LANGUAGE_OCCITAN:
-                return 'values-oc';
+                return 'oc';
             case self::LANGUAGE_POLISH:
-                return 'values-pl';
+                return 'pl';
             case self::LANGUAGE_PORTUGUESE_BRAZIL:
-                return 'values-pt-rBR';
+                return 'pt-rBR';
             case self::LANGUAGE_PORTUGUESE_PORTUGAL:
-                return 'values-pt-rPT';
+                return 'pt-rPT';
             case self::LANGUAGE_ROMANIAN:
-                return 'values-ro';
+                return 'ro';
             case self::LANGUAGE_RUSSIAN:
-                return 'values-ru';
+                return 'ru';
             case self::LANGUAGE_SLOVAK:
-                return 'values-sk';
+                return 'sk';
             case self::LANGUAGE_SLOVENE:
-                return 'values-sl';
+                return 'sl';
             case self::LANGUAGE_ALBANIAN:
-                return 'values-sq';
+                return 'sq';
             case self::LANGUAGE_SERBIAN:
-                return 'values-sr';
+                return 'sr';
             case self::LANGUAGE_SUNDANESE:
-                return 'values-su';
+                return 'su';
             case self::LANGUAGE_SWEDISH:
-                return 'values-sv';
+                return 'sv';
             case self::LANGUAGE_SWAHILI:
-                return 'values-sw';
+                return 'sw';
             case self::LANGUAGE_TELUGU:
-                return 'values-te';
+                return 'te';
             case self::LANGUAGE_TAJIK:
-                return 'values-tg';
+                return 'tg';
             case self::LANGUAGE_THAI:
-                return 'values-th';
+                return 'th';
             case self::LANGUAGE_TAGALOG:
-                return 'values-tl';
+                return 'tl';
             case self::LANGUAGE_TURKISH:
-                return 'values-tr';
+                return 'tr';
             case self::LANGUAGE_TATAR:
-                return 'values-tt';
+                return 'tt';
             case self::LANGUAGE_UKRAINIAN:
-                return 'values-uk';
+                return 'uk';
             case self::LANGUAGE_UZBEK:
-                return 'values-uz';
+                return 'uz';
             case self::LANGUAGE_VIETNAMESE:
-                return 'values-vi';
+                return 'vi';
             case self::LANGUAGE_WALLOON:
-                return 'values-wa';
+                return 'wa';
             case self::LANGUAGE_YORUBA:
-                return 'values-yo';
+                return 'yo';
             case self::LANGUAGE_CHINESE_SIMPLIFIED:
-                return 'values-zh-rCN';
+                return 'zh-rCN';
             case self::LANGUAGE_CHINESE_TRADITIONAL:
-                return 'values-zh-rTW';
+                return 'zh-rTW';
             case self::LANGUAGE_ARAGONESE:
-                return 'values-an';
+                return 'an';
             case self::LANGUAGE_HAUSA:
-                return 'values-ha';
+                return 'ha';
             case self::LANGUAGE_IGBO:
-                return 'values-ig';
+                return 'ig';
             case self::LANGUAGE_KHMER:
-                return 'values-km';
+                return 'km';
             case self::LANGUAGE_LAO:
-                return 'values-lo';
+                return 'lo';
             case self::LANGUAGE_MALTESE:
-                return 'values-mt';
+                return 'mt';
             case self::LANGUAGE_MAORI:
-                return 'values-mi';
+                return 'mi';
             case self::LANGUAGE_PUNJABI:
-                return 'values-pa';
+                return 'pa';
             case self::LANGUAGE_SOMALI:
-                return 'values-so';
+                return 'so';
             case self::LANGUAGE_TAMIL:
-                return 'values-ta';
+                return 'ta';
             case self::LANGUAGE_URDU:
-                return 'values-ur';
+                return 'ur';
             case self::LANGUAGE_YIDDISH:
-                return 'values-yi';
+                return 'yi';
             case self::LANGUAGE_ZULU:
-                return 'values-zu';
+                return 'zu';
             default:
                 throw new Exception('Unknown language ID '.$languageID);
         }
+    }
+
+    public static function getLanguageNameFull($languageID) {
+        return parent::getLanguageNameFull($languageID).' — '.self::getLanguageCode($languageID);
     }
 
     /**

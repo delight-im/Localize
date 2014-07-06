@@ -411,7 +411,7 @@ abstract class UI {
             $selectDefaultLanguage = new UI_Form_Select('Default language', 'create_project[defaultLanguage]', $defaultLanguageHelpText);
             $languages = Language::getList();
             foreach ($languages as $language) {
-                $languageLabel = Language::getLanguageNameFull($language);
+                $languageLabel = Language_Android::getLanguageNameFull($language);
                 $selectDefaultLanguage->addOption($languageLabel, $language);
             }
             if (!empty($repositoryData)) {
@@ -567,12 +567,7 @@ abstract class UI {
         $langXMLMachine = '<string-array name="language_selection_machine" translatable="false">'."\n";
         $langXMLMachine .= '    <item></item>'."\n";
         foreach ($langList as $langItem) {
-            if ($langItem == Language::LANGUAGE_ENGLISH) {
-                $langXMLName = 'en';
-            }
-            else {
-                $langXMLName = str_replace('values-', '', Language_Android::getLanguageKey($langItem));
-            }
+            $langXMLName = Language_Android::getLanguageCode($langItem);
             $langXMLMachine .= '    <item>'.$langXMLName.'</item>'."\n";
         }
         $langXMLMachine .= '</string-array>';
@@ -1274,7 +1269,7 @@ abstract class UI {
                     $selectLanguage->addOption('— Please choose —', 0);
                     $languageIDs = Language::getList($repositoryData['defaultLanguage']);
                     foreach ($languageIDs as $languageID) {
-                        $selectLanguage->addOption(Language::getLanguageNameFull($languageID), $languageID);
+                        $selectLanguage->addOption(Language_Android::getLanguageNameFull($languageID), $languageID);
                     }
                     $form->addContent($selectLanguage);
 
