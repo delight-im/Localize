@@ -48,6 +48,7 @@ abstract class UI {
     private static $actionGET;
     private static $breadcrumbPath;
     private static $breadcrumbDisabled;
+    private static $title;
 
     abstract public function getHTML();
 
@@ -125,6 +126,21 @@ abstract class UI {
         return isset(self::$actionGET[$action]) ? self::$actionGET[$action] : NULL;
     }
 
+    private static function getTitle($appendSiteName = true, $escapeHTML = true) {
+        $out = self::$title;
+        if ($escapeHTML) {
+            $out = htmlspecialchars($out);
+        }
+        if ($appendSiteName) {
+            $out .= ' - '.CONFIG_SITE_NAME;
+        }
+        return $out;
+    }
+
+    public static function setTitle($title) {
+        self::$title = $title;
+    }
+
     protected static function getHeader($isSignedIn) {
         $headerHTML = file_get_contents($isSignedIn ? 'templates/header_signed_in.html' : 'templates/header_signed_out.html');
 
@@ -139,7 +155,8 @@ abstract class UI {
             URL::toDashboard(),
             URL::toPage('settings'),
             URL::toPage('sign_out'),
-            $csrfToken->getHTML()
+            $csrfToken->getHTML(),
+            self::getTitle()
         );
     }
 
@@ -181,16 +198,24 @@ abstract class UI {
     }
 
     public static function getPage($pageID, $contents = array(), $containers = array()) {
-        $out = self::getHeader(Authentication::isSignedIn());
+        // fetch the page content
         $content = self::findPage($pageID, $contents, $containers);
-        $out .= self::showBreadcrumb(); // place after invocation of findPage() so that the breadcrumb navigation can be built there
+        // add the header HTML (after the call to findPage() so that the title can be set there)
+        $out = self::getHeader(Authentication::isSignedIn());
+        // add the breadcrumb (after the call to findPage() so that it can be built there)
+        $out .= self::showBreadcrumb();
+
+        // add the page content HTML
         if ($content instanceof UI) {
             $out .= $content->getHTML();
         }
         else {
             throw new Exception('Result of getPageContent() must be an instance of class UI');
         }
+
+        // add the footer HTML
         $out .= self::getFooter();
+
         return $out;
     }
 
@@ -227,6 +252,7 @@ abstract class UI {
 
     public static function getPage_Index($contents, $containers) {
         self::setBreadcrumbDisabled(true);
+        self::setTitle('Collaborative Translation for Android');
         $contents[] = new UI_Heading('Collaborative Translation for Android');
         $contents[] = new UI_Paragraph('We believe that everybody should be able to use software in their own language.');
         $contents[] = new UI_Paragraph('Localize takes care of all the background work. You can concentrate on great apps and perfect translations.');
@@ -267,6 +293,7 @@ abstract class UI {
 
         $projectList = Database::select("SELECT a.repositoryID, a.role, b.name, b.visibility, b.defaultLanguage FROM roles AS a JOIN repositories AS b ON a.repositoryID = b.id WHERE a.userID = ".intval(Authentication::getUserID())." ORDER BY b.name ASC");
 
+        self::setTitle('Dashboard');
         $contents[] = new UI_Heading('Dashboard', true);
         if (Authentication::isUserDeveloper()) {
             if (count($projectList) > 0) {
@@ -428,6 +455,7 @@ abstract class UI {
         $buttonCancel = new UI_Link('Cancel', (empty($repositoryData) ? URL::toDashboard() : URL::toProject($repositoryID)), UI_Form_Button::TYPE_UNIMPORTANT);
         $form->addContent(new UI_Form_ButtonGroup(array($buttonSubmit, $buttonCancel)));
 
+        self::setTitle((empty($repositoryData) ? 'Create project' : 'Edit project'));
         $contents[] = new UI_Heading((empty($repositoryData) ? 'Create project' : 'Edit project'), true);
         $contents[] = new UI_Heading('Project settings', false, 3);
         $contents[] = $form;
@@ -499,6 +527,7 @@ abstract class UI {
             $buttonCancel
         )));
 
+        self::setTitle('Create free account');
         $contents[] = new UI_Heading('Create free account', true);
         $contents[] = $form;
         $cell = new UI_Cell($contents);
@@ -510,6 +539,7 @@ abstract class UI {
 
     public static function getPage_Contact($contents, $containers) {
         self::addBreadcrumbItem(URL::toPage('contact'), 'Contact');
+        self::setTitle('Contact');
         $contents[] = new UI_Heading('Contact', true);
         $contents[] = new UI_Paragraph('<img src="'.URL::toResource('img/contact.php').'" alt="Contact" width="300">');
         $cell = new UI_Cell($contents);
@@ -521,6 +551,7 @@ abstract class UI {
 
     public static function getPage_Help($contents, $containers) {
         self::addBreadcrumbItem(URL::toPage('help'), 'Help');
+        self::setTitle('Help with Localization for Android');
         $contents[] = new UI_Heading('Help with Localization for Android', true);
 
 		$contents[] = new UI_Heading('Embedding HTML in String resources and using it from Java', true, 3);
@@ -595,12 +626,14 @@ abstract class UI {
 
         if (empty($repositoryData)) {
             self::addBreadcrumbItem(URL::toProject($repositoryID), 'Project not found');
+            self::setTitle('Project not found');
             $contents[] = new UI_Heading('Project not found', true);
             $contents[] = new UI_Paragraph('We\'re sorry, but we could not find the project that you requested.');
             $contents[] = new UI_Paragraph('Please check if you have made any typing errors.');
         }
         else {
             if (Authentication::getUserID() <= 0) {
+                self::setTitle($repositoryData['name']);
                 $contents[] = new UI_Heading(htmlspecialchars($repositoryData['name']), true);
                 $contents[] = self::getLoginForm();
             }
@@ -608,6 +641,7 @@ abstract class UI {
                 $isAllowedToReview = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_MODERATOR);
                 self::addBreadcrumbItem(URL::toReview($repositoryID), 'Review');
                 if (empty($languageData)) { // review index page for this repository
+                    self::setTitle('Review contributions');
                     $contents[] = new UI_Heading('Review contributions', true);
                     if ($isAllowedToReview) {
                         $table = new UI_Table(array('Language', 'Review'));
@@ -645,6 +679,7 @@ abstract class UI {
                         $currentPageURL = URL::toReviewLanguage($repositoryID, $languageID, $editID);
                     }
                     self::addBreadcrumbItem(htmlspecialchars($currentPageURL), Language::getLanguageNameFull($languageID));
+                    self::setTitle($languageData->getNameFull());
                     $contents[] = new UI_Heading($languageData->getNameFull(), true);
 
                     if ($editID <= 0) {
@@ -775,22 +810,26 @@ abstract class UI {
 
         if (empty($repositoryData)) {
             self::addBreadcrumbItem(URL::toProject($repositoryID), 'Project not found');
+            self::setTitle('Project not found');
             $contents[] = new UI_Heading('Project not found', true);
             $contents[] = new UI_Paragraph('We\'re sorry, but we could not find the project that you requested.');
             $contents[] = new UI_Paragraph('Please check if you have made any typing errors.');
         }
         else {
             if (Authentication::getUserID() <= 0) {
+                self::setTitle($repositoryData['name']);
                 $contents[] = new UI_Heading(htmlspecialchars($repositoryData['name']), true);
                 $contents[] = self::getLoginForm();
             }
             elseif (!Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_ADMINISTRATOR)) {
+                self::setTitle($repositoryData['name']);
                 $contents[] = new UI_Heading(htmlspecialchars($repositoryData['name']), true);
                 $contents[] = new UI_Paragraph('Only administrators of this project are allowed to review invitation requests.');
             }
             else {
                 $currentPageURL = URL::toInvitations($repositoryID);
                 self::addBreadcrumbItem($currentPageURL, 'Invitations');
+                self::setTitle('Invitations');
                 $contents[] = new UI_Heading('Invitations', true);
 
                 $invitationData = Database::getInvitationByRepository($repositoryID);
@@ -845,12 +884,14 @@ abstract class UI {
 
     public static function getPage_Settings($contents, $containers) {
         if (Authentication::getUserID() <= 0) {
+            self::setTitle('Settings');
             $contents[] = new UI_Heading('Settings', true);
             $contents[] = self::getLoginForm('Please sign in below to access your settings.');
         }
         else {
             $currentPageURL = URL::toPage('settings');
             UI::addBreadcrumbItem($currentPageURL, 'Settings');
+            self::setTitle('Settings');
             $contents[] = new UI_Heading('Settings', true);
             $form = new UI_Form($currentPageURL, false);
 
@@ -944,6 +985,7 @@ abstract class UI {
 
         if (empty($repositoryData) || empty($phraseData)) {
             self::addBreadcrumbItem(URL::toProject($repositoryID), 'Phrase not found');
+            self::setTitle('Phrase not found');
             $contents[] = new UI_Heading('Phrase not found', true);
             $contents[] = new UI_Paragraph('We\'re sorry, but we could not find the phrase that you requested.');
             $contents[] = new UI_Paragraph('Please check if you have made any typing errors.');
@@ -958,10 +1000,12 @@ abstract class UI {
             $permissions = $repository->getPermissions(Authentication::getUserID(), $role);
 
             if (Authentication::getUserID() <= 0) {
+                self::setTitle($repositoryData['name']);
                 $contents[] = new UI_Heading(htmlspecialchars($repositoryData['name']), true);
                 $contents[] = self::getLoginForm();
             }
             elseif ($permissions->isInvitationMissing()) {
+                self::setTitle($repositoryData['name']);
                 $contents[] = new UI_Heading(htmlspecialchars($repositoryData['name']), true);
                 $contents[] = self::getInvitationForm($repositoryID);
             }
@@ -1021,6 +1065,7 @@ abstract class UI {
                     $formChange = NULL;
                 }
 
+                self::setTitle('Phrase: '.$phraseData['phraseKey']);
                 $contents[] = new UI_Heading('Phrase: '.$phraseData['phraseKey'], true);
                 $contents[] = new UI_Heading('Contents', false, 3);
                 $contents[] = $phraseEntries;
@@ -1048,6 +1093,7 @@ abstract class UI {
 
         if (empty($repositoryData)) {
             self::addBreadcrumbItem(URL::toWatchProject($repositoryID), 'Project not found');
+            self::setTitle('Project not found');
             $contents[] = new UI_Heading('Project not found', true);
             $contents[] = new UI_Paragraph('We\'re sorry, but we could not find the project that you requested.');
             $contents[] = new UI_Paragraph('Please check if you have made any typing errors.');
@@ -1062,14 +1108,17 @@ abstract class UI {
             $permissions = $repository->getPermissions(Authentication::getUserID(), $role);
 
             if (Authentication::getUserID() <= 0) {
+                self::setTitle($repositoryData['name']);
                 $contents[] = new UI_Heading(htmlspecialchars($repositoryData['name']), true);
                 $contents[] = self::getLoginForm();
             }
             elseif ($permissions->isInvitationMissing()) {
+                self::setTitle($repositoryData['name']);
                 $contents[] = new UI_Heading(htmlspecialchars($repositoryData['name']), true);
                 $contents[] = self::getInvitationForm($repositoryID);
             }
             elseif (Authentication::getUserEmail() == '' || Authentication::getUserEmail_lastVerificationAttempt() > 0) { // no email address or unverified email
+                self::setTitle('Watch project');
                 $contents[] = new UI_Heading('Watch project', true);
                 $contents[] = new UI_Paragraph('You need a verified email address in order to watch projects and receive notifications.');
                 $contents[] = new UI_Paragraph('Enter your email address in your settings to get started.');
@@ -1080,6 +1129,7 @@ abstract class UI {
             else {
                 $currentPageURL = URL::toWatchProject($repositoryID);
 
+                self::setTitle('Watch project');
                 $contents[] = new UI_Heading('Watch project', true);
                 $contents[] = new UI_Paragraph('Do you want to receive email notifications for certain events in this project?');
                 $contents[] = new UI_Paragraph('You will receive updates from us not more than once per 24 hours. And of course, you can unsubscribe from the notifications on this page at any time.');
@@ -1135,6 +1185,7 @@ abstract class UI {
 
         if (empty($repositoryData)) {
             self::addBreadcrumbItem(URL::toProject($repositoryID), 'Project not found');
+            self::setTitle('Project not found');
             $contents[] = new UI_Heading('Project not found', true);
             $contents[] = new UI_Paragraph('We\'re sorry, but we could not find the project that you requested.');
             $contents[] = new UI_Paragraph('Please check if you have made any typing errors.');
@@ -1148,10 +1199,12 @@ abstract class UI {
             $permissions = $repository->getPermissions(Authentication::getUserID(), $role);
 
             if (Authentication::getUserID() <= 0) {
+                self::setTitle($repositoryData['name']);
                 $contents[] = new UI_Heading(htmlspecialchars($repositoryData['name']), true);
                 $contents[] = self::getLoginForm();
             }
             elseif ($permissions->isInvitationMissing()) {
+                self::setTitle($repositoryData['name']);
                 $contents[] = new UI_Heading(htmlspecialchars($repositoryData['name']), true);
                 $contents[] = self::getInvitationForm($repositoryID);
             }
@@ -1193,6 +1246,7 @@ abstract class UI {
                         $buttonCancel
                     )));
 
+                    self::setTitle('Add phrase to default language');
                     $contents[] = new UI_Heading('Add phrase to default language', true);
                     $contents[] = $form;
                 }
@@ -1251,6 +1305,7 @@ abstract class UI {
                         )));
                     }
 
+                    self::setTitle('Export');
                     $contents[] = new UI_Heading('Export', true);
                     $contents[] = $form;
                 }
@@ -1306,10 +1361,12 @@ abstract class UI {
                         )));
                     }
 
+                    self::setTitle('Import XML');
                     $contents[] = new UI_Heading('Import XML', true);
                     $contents[] = $form;
                 }
                 elseif (empty($languageData)) {
+                    self::setTitle($repositoryData['name']);
                     $heading = new UI_Heading(htmlspecialchars($repositoryData['name']), true, 1, $repository->getShareURL());
 
                     $languageTable = new UI_Table(array('Language', 'Completion'));
@@ -1371,6 +1428,7 @@ abstract class UI {
                     $language = new Language_Android($languageID);
                     self::addBreadcrumbItem(URL::toLanguage($repositoryID, $languageID), $language->getNameFull());
 
+                    self::setTitle($languageData->getNameFull());
                     $heading = new UI_Heading($languageData->getNameFull(), true);
 
                     $repository->loadLanguages(false, $languageID, $languageID);
