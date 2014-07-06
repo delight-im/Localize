@@ -137,6 +137,14 @@ function openTablePage(tableID, paginationClass, pageToOpen, doScrollUp) {
                         window.scrollTo(0, 0);
                     }
                 }
+
+                // save the current page in the URL
+                var paginationData = [];
+                paginationData.push('tableID='+encodeURIComponent(tableID));
+                paginationData.push('paginationClass='+encodeURIComponent(paginationClass));
+                paginationData.push('pageToOpen='+encodeURIComponent(pageToOpen));
+                paginationData.push('doScrollUp='+encodeURIComponent(doScrollUp));
+                window.location.hash = '#?'+paginationData.join('&');
             }
         }
     }
@@ -192,3 +200,18 @@ var Authentication = new function() {
         return false;
     }
 };
+function restorePaginationFromURL(urlHash) {
+    if (typeof urlHash !== 'undefined' && urlHash !== null) {
+        var regex = /^#\?tableID=(.*?)&paginationClass=(.*?)&pageToOpen=(.*?)&doScrollUp=(.*?)$/ig;
+        var matches = regex.exec(urlHash);
+        if (matches) {
+            if (matches.length >= 4) {
+                openTablePage(matches[1], matches[2], matches[3], false);
+            }
+        }
+    }
+}
+$(document).ready(function() {
+    // try to restore pagination data from the URL
+    restorePaginationFromURL(window.location.hash);
+});

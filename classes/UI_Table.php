@@ -43,7 +43,10 @@ class UI_Table extends UI {
         }
         $this->rows = array();
         $this->columnPriorities = array();
-        $this->uniqueViewID = sha1('table-'.mt_rand(100000, 900000));
+
+        // assign a unique ID to the table that does not change after a page reload
+        $this->uniqueViewID = sha1('table-'.$_SERVER['REQUEST_URI'].'-'.json_encode($this->headers));
+
         $this->showSearchFilter = false;
     }
 
