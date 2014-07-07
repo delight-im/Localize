@@ -786,7 +786,9 @@ elseif (UI::isPage('phrase')) {
             if ($isAllowed) {
                 $data = UI::getDataPOST('phraseMove');
                 if (isset($data['phraseKey']) && isset($data['groupID'])) {
-                    Database::setPhraseGroup($repositoryID, $data['phraseKey'], $data['groupID']);
+                    $data_phraseKey = isset($data['phraseKey']) && is_string($data['phraseKey']) ? trim($data['phraseKey']) : '';
+                    $data_groupID = isset($data['groupID']) && is_string($data['groupID']) ? intval(trim($data['groupID'])) : 0;
+                    Database::setPhraseGroup($repositoryID, $data_phraseKey, $data_groupID);
                     $alert = new UI_Alert('<p>You have successfully moved the phrase to its new group!</p>', UI_Alert::TYPE_SUCCESS);
                 }
             }
@@ -836,6 +838,7 @@ else {
                         }
                         else {
                             UI::redirectToURL($data_returnURL);
+                            exit;
                         }
                     }
                     else {
