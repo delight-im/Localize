@@ -520,7 +520,7 @@ abstract class UI {
 
         $buttonSubmit = new UI_Form_Button('Sign up', UI_Form_Button::TYPE_SUCCESS);
         $buttonSubmit->setID('sign_up[submit]');
-        $buttonSubmit->setJSEvents('if (Authentication.isPasswordAllowed(document.getElementById(\'sign_up[password]\'))) { return true; } else { alert(\'Please make sure to enter a valid password and to re-type the verification correctly!\'); return false; }');
+        $buttonSubmit->setJSEvents('if (Authentication.isPasswordAllowed(document.getElementById(\'sign_up[password]\'))) { return true; } else { alert(\'Please make sure to enter a valid password! See the requirements below the field.\'); return false; }');
         $buttonCancel = new UI_Link('Cancel', URL::toDashboard(), UI_Link::TYPE_UNIMPORTANT);
         $form->addContent(new UI_Form_ButtonGroup(array(
             $buttonSubmit,
