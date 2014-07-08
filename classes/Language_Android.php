@@ -10,19 +10,34 @@ class Language_Android extends Language {
     }
 
     /**
-     * Returns the platform-specific key (string) for the given language
+     * Returns the platform-specific keys (strings) for the given language
      *
      * @param int $languageID the language ID to get the key for
-     * @return string key for this language
+     * @return array keys for this language (at least one)
      * @throws Exception if the given language ID could not be found
      */
-    public static function getLanguageKey($languageID) {
+    public static function getLanguageKeys($languageID) {
+        $out = array();
+
         if ($languageID == Language::LANGUAGE_ENGLISH) {
-            return 'values';
+            $out[] = 'values';
         }
         else {
-            return 'values-'.self::getLanguageCode($languageID);
+            $out[] = 'values-'.self::getLanguageCode($languageID);
         }
+
+        // add alternative codes where necessary for better compatibility
+        if ($languageID == Language::LANGUAGE_HEBREW) {
+            $out[] = 'values-he';
+        }
+        elseif ($languageID == Language::LANGUAGE_INDONESIAN) {
+            $out[] = 'values-id';
+        }
+        elseif ($languageID == Language::LANGUAGE_YIDDISH) {
+            $out[] = 'values-yi';
+        }
+
+        return $out;
     }
 
     /**
@@ -101,7 +116,7 @@ class Language_Android extends Language {
             case self::LANGUAGE_ARMENIAN:
                 return 'hy';
             case self::LANGUAGE_INDONESIAN:
-                return 'id';
+                return 'in';
             case self::LANGUAGE_ICELANDIC:
                 return 'is';
             case self::LANGUAGE_ITALIAN:
@@ -223,7 +238,7 @@ class Language_Android extends Language {
             case self::LANGUAGE_URDU:
                 return 'ur';
             case self::LANGUAGE_YIDDISH:
-                return 'yi';
+                return 'ji';
             case self::LANGUAGE_ZULU:
                 return 'zu';
             default:
@@ -236,13 +251,13 @@ class Language_Android extends Language {
     }
 
     /**
-     * Returns the platform-specific key (string) for this language
+     * Returns the platform-specific keys (strings) for this language
      *
-     * @return string key for this language
+     * @return array keys for this language (at least one)
      * @throws Exception if the given language ID could not be found
      */
-    public function getKey() {
-        return self::getLanguageKey($this->id);
+    public function getKeys() {
+        return self::getLanguageKeys($this->id);
     }
 
     /**

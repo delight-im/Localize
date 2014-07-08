@@ -114,7 +114,7 @@ class File_IO {
                     $languages = Language::getList();
                     foreach ($languages as $language) {
                         $languageObject = $repository->getLanguage($language);
-                        $languageKey = $languageObject->getKey();
+                        $languageKeys = $languageObject->getKeys();
 
                         if ($format == self::FORMAT_ANDROID_XML_ESCAPED_HTML) {
                             $languageOutput = $languageObject->outputAndroidXMLEscapedHTML($groupID);
@@ -134,16 +134,18 @@ class File_IO {
                         }
 
                         if ($languageOutput->getCompleteness() >= $minCompletion) {
-                            if (mkdir($savePath.'/'.$languageKey.'/', 0755, true)) {
+                            foreach ($languageKeys as $languageKey) {
+                                if (mkdir($savePath.'/'.$languageKey.'/', 0755, true)) {
                                     if (file_put_contents($savePath.'/'.$languageKey.'/'.$filename.$fileExtension, $languageOutput->getContent()) !== false) {
                                         $exportSuccess = true;
                                     }
                                     else { // output file could not be written
                                         $exportSuccess = false;
                                     }
-                            }
-                            else { // sub-directory for language could not be created
-                                $exportSuccess = false;
+                                }
+                                else { // sub-directory for language could not be created
+                                    $exportSuccess = false;
+                                }
                             }
                         }
                     }

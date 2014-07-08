@@ -148,11 +148,11 @@ abstract class Language {
     abstract public function outputPlaintext($groupID);
 
     /**
-     * Returns the platform-specific key (string) for this language
+     * Returns the platform-specific keys (strings) for this language
      *
-     * @return string key for this language
+     * @return array keys for this language (at least one)
      */
-    abstract public function getKey();
+    abstract public function getKeys();
 
     public function __construct($id) {
         $this->id = $id;
