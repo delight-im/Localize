@@ -289,6 +289,11 @@ abstract class UI {
     }
 
     public static function getPage_Dashboard($contents, $containers) {
+        // ask developers (who are the target audience) for feedback
+        if (Authentication::isUserDeveloper()) {
+            $contents[] = new UI_Alert('<p>How do you like '.CONFIG_SITE_NAME.'? Does it help you?</p><p>If you have any questions or feedback, please get in touch with us at <a href="mailto:'.CONFIG_SITE_EMAIL.'">'.CONFIG_SITE_EMAIL.'</a></p>');
+        }
+
         $createProjectButton = new UI_Link('Create new project', URL::toPage('create_project'), UI_Link::TYPE_SUCCESS);
 
         $projectList = Database::select("SELECT a.repositoryID, a.role, b.name, b.visibility, b.defaultLanguage FROM roles AS a JOIN repositories AS b ON a.repositoryID = b.id WHERE a.userID = ".intval(Authentication::getUserID())." ORDER BY b.name ASC");
