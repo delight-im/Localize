@@ -1,0 +1,108 @@
+<?php
+
+// ########## CONFIGURATION BEGIN ##########
+
+// you only need to set your filenames below
+compareFiles('current.xml', 'future.xml');
+
+// ########## CONFIGURATION END ##########
+
+header('Content-type: text/plain; charset=utf-8');
+
+function saveResult($label, $itemA) {
+	global $results;
+
+	$results[$label][] = $itemA['type'].'['.$itemA['name'].']';
+}
+
+function printResults() {
+	global $results;
+
+	echo '# Report'."\n";
+
+	foreach ($results as $label => $items) {
+		echo "\n\n";
+		echo '## '.$label."\n\n";
+		
+		foreach ($items as $item) {
+			echo ' * '.$item."\n";
+		}
+	}
+}
+
+function compareFiles($filenameA, $filenameB) {
+	$files = array(
+		$filenameA,
+		$filenameB
+	);
+
+	$results = array(
+		'match' => array(),
+		'changed' => array(),
+		'missing' => array()
+	);
+
+	$out = array();
+	foreach ($files as $file) {
+		$out[$file] = array();
+		$xml = file_get_contents($file);
+		$matches = array();
+
+		$regex = '/<\s*?(string|plurals|string-array).*?name\s*?=\s*?"\s*?([^"]+)\s*?".*?>(.*?)<\s*?\/\s*?\1\s*?\s*?>/is';
+		preg_match_all($regex, $xml, $out[$file]);
+
+		// remove full matches (we're only interested in the subgroups)
+		unset($out[$file][0]);
+	}
+
+	$keysA = array_keys($out[$files[0]][1]);
+	$keysB = array_keys($out[$files[1]][1]);
+	foreach ($keysA as $keyA) {
+		$exists = false;
+		$equal = false;
+
+		// generate an object for this entry from file A
+		$itemA = array(
+			'type' => preg_replace('/\s/', '', $out[$files[0]][1][$keyA]),
+			'name' => preg_replace('/\s/', '', $out[$files[0]][2][$keyA]),
+			'content' => preg_replace('/\s/', '', $out[$files[0]][3][$keyA])
+		);
+
+		foreach ($keysB as $keyB) {
+			// generate an object for this entry from file B
+			$itemB = array(
+				'type' => preg_replace('/\s/', '', $out[$files[1]][1][$keyB]),
+				'name' => preg_replace('/\s/', '', $out[$files[1]][2][$keyB]),
+				'content' => preg_replace('/\s/', '', $out[$files[1]][3][$keyB])
+			);
+
+			// if the types are the same
+			if ($itemA['type'] == $itemB['type']) {
+				// if the names are the same
+				if ($itemA['name'] == $itemB['name']) {
+					$exists = true;
+					// if the content is the same
+					if ($itemA['content'] == $itemB['content']) {
+						$equal = true;
+					}
+				}
+			}
+		}
+
+		if ($exists) {
+			if ($equal) {
+				saveResult('match', $itemA)."\n";
+			}
+			else {
+				saveResult('changed', $itemA)."\n";
+			}
+		}
+		else {
+			saveResult('missing', $itemA)."\n";
+		}
+	}
+
+	printResults();
+}
+
+?>
