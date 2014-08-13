@@ -725,6 +725,28 @@ elseif (UI::isPage('create_project') && Authentication::isSignedIn()) {
 
         echo UI::getPage(UI::PAGE_CREATE_PROJECT, array($alert));
     }
+    elseif (UI::isAction('cleanLanguages')) {
+        if (UI_Form::isCSRFTokenValid($_POST)) {
+            $data = UI::getDataPOST('cleanLanguages');
+            $repositoryID = UI::validateID(UI::getDataGET('project'), true);
+            $repositoryData = Database::getRepositoryData($repositoryID);
+            $isAllowed = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_DEVELOPER);
+            if ($isAllowed) {
+                Database::cleanLanguages($repositoryID, $repositoryData['defaultLanguage']);
+                Authentication::setCachedLanguageProgress($repositoryID, NULL); // unset cached version of this repository's progress
+
+                $alert = new UI_Alert('<p>All languages have successfully been cleaned!</p>', UI_Alert::TYPE_SUCCESS);
+            }
+            else {
+                $alert = new UI_Alert('<p>You are not allowed to clean languages in this project!</p>', UI_Alert::TYPE_WARNING);
+            }
+        }
+        else {
+            $alert = new UI_Alert('<p>Oops, that didn\'t work! Please try again!</p>', UI_Alert::TYPE_WARNING);
+        }
+
+        echo UI::getPage(UI::PAGE_CREATE_PROJECT, array($alert));
+    }
     elseif (UI::isAction('deleteGroup')) {
         if (UI_Form::isCSRFTokenValid($_POST)) {
             $data = UI::getDataPOST('deleteGroup');

@@ -438,6 +438,30 @@ class Database {
     }
 
     /**
+     * Removes all translations that don't differ from the default language
+     *
+     * These translations have no effect and thus only distort the progress indication
+     *
+     * @param int $repositoryID
+     * @param int $defaultLanguageID
+     */
+    public static function cleanLanguages($repositoryID, $defaultLanguageID) {
+        $languages = Language::getList();
+        $phraseIDsToDelete = array();
+
+        foreach ($languages as $language) {
+            if ($language != $defaultLanguageID) {
+                $phraseIDs = self::select("SELECT id FROM phrases AS a WHERE a.repositoryID = ".intval($repositoryID)." AND a.languageID = ".intval($language)." AND a.payload = (SELECT payload FROM phrases AS b WHERE b.repositoryID = a.repositoryID AND b.languageID = ".intval($defaultLanguageID)." AND b.phraseKey = a.phraseKey)");
+                foreach ($phraseIDs as $phraseID) {
+                    $phraseIDsToDelete[] = intval($phraseID['id']);
+                }
+            }
+        }
+
+        self::delete("DELETE FROM phrases WHERE id IN (".implode(',', $phraseIDsToDelete).")");
+    }
+
+    /**
      * Logs that the given IP address has performed the declared action so that one can check later if an action must be throttled or not for this IP address
      *
      * @param string $ipAddress the IP address that has performed the action

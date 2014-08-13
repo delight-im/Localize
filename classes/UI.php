@@ -487,6 +487,14 @@ abstract class UI {
             $formAdd->addContent(new UI_Form_ButtonGroup(array(new UI_Form_Button('Create group'))));
 
             $contents[] = $formAdd;
+
+            $contents[] = new UI_Heading('Clean languages', false, 3);
+            $contents[] = new UI_Paragraph('Use the following option to remove all translations that don\'t differ from the default language.');
+            $contents[] = new UI_Paragraph('These translations have no effect and thus only distort the progress indication.');
+            $formAdd = new UI_Form(htmlspecialchars($currentPageURL), false);
+            $formAdd->addContent(new UI_Form_Button('Run now', UI_Form_Button::TYPE_SUCCESS, UI_Form_Button::ACTION_SUBMIT, 'cleanLanguages[run]', 1));
+
+            $contents[] = $formAdd;
         }
 
         $cell = new UI_Cell($contents);
