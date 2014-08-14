@@ -201,14 +201,14 @@ class File_IO {
                         foreach ($xml->{'entrySingle'} as $entrySingle) {
                             $entryAttributes = $entrySingle->attributes();
                             $importedPhrase = new Phrase_Android_String(0, trim($entryAttributes['name']), true);
-                            $importedPhrase->addValue(trim(Phrase_Android::readFromRaw($entrySingle[0])));
+                            $importedPhrase->addValue(Phrase_Android::readFromRaw(trim($entrySingle[0])));
                             $importedPhrases[] = $importedPhrase;
                         }
                         foreach ($xml->{'entryList'} as $entryList) {
                             $entryAttributes = $entryList->attributes();
                             $importedPhrase = new Phrase_Android_StringArray(0, trim($entryAttributes['name']), true);
                             foreach ($entryList->{'item'} as $entryItem) {
-                                $importedPhrase->addValue(trim(Phrase_Android::readFromRaw($entryItem)));
+                                $importedPhrase->addValue(Phrase_Android::readFromRaw(trim($entryItem)));
                             }
                             $importedPhrases[] = $importedPhrase;
                         }
@@ -219,7 +219,7 @@ class File_IO {
                             foreach ($plural->{'item'} as $pluralItem) {
                                 $itemAttributes = $pluralItem->attributes();
                                 $pluralQuantity = trim($itemAttributes['quantity']);
-                                $pluralValue = trim(Phrase_Android::readFromRaw($pluralItem));
+                                $pluralValue = Phrase_Android::readFromRaw(trim($pluralItem));
 
                                 if (!isset($defaultPluralValue) || $pluralQuantity === 'other') {
                                     $defaultPluralValue = $pluralValue;
