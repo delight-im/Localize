@@ -215,10 +215,23 @@ class File_IO {
                         foreach ($xml->{'plurals'} as $plural) {
                             $pluralAttributes = $plural->attributes();
                             $importedPhrase = new Phrase_Android_Plurals(0, trim($pluralAttributes['name']), true);
+                            $defaultPluralValue = NULL;
                             foreach ($plural->{'item'} as $pluralItem) {
                                 $itemAttributes = $pluralItem->attributes();
-                                $importedPhrase->addValue(trim(Phrase_Android::readFromRaw($pluralItem)), trim($itemAttributes['quantity']));
+                                $pluralQuantity = trim($itemAttributes['quantity']);
+                                $pluralValue = trim(Phrase_Android::readFromRaw($pluralItem));
+
+                                if (!isset($defaultPluralValue) || $pluralQuantity === 'other') {
+                                    $defaultPluralValue = $pluralValue;
+                                }
+
+                                $importedPhrase->addValue($pluralValue, $pluralQuantity);
                             }
+
+                            if (isset($defaultPluralValue)) {
+                                $importedPhrase->fillWithDefault($defaultPluralValue);
+                            }
+
                             $importedPhrases[] = $importedPhrase;
                         }
                         if (count($importedPhrases) > 0) {

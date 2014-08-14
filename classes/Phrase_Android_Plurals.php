@@ -47,6 +47,19 @@ class Phrase_Android_Plurals extends Phrase_Android {
     }
 
     /**
+     * The default value to use for any quantities that have not been explicitly set
+     *
+     * @param string $defaultValue
+     */
+    public function fillWithDefault($defaultValue) {
+        foreach (self::$list as $quantity) {
+            if (empty($this->values[$quantity])) {
+                $this->values[$quantity] = $defaultValue;
+            }
+        }
+    }
+
+    /**
      * Creates JSON payload from a phrase's value(s)
      *
      * @param mixed $value single string or array of strings (value for the phrase)
