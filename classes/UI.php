@@ -747,7 +747,7 @@ abstract class UI {
                         }
 
                         $valuesReference = $referencedPhrase->getPhraseValues();
-                        $valueReference = isset($valuesReference[$editData[0]['phraseSubKey']]) && is_string($valuesReference[$editData[0]['phraseSubKey']]) ? trim($valuesReference[$editData[0]['phraseSubKey']]) : '';
+                        $valueReference = isset($valuesReference[$editData[0]['phraseSubKey']]) && is_string($valuesReference[$editData[0]['phraseSubKey']]) ? $valuesReference[$editData[0]['phraseSubKey']] : '';
                         $valuesPrevious = $previousPhrase->getPhraseValues();
                         $valuePrevious = isset($valuesPrevious[$editData[0]['phraseSubKey']]) && is_string($valuesPrevious[$editData[0]['phraseSubKey']]) ? trim($valuesPrevious[$editData[0]['phraseSubKey']]) : '';
 

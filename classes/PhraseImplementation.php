@@ -35,4 +35,20 @@ interface PhraseImplementation {
      */
     public static function getPlaceholders($phraseText);
 
+    /**
+     * Returns all occurrences of leading or trailing whitespace that has been found in the given phrase text
+     *
+     * @param string $phraseText
+     * @return array occurrences of leading or trailing whitespace
+     */
+    public static function getOuterWhitespace($phraseText);
+
+    /**
+     * Returns an array of HTML tags that have been found in the given phrase text
+     *
+     * @param string $phraseText
+     * @return array list of HTML tags
+     */
+    public static function getHTMLTags($phraseText);
+
 }

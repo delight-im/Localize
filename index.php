@@ -245,18 +245,30 @@ elseif (UI::isPage('review')) {
                 $data_phraseKey = isset($data['phraseKey']) && is_string($data['phraseKey']) ? trim($data['phraseKey']) : '';
                 $data_phraseSubKey = isset($data['phraseSubKey']) && is_string($data['phraseSubKey']) ? trim($data['phraseSubKey']) : '';
                 $data_contributorID = isset($data['contributorID']) ? UI::validateID($data['contributorID'], true) : '';
-                $data_newValue = isset($data['newValue']) && is_string($data['newValue']) ? trim($data['newValue']) : '';
-                $data_referenceValue = isset($data['referenceValue']) && is_string($data['referenceValue']) ? trim($data['referenceValue']) : '';
+                $data_newValue = isset($data['newValue']) && is_string($data['newValue']) ? $data['newValue'] : '';
+                $data_referenceValue = isset($data['referenceValue']) && is_string($data['referenceValue']) ? $data['referenceValue'] : '';
                 if (!empty($data_phraseObject)) {
                     switch ($data_action) {
                         case 'approve':
                             // placeholders (except their order) may only be changed in default language
                             if (Phrase::areEntitiesMatching(Phrase_Android::getPlaceholders($data_referenceValue), Phrase_Android::getPlaceholders($data_newValue)) || $languageID == $repositoryData['defaultLanguage']) {
-                                $data_phraseObject->setPhraseValue($data_phraseSubKey, $data_newValue);
-                                Database::updatePhrase($repositoryID, $languageID, $data_phraseKey, $data_phraseObject->getPayload());
-                                Database::updateContributor($repositoryID, $data_contributorID);
-                                Database::deleteEdit($data_editID);
-                                Authentication::setCachedLanguageProgress($repositoryID, NULL); // unset cached version of this repository's progress
+                                // leading or trailing whitespace (except the order) may only be changed in default language
+                                if (Phrase::areEntitiesMatching(Phrase_Android::getOuterWhitespace($data_referenceValue), Phrase_Android::getOuterWhitespace($data_newValue)) || $languageID == $repositoryData['defaultLanguage']) {
+                                    // HTML tags (except their order) may only be changed in default language
+                                    if (Phrase::areEntitiesMatching(Phrase_Android::getHTMLTags($data_referenceValue), Phrase_Android::getHTMLTags($data_newValue)) || $languageID == $repositoryData['defaultLanguage']) {
+                                        $data_phraseObject->setPhraseValue($data_phraseSubKey, $data_newValue);
+                                        Database::updatePhrase($repositoryID, $languageID, $data_phraseKey, $data_phraseObject->getPayload());
+                                        Database::updateContributor($repositoryID, $data_contributorID);
+                                        Database::deleteEdit($data_editID);
+                                        Authentication::setCachedLanguageProgress($repositoryID, NULL); // unset cached version of this repository's progress
+                                    }
+                                    else {
+                                        $alert = new UI_Alert('<p>The HTML tags must match with those from the reference phrase.</p>', UI_Alert::TYPE_WARNING);
+                                    }
+                                }
+                                else {
+                                    $alert = new UI_Alert('<p>Any leading or trailing whitespace must match with that from the reference phrase.</p>', UI_Alert::TYPE_WARNING);
+                                }
                             }
                             else {
                                 $alert = new UI_Alert('<p>The placeholders must match with those from the reference phrase.</p>', UI_Alert::TYPE_WARNING);

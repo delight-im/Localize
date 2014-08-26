@@ -105,6 +105,36 @@ abstract class Phrase_Android extends Phrase implements PhraseImplementation {
         }
     }
 
+    /**
+     * Returns all occurrences of leading or trailing whitespace that has been found in the given phrase text
+     *
+     * @param string $phraseText
+     * @return array occurrences of leading or trailing whitespace
+     */
+    public static function getOuterWhitespace($phraseText) {
+        if (preg_match_all('/(^[ \t\r\n]|[ \t\r\n]$)/', $phraseText, $matches)) {
+            return $matches[0];
+        }
+        else {
+            return array();
+        }
+    }
+
+    /**
+     * Returns an array of HTML tags that have been found in the given phrase text
+     *
+     * @param string $phraseText
+     * @return array list of HTML tags
+     */
+    public static function getHTMLTags($phraseText) {
+        if (preg_match_all('/<\s*?(\/)?\s*?(b|i|u)\s*?>/', $phraseText, $matches)) {
+            return $matches[0];
+        }
+        else {
+            return array();
+        }
+    }
+
     public static function getFullyQualifiedName($defaultPhrase, $subKey) {
         if ($defaultPhrase instanceof Phrase_Android_StringArray) {
             return $defaultPhrase->getPhraseKey().' » ['.$subKey.']';
