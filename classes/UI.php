@@ -693,7 +693,6 @@ abstract class UI {
                     }
                     self::addBreadcrumbItem(htmlspecialchars($currentPageURL), Language::getLanguageNameFull($languageID));
                     self::setTitle($languageData->getNameFull());
-                    $contents[] = new UI_Heading($languageData->getNameFull(), true);
 
                     if ($editID <= 0) {
                         $editData = Database::getPendingEdit($repositoryID, $languageID);
@@ -706,6 +705,7 @@ abstract class UI {
                             UI::redirectToURL(URL::toReview($repositoryID)); // redirect to review index page
                         }
                         else { // user is a guest taking part in the discussion only
+                            $contents[] = new UI_Heading($languageData->getNameFull(), true);
                             $contents[] = new UI_Paragraph('This link has expired and is not valid anymore.');
                             $contents[] = new UI_Paragraph('The discussion has been closed. Thanks for your collaboration!');
                         }
@@ -751,8 +751,9 @@ abstract class UI {
                         $valuesPrevious = $previousPhrase->getPhraseValues();
                         $valuePrevious = isset($valuesPrevious[$editData[0]['phraseSubKey']]) && is_string($valuesPrevious[$editData[0]['phraseSubKey']]) ? trim($valuesPrevious[$editData[0]['phraseSubKey']]) : '';
 
-                        $pendingEditsLeftCount = Database::getPendingEditsByRepositoryAndLanguageCount($repositoryID, $languageID) - 1;
-                        $pendingEditsLeft = $pendingEditsLeftCount == 0 ? 'only this one' : ($pendingEditsLeftCount == 1 ? '1 other' : $pendingEditsLeftCount.' others');
+                        $pendingEditsCount = Database::getPendingEditsByRepositoryAndLanguageCount($repositoryID, $languageID);
+                        $pendingEditsCountHTML = $pendingEditsCount.' edit'.($pendingEditsCount == 1 ? '' : 's').' to review';
+                        $contents[] = new UI_Heading($languageData->getNameFull(), true, 1, $pendingEditsCountHTML);
 
                         // mark placeholders and HTML tags in the reference phrase
                         $phraseWithMarkedEntities = htmlspecialchars($valueReference);
@@ -774,7 +775,6 @@ abstract class UI {
                         $table->addRow(array('<strong>Submit time</strong>', date('d.m.Y H:i', $editData[0]['submit_time'])));
                         if ($isAllowedToReview) {
                             $table->addRow(array('<strong>Contributor</strong>', $contributorName));
-                            $table->addRow(array('<strong>Edits left</strong>', $pendingEditsLeft));
                         }
 
                         if ($isAllowedToReview) {
