@@ -191,11 +191,16 @@ abstract class Phrase {
      *
      * @param string $text
      * @param array $entities
+     * @param string $cssClass
+     * @param boolean $isInputEscaped
      * @return string modified text with marked entities
      */
-    public static function markEntities($text, $entities) {
+    public static function markEntities($text, $entities, $cssClass = 'text-primary', $isInputEscaped = false) {
         foreach ($entities as $entity) {
-            $text = str_replace($entity, '<strong class="text-primary">'.$entity.'</strong>', $text);
+            if ($isInputEscaped) {
+                $entity = htmlspecialchars($entity);
+            }
+            $text = str_replace($entity, '<strong class="'.htmlspecialchars($cssClass).'">'.$entity.'</strong>', $text);
         }
         return $text;
     }

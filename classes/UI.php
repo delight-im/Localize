@@ -754,7 +754,9 @@ abstract class UI {
                         $pendingEditsLeftCount = Database::getPendingEditsByRepositoryAndLanguageCount($repositoryID, $languageID) - 1;
                         $pendingEditsLeft = $pendingEditsLeftCount == 0 ? 'only this one' : ($pendingEditsLeftCount == 1 ? '1 other' : $pendingEditsLeftCount.' others');
 
-                        $phraseWithMarkedEntities = Phrase::markEntities(htmlspecialchars($valueReference), Phrase_Android::getPlaceholders($valueReference));
+                        $phraseWithMarkedEntities = htmlspecialchars($valueReference);
+                        $phraseWithMarkedEntities = Phrase::markEntities($phraseWithMarkedEntities, Phrase_Android::getPlaceholders($valueReference), 'text-primary', true);
+                        $phraseWithMarkedEntities = Phrase::markEntities($phraseWithMarkedEntities, Phrase_Android::getHTMLTags($valueReference), 'text-success', true);
 
                         $table->addRow(array('<strong>'.Language::getLanguageNameFull($repositoryData['defaultLanguage']).'</strong>', '<span dir="'.(Language::isLanguageRTL($repositoryData['defaultLanguage']) ? 'rtl' : 'ltr').'">'.nl2br($phraseWithMarkedEntities).'</span>'));
                         $table->addRow(array('<strong>Old value</strong>', '<span dir="'.(Language::isLanguageRTL($languageID) ? 'rtl' : 'ltr').'">'.nl2br(htmlspecialchars($valuePrevious)).'</span>'));
