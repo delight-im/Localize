@@ -754,12 +754,18 @@ abstract class UI {
                         $pendingEditsLeftCount = Database::getPendingEditsByRepositoryAndLanguageCount($repositoryID, $languageID) - 1;
                         $pendingEditsLeft = $pendingEditsLeftCount == 0 ? 'only this one' : ($pendingEditsLeftCount == 1 ? '1 other' : $pendingEditsLeftCount.' others');
 
+                        // mark placeholders and HTML tags in the reference phrase
                         $phraseWithMarkedEntities = htmlspecialchars($valueReference);
                         $phraseWithMarkedEntities = Phrase::markEntities($phraseWithMarkedEntities, Phrase_Android::getPlaceholders($valueReference), 'text-primary', true);
                         $phraseWithMarkedEntities = Phrase::markEntities($phraseWithMarkedEntities, Phrase_Android::getHTMLTags($valueReference), 'text-success', true);
 
+                        // mark placeholders and HTML tags in the current (old) value of the phrase
+                        $originalWithMarkedEntities = htmlspecialchars($valuePrevious);
+                        $originalWithMarkedEntities = Phrase::markEntities($originalWithMarkedEntities, Phrase_Android::getPlaceholders($valueReference), 'text-primary', true);
+                        $originalWithMarkedEntities = Phrase::markEntities($originalWithMarkedEntities, Phrase_Android::getHTMLTags($valueReference), 'text-success', true);
+
                         $table->addRow(array('<strong>'.Language::getLanguageNameFull($repositoryData['defaultLanguage']).'</strong>', '<span dir="'.(Language::isLanguageRTL($repositoryData['defaultLanguage']) ? 'rtl' : 'ltr').'">'.nl2br($phraseWithMarkedEntities).'</span>'));
-                        $table->addRow(array('<strong>Old value</strong>', '<span dir="'.(Language::isLanguageRTL($languageID) ? 'rtl' : 'ltr').'">'.nl2br(htmlspecialchars($valuePrevious)).'</span>'));
+                        $table->addRow(array('<strong>Old value</strong>', '<span dir="'.(Language::isLanguageRTL($languageID) ? 'rtl' : 'ltr').'">'.nl2br($originalWithMarkedEntities).'</span>'));
                         $table->addRow(array('<strong>Applied changes</strong>', '<span dir="'.(Language::isLanguageRTL($languageID) ? 'rtl' : 'ltr').'">'.nl2br(htmlDiff(htmlspecialchars($valuePrevious), htmlspecialchars($editData[0]['suggestedValue']))).'</span>'));
                         $table->addRow(array('<strong>New value</strong>', $newValueHTML));
                         $table->addRow(array('<strong>Submit time</strong>', date('d.m.Y H:i', $editData[0]['submit_time'])));
