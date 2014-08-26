@@ -162,20 +162,20 @@ abstract class Phrase {
     }
 
     /**
-     * Returns whether the two given lists of placeholders do match (except their order)
+     * Returns whether the two given lists of entities do match (except their order)
      *
-     * @param array $placeholders1
-     * @param array $placeholders2
+     * @param array $entities1
+     * @param array $entities2
      * @return bool
      */
-    public static function arePlaceholdersMatching($placeholders1, $placeholders2) {
-        sort($placeholders1);
-        sort($placeholders2);
-        $count1 = count($placeholders1);
-        $count2 = count($placeholders2);
+    public static function areEntitiesMatching($entities1, $entities2) {
+        sort($entities1);
+        sort($entities2);
+        $count1 = count($entities1);
+        $count2 = count($entities2);
         if ($count1 == $count2) {
             for ($i = 0; $i < $count1; $i++) {
-                if (!isset($placeholders2[$i]) || $placeholders1[$i] !== $placeholders2[$i]) {
+                if (!isset($entities2[$i]) || $entities1[$i] !== $entities2[$i]) {
                     return false;
                 }
             }
@@ -187,15 +187,15 @@ abstract class Phrase {
     }
 
     /**
-     * Mark the given placeholders in the given text and return the modified text
+     * Mark the given entities in the given text and return the modified text
      *
      * @param string $text
-     * @param array $placeholders
-     * @return string modified text with marked placeholders
+     * @param array $entities
+     * @return string modified text with marked entities
      */
-    public static function markPlaceholders($text, $placeholders) {
-        foreach ($placeholders as $placeholder) {
-            $text = str_replace($placeholder, '<strong class="text-primary">'.$placeholder.'</strong>', $text);
+    public static function markEntities($text, $entities) {
+        foreach ($entities as $entity) {
+            $text = str_replace($entity, '<strong class="text-primary">'.$entity.'</strong>', $text);
         }
         return $text;
     }

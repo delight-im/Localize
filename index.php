@@ -250,9 +250,8 @@ elseif (UI::isPage('review')) {
                 if (!empty($data_phraseObject)) {
                     switch ($data_action) {
                         case 'approve':
-                            $placeholdersReference = Phrase_Android::getPlaceholders($data_referenceValue);
-                            $placeholdersNew = Phrase_Android::getPlaceholders($data_newValue);
-                            if (Phrase::arePlaceholdersMatching($placeholdersReference, $placeholdersNew) || $languageID == $repositoryData['defaultLanguage']) { // placeholders (except their order) may only be changed in default language
+                            // placeholders (except their order) may only be changed in default language
+                            if (Phrase::areEntitiesMatching(Phrase_Android::getPlaceholders($data_referenceValue), Phrase_Android::getPlaceholders($data_newValue)) || $languageID == $repositoryData['defaultLanguage']) {
                                 $data_phraseObject->setPhraseValue($data_phraseSubKey, $data_newValue);
                                 Database::updatePhrase($repositoryID, $languageID, $data_phraseKey, $data_phraseObject->getPayload());
                                 Database::updateContributor($repositoryID, $data_contributorID);
@@ -260,7 +259,7 @@ elseif (UI::isPage('review')) {
                                 Authentication::setCachedLanguageProgress($repositoryID, NULL); // unset cached version of this repository's progress
                             }
                             else {
-                                $alert = new UI_Alert('<p>The placeholders must match with those of the reference phrase.</p>', UI_Alert::TYPE_WARNING);
+                                $alert = new UI_Alert('<p>The placeholders must match with those from the reference phrase.</p>', UI_Alert::TYPE_WARNING);
                             }
                             break;
                         case 'reviewLater':

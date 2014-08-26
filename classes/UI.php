@@ -751,14 +751,12 @@ abstract class UI {
                         $valuesPrevious = $previousPhrase->getPhraseValues();
                         $valuePrevious = isset($valuesPrevious[$editData[0]['phraseSubKey']]) && is_string($valuesPrevious[$editData[0]['phraseSubKey']]) ? trim($valuesPrevious[$editData[0]['phraseSubKey']]) : '';
 
-                        $placeholdersReference = Phrase_Android::getPlaceholders($valueReference);
-
                         $pendingEditsLeftCount = Database::getPendingEditsByRepositoryAndLanguageCount($repositoryID, $languageID) - 1;
                         $pendingEditsLeft = $pendingEditsLeftCount == 0 ? 'only this one' : ($pendingEditsLeftCount == 1 ? '1 other' : $pendingEditsLeftCount.' others');
 
-                        $phraseWithMarkedPlaceholders = Phrase::markPlaceholders(htmlspecialchars($valueReference), $placeholdersReference);
+                        $phraseWithMarkedEntities = Phrase::markEntities(htmlspecialchars($valueReference), Phrase_Android::getPlaceholders($valueReference));
 
-                        $table->addRow(array('<strong>'.Language::getLanguageNameFull($repositoryData['defaultLanguage']).'</strong>', '<span dir="'.(Language::isLanguageRTL($repositoryData['defaultLanguage']) ? 'rtl' : 'ltr').'">'.nl2br($phraseWithMarkedPlaceholders).'</span>'));
+                        $table->addRow(array('<strong>'.Language::getLanguageNameFull($repositoryData['defaultLanguage']).'</strong>', '<span dir="'.(Language::isLanguageRTL($repositoryData['defaultLanguage']) ? 'rtl' : 'ltr').'">'.nl2br($phraseWithMarkedEntities).'</span>'));
                         $table->addRow(array('<strong>Old value</strong>', '<span dir="'.(Language::isLanguageRTL($languageID) ? 'rtl' : 'ltr').'">'.nl2br(htmlspecialchars($valuePrevious)).'</span>'));
                         $table->addRow(array('<strong>Applied changes</strong>', '<span dir="'.(Language::isLanguageRTL($languageID) ? 'rtl' : 'ltr').'">'.nl2br(htmlDiff(htmlspecialchars($valuePrevious), htmlspecialchars($editData[0]['suggestedValue']))).'</span>'));
                         $table->addRow(array('<strong>New value</strong>', $newValueHTML));
