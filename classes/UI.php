@@ -1308,6 +1308,11 @@ abstract class UI {
                     $selectFormat->addOption('Plaintext', File_IO::FORMAT_PLAINTEXT);
                     $form->addContent($selectFormat);
 
+                    $ignoreIfSameAsDefault = new UI_Form_Select('Exclude same phrases?', 'export[ignoreIfSameAsDefault]', 'Exclude phrases which are the same as the default language?');
+                    $ignoreIfSameAsDefault->addOption('No', 0);					
+                    $ignoreIfSameAsDefault->addOption('Yes', 1);
+                    $form->addContent($ignoreIfSameAsDefault);
+
                     $isAdmin = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_ADMINISTRATOR);
 
                     $buttonSubmit = new UI_Form_Button('Export', UI_Form_Button::TYPE_SUCCESS);
