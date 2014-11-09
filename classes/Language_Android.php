@@ -264,8 +264,8 @@ class Language_Android extends Language {
      * Constructs the platform-specific output for this Language object in Android XML format
      *
      * @param int $groupID the group ID to get the output for (or Phrase::GROUP_ALL)
-     * @param int $ignoreIfSameAsDefaultLanguage exclude a phrase if it's the same as the default language
-     * @param int $defaultLanguageObject the default language object	 
+     * @param boolean $ignoreIfSameAsDefaultLanguage exclude a phrase if it's the same as the default language
+     * @param Language $defaultLanguageObject the default language object	 
      * @return OutputContainer the output object containing both data and completeness in percent
      */
     public function outputAndroidXML($groupID, $ignoreIfSameAsDefault, $defaultLanguageObject) {
@@ -275,7 +275,7 @@ class Language_Android extends Language {
         foreach ($this->phrases as $phrase) {
             // if we want all groups or if the phrase is in the selected group
             if ($groupID == Phrase::GROUP_ALL || $phrase->getGroupID() == $groupID) {
-				if (!$ignoreIfSameAsDefault  || $phrase->outputAndroidXML($groupID) != $defaultLanguageObject->getPhraseByKey($phrase->getPhraseKey())->outputAndroidXML($groupID)) {
+				if (!$ignoreIfSameAsDefault || $phrase->outputAndroidXML($groupID) != $defaultLanguageObject->getPhraseByKey($phrase->getPhraseKey())->outputAndroidXML($groupID)) {
 					$container->newPhrase($phrase->isEmpty());
 					$phraseEntries[] = $phrase->outputAndroidXML($groupID);
 				}
@@ -290,8 +290,8 @@ class Language_Android extends Language {
      * Constructs the platform-specific output for this Language object in Android XML format with escaped HTML
      *
      * @param int $groupID the group ID to get the output for (or Phrase::GROUP_ALL)
-     * @param int $ignoreIfSameAsDefaultLanguage exclude a phrase if it's the same as the default language
-     * @param int $defaultLanguageObject the default language object	 
+     * @param boolean $ignoreIfSameAsDefaultLanguage exclude a phrase if it's the same as the default language
+     * @param Language $defaultLanguageObject the default language object	 
      * @return OutputContainer the output object containing both data and completeness in percent
      */
     public function outputAndroidXMLEscapedHTML($groupID, $ignoreIfSameAsDefault, $defaultLanguageObject) {
@@ -301,7 +301,7 @@ class Language_Android extends Language {
         foreach ($this->phrases as $phrase) {
             // if we want all groups or if the phrase is in the selected group
             if ($groupID == Phrase::GROUP_ALL || $phrase->getGroupID() == $groupID) {
-				if (!$ignoreIfSameAsDefault  || $phrase->outputAndroidXMLEscapedHTML($groupID) != $defaultLanguageObject->getPhraseByKey($phrase->getPhraseKey())->outputAndroidXMLEscapedHTML($groupID)) {
+				if (!$ignoreIfSameAsDefault || $phrase->outputAndroidXMLEscapedHTML($groupID) != $defaultLanguageObject->getPhraseByKey($phrase->getPhraseKey())->outputAndroidXMLEscapedHTML($groupID)) {
 					$container->newPhrase($phrase->isEmpty());
 					$phraseEntries[] = $phrase->outputAndroidXMLEscapedHTML($groupID);
 				}
@@ -316,8 +316,8 @@ class Language_Android extends Language {
      * Constructs the platform-specific output for this Language object in JSON format
      *
      * @param int $groupID the group ID to get the output for (or Phrase::GROUP_ALL)
-     * @param int $ignoreIfSameAsDefaultLanguage exclude a phrase if it's the same as the default language
-     * @param int $defaultLanguageObject the default language object	 
+     * @param boolean $ignoreIfSameAsDefaultLanguage exclude a phrase if it's the same as the default language
+     * @param Language $defaultLanguageObject the default language object	 
      * @return OutputContainer the output object containing both data and completeness in percent
      */
     public function outputJSON($groupID, $ignoreIfSameAsDefault, $defaultLanguageObject) {
@@ -327,7 +327,7 @@ class Language_Android extends Language {
         foreach ($this->phrases as $phrase) {
             // if we want all groups or if the phrase is in the selected group
             if ($groupID == Phrase::GROUP_ALL || $phrase->getGroupID() == $groupID) {
-				if (!$ignoreIfSameAsDefault  || $phrase->outputJSON($groupID) != $defaultLanguageObject->getPhraseByKey($phrase->getPhraseKey())->outputJSON($groupID)) {			
+				if (!$ignoreIfSameAsDefault || $phrase->outputJSON($groupID) != $defaultLanguageObject->getPhraseByKey($phrase->getPhraseKey())->outputJSON($groupID)) {			
 					$container->newPhrase($phrase->isEmpty());
 					$phraseEntries[] = $phrase->outputJSON($groupID);
 				}
@@ -342,8 +342,8 @@ class Language_Android extends Language {
      * Constructs the platform-specific output for this Language object in plaintext format
      *
      * @param int $groupID the group ID to get the output for (or Phrase::GROUP_ALL)
-     * @param int $ignoreIfSameAsDefaultLanguage exclude a phrase if it's the same as the default language
-     * @param int $defaultLanguageObject the default language object	 
+     * @param boolean $ignoreIfSameAsDefaultLanguage exclude a phrase if it's the same as the default language
+     * @param Language $defaultLanguageObject the default language object	 
      * @return OutputContainer the output object containing both data and completeness in percent
      */
     public function outputPlaintext($groupID, $ignoreIfSameAsDefault, $defaultLanguageObject) {
@@ -353,7 +353,7 @@ class Language_Android extends Language {
         foreach ($this->phrases as $phrase) {
             // if we want all groups or if the phrase is in the selected group
             if ($groupID == Phrase::GROUP_ALL || $phrase->getGroupID() == $groupID) {
-				if (!$ignoreIfSameAsDefault  || $phrase->outputPlaintext($groupID) != $defaultLanguageObject->getPhraseByKey($phrase->getPhraseKey())->outputPlaintext($groupID)) {
+				if (!$ignoreIfSameAsDefault || $phrase->outputPlaintext($groupID) != $defaultLanguageObject->getPhraseByKey($phrase->getPhraseKey())->outputPlaintext($groupID)) {
 					$container->newPhrase($phrase->isEmpty());
 					$phraseEntries[] = $phrase->outputPlaintext($groupID);
 				}
