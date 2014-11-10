@@ -404,10 +404,10 @@ elseif (UI::isPage('export')) {
                     $groupID = intval(trim($data['groupID']));
                     $minCompletion = intval(trim($data['minCompletion']));
 					$format = intval(trim($data['format']));
-
+					$ignoreIfSameAsDefault = intval(trim($data['ignoreIfSameAsDefault'])) == 1;
                     $repository = new Repository($repositoryID, $repositoryData['name'], $repositoryData['visibility'], $repositoryData['defaultLanguage']);
                     $repository->loadLanguages(true, Repository::SORT_ALL_LANGUAGES, Repository::LOAD_ALL_LANGUAGES);
-                    File_IO::exportRepository($repository, $filename, $groupID, $format, $minCompletion);
+                    File_IO::exportRepository($repository, $filename, $groupID, $format, $minCompletion, $ignoreIfSameAsDefault);
                     exit;
                 }
                 else {

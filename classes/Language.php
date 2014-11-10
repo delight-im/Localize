@@ -119,33 +119,41 @@ abstract class Language {
      * Constructs the platform-specific output for this Language object in Android XML format
      *
      * @param int $groupID the group ID to get the output for (or Phrase::GROUP_ALL)
+     * @param boolean $ignoreIfSameAsDefaultLanguage exclude a phrase if it's the same as the default language
+     * @param Language $defaultLanguageObject the default language object
      * @return OutputContainer the output object containing both data and completeness in percent
      */
-    abstract public function outputAndroidXML($groupID);
+    abstract public function outputAndroidXML($groupID, $ignoreIfSameAsDefaultLanguage, $defaultLanguageObject);
 
     /**
      * Constructs the platform-specific output for this Language object in Android XML format with escaped HTML
      *
      * @param int $groupID the group ID to get the output for (or Phrase::GROUP_ALL)
+     * @param boolean $ignoreIfSameAsDefaultLanguage exclude a phrase if it's the same as the default language
+     * @param Language $defaultLanguageObject the default language object
      * @return OutputContainer the output object containing both data and completeness in percent
      */
-    abstract public function outputAndroidXMLEscapedHTML($groupID);
+    abstract public function outputAndroidXMLEscapedHTML($groupID, $ignoreIfSameAsDefaultLanguage, $defaultLanguageObject);
 
     /**
      * Constructs the platform-specific output for this Language object in JSON format
      *
      * @param int $groupID the group ID to get the output for (or Phrase::GROUP_ALL)
+     * @param boolean $ignoreIfSameAsDefaultLanguage exclude a phrase if it's the same as the default language
+     * @param Language $defaultLanguageObject the default language object
      * @return OutputContainer the output object containing both data and completeness in percent
      */
-    abstract public function outputJSON($groupID);
+    abstract public function outputJSON($groupID, $ignoreIfSameAsDefaultLanguage, $defaultLanguageObject);
 
     /**
      * Constructs the platform-specific output for this Language object in plaintext format
      *
      * @param int $groupID the group ID to get the output for (or Phrase::GROUP_ALL)
+     * @param boolean $ignoreIfSameAsDefaultLanguage exclude a phrase if it's the same as the default language
+     * @param Language $defaultLanguageObject the default language object
      * @return OutputContainer the output object containing both data and completeness in percent
      */
-    abstract public function outputPlaintext($groupID);
+    abstract public function outputPlaintext($groupID, $ignoreIfSameAsDefaultLanguage, $defaultLanguageObject);
 
     /**
      * Returns the platform-specific keys (strings) for this language

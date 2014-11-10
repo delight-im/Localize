@@ -100,9 +100,10 @@ class File_IO {
      * @param int $groupID the group to get the output for (or Phrase::GROUP_ALL)
      * @param int $format the format (constant) to use for this export
      * @param int $minCompletion the minimum percentage of completion for languages to be eligible for exporting
+     * @param bool $ignoreIfSameAsDefault ignore phrases which are the same as the default language
      * @throws Exception if the repository could not be exported
      */
-    public static function exportRepository($repository, $filename, $groupID, $format, $minCompletion = 0) {
+    public static function exportRepository($repository, $filename, $groupID, $format, $minCompletion = 0, $ignoreIfSameAsDefault = false) {
         if (self::isFilenameValid($filename)) {
             if ($repository instanceof Repository) {
                 $exportSuccess = true;
@@ -112,24 +113,26 @@ class File_IO {
                 $savePath .= '/'.$randomDir; // navigate to random directory inside output folder
                 if (mkdir($savePath, 0755, true)) { // if output folder could be created
                     $languages = Language::getList();
+					$defaultLanguageObject = $repository->getLanguage($repository->getDefaultLanguage());
+
                     foreach ($languages as $language) {
                         $languageObject = $repository->getLanguage($language);
                         $languageKeys = $languageObject->getKeys();
-
+                        $ignorePhrasesSameAsDefault = $ignoreIfSameAsDefault && $repository->getDefaultLanguage() != $language;
                         if ($format == self::FORMAT_ANDROID_XML_ESCAPED_HTML) {
-                            $languageOutput = $languageObject->outputAndroidXMLEscapedHTML($groupID);
+                            $languageOutput = $languageObject->outputAndroidXMLEscapedHTML($groupID, $ignorePhrasesSameAsDefault, $defaultLanguageObject);
                             $fileExtension = '.xml';
                         }
                         elseif ($format == self::FORMAT_JSON) {
-                            $languageOutput = $languageObject->outputJSON($groupID);
+                            $languageOutput = $languageObject->outputJSON($groupID, $ignorePhrasesSameAsDefault, $defaultLanguageObject);
                             $fileExtension = '.json';
                         }
                         elseif ($format == self::FORMAT_PLAINTEXT) {
-                            $languageOutput = $languageObject->outputPlaintext($groupID);
+                            $languageOutput = $languageObject->outputPlaintext($groupID, $ignorePhrasesSameAsDefault, $defaultLanguageObject);
                             $fileExtension = '.txt';
                         }
                         else {
-                            $languageOutput = $languageObject->outputAndroidXML($groupID);
+                            $languageOutput = $languageObject->outputAndroidXML($groupID, $ignorePhrasesSameAsDefault, $defaultLanguageObject);
                             $fileExtension = '.xml';
                         }
 
