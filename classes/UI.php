@@ -1308,9 +1308,9 @@ abstract class UI {
                     $selectFormat->addOption('Plaintext', File_IO::FORMAT_PLAINTEXT);
                     $form->addContent($selectFormat);
 
-                    $ignoreIfSameAsDefault = new UI_Form_Select('Exclude same phrases?', 'export[ignoreIfSameAsDefault]', 'Exclude phrases which are the same as the default language?');
-                    $ignoreIfSameAsDefault->addOption('No', 0);					
-                    $ignoreIfSameAsDefault->addOption('Yes', 1);
+                    $ignoreIfSameAsDefault = new UI_Form_Select('Exclude defaults', 'export[ignoreIfSameAsDefault]', 'Do you want to exclude phrases which are the same as the respective phrase in the default language?');
+                    $ignoreIfSameAsDefault->addOption('No, export a complete file for each language', 0);
+                    $ignoreIfSameAsDefault->addOption('Yes, export only what\'s necessary', 1);
                     $form->addContent($ignoreIfSameAsDefault);
 
                     $isAdmin = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_ADMINISTRATOR);
