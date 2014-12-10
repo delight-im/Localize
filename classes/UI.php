@@ -456,8 +456,8 @@ abstract class UI {
             $form->addContent(new UI_Form_Hidden('create_project[defaultLanguage]', $repositoryData['defaultLanguage']));
         }
 
-        $buttonSubmit = new UI_Form_Button((empty($repositoryData) ? 'Create project' : 'Edit project'), UI_Form_Button::TYPE_SUCCESS);
-        $buttonCancel = new UI_Link('Cancel', (empty($repositoryData) ? URL::toDashboard() : URL::toProject($repositoryID)), UI_Form_Button::TYPE_UNIMPORTANT);
+        $buttonSubmit = new UI_Form_Button((empty($repositoryData) ? 'Create project' : 'Edit project'), UI_Link::TYPE_SUCCESS);
+        $buttonCancel = new UI_Link('Cancel', (empty($repositoryData) ? URL::toDashboard() : URL::toProject($repositoryID)), UI_Link::TYPE_UNIMPORTANT);
         $form->addContent(new UI_Form_ButtonGroup(array($buttonSubmit, $buttonCancel)));
 
         self::setTitle((empty($repositoryData) ? 'Create project' : 'Edit project'));
@@ -477,7 +477,7 @@ abstract class UI {
                 '(Default group)', $phrasesInDefaultGroup.' phrases', ''
             ));
             foreach ($phraseGroups as $phraseGroup) {
-                $linkDelete = new UI_Form_Button('Delete', UI_Form_Button::TYPE_DANGER, UI_Form_Button::ACTION_SUBMIT, 'deleteGroup[id]', $phraseGroup['id'], 'return confirm(\'Are you sure you want to delete this group? All phrases will be moved to the default group.\');');
+                $linkDelete = new UI_Form_Button('Delete', UI_Link::TYPE_DANGER, UI_Form_Button::ACTION_SUBMIT, 'deleteGroup[id]', $phraseGroup['id'], 'return confirm(\'Are you sure you want to delete this group? All phrases will be moved to the default group.\');');
                 $table->addRow(array(
                     htmlspecialchars($phraseGroup['name']), $phraseGroup['phraseCount'].' phrases', $linkDelete->getHTML()
                 ));
@@ -497,7 +497,7 @@ abstract class UI {
             $contents[] = new UI_Paragraph('Use the following option to remove all translations that don\'t differ from the default language.');
             $contents[] = new UI_Paragraph('These translations have no effect and thus only distort the progress indication.');
             $formAdd = new UI_Form(htmlspecialchars($currentPageURL), false);
-            $formAdd->addContent(new UI_Form_Button('Run now', UI_Form_Button::TYPE_SUCCESS, UI_Form_Button::ACTION_SUBMIT, 'cleanLanguages[run]', 1));
+            $formAdd->addContent(new UI_Form_Button('Run now', UI_Link::TYPE_SUCCESS, UI_Form_Button::ACTION_SUBMIT, 'cleanLanguages[run]', 1));
 
             $contents[] = $formAdd;
         }
@@ -531,7 +531,7 @@ abstract class UI {
         $textPassword = new UI_Form_Text('Password', 'sign_up[password]', 'Type a strong password', true, 'Please choose a password of at least 8 characters. Include letters (A-Z) and numbers (0-9).');
         $form->addContent($textPassword);
 
-        $buttonSubmit = new UI_Form_Button('Sign up', UI_Form_Button::TYPE_SUCCESS);
+        $buttonSubmit = new UI_Form_Button('Sign up', UI_Link::TYPE_SUCCESS);
         $buttonSubmit->setID('sign_up[submit]');
         $buttonSubmit->setJSEvents('if (Authentication.isPasswordAllowed(document.getElementById(\'sign_up[password]\'))) { return true; } else { alert(\'Please make sure to enter a valid password! See the requirements below the field.\'); return false; }');
         $buttonCancel = new UI_Link('Cancel', URL::toDashboard(), UI_Link::TYPE_UNIMPORTANT);
@@ -716,11 +716,11 @@ abstract class UI {
                         $table->setColumnPriorities(3, 9);
                         $contributorName = empty($editData[0]['real_name']) ? '<span class="text-muted">'.htmlspecialchars($editData[0]['username']).'</span>' : htmlspecialchars($editData[0]['real_name']).' <span class="text-muted">('.htmlspecialchars($editData[0]['username']).')</span>';
 
-                        $buttonApprove = new UI_Form_Button('Approve', UI_Form_Button::TYPE_SUCCESS, UI_Form_Button::ACTION_SUBMIT, 'review[action]', 'approve');
-                        $buttonReviewLater = new UI_Form_Button('Review later', UI_Form_Button::TYPE_UNIMPORTANT, UI_Form_Button::ACTION_SUBMIT, 'review[action]', 'reviewLater');
-                        $buttonReject = new UI_Form_Button('Reject', UI_Form_Button::TYPE_WARNING, UI_Form_Button::ACTION_SUBMIT, 'review[action]', 'reject');
-                        $buttonApproveAllByContributor = new UI_Form_Button('Approve all from this contributor', UI_Form_Button::TYPE_SUCCESS, UI_Form_Button::ACTION_SUBMIT, 'review[action]', 'approveAllFromThisContributor', 'return confirm(\'Are you sure you want to execute this batch operation? Danger: Validity checks (e.g. placeholders, whitespace, HTML) will not be performed!\');');
-                        $buttonRejectAllByContributor = new UI_Form_Button('Reject all from this contributor', UI_Form_Button::TYPE_DANGER, UI_Form_Button::ACTION_SUBMIT, 'review[action]', 'rejectAllFromThisContributor', 'return confirm(\'Are you sure you want to execute this batch operation?\');');
+                        $buttonApprove = new UI_Form_Button('Approve', UI_Link::TYPE_SUCCESS, UI_Form_Button::ACTION_SUBMIT, 'review[action]', 'approve');
+                        $buttonReviewLater = new UI_Form_Button('Review later', UI_Link::TYPE_UNIMPORTANT, UI_Form_Button::ACTION_SUBMIT, 'review[action]', 'reviewLater');
+                        $buttonReject = new UI_Form_Button('Reject', UI_Link::TYPE_WARNING, UI_Form_Button::ACTION_SUBMIT, 'review[action]', 'reject');
+                        $buttonApproveAllByContributor = new UI_Form_Button('Approve all from this contributor', UI_Link::TYPE_SUCCESS, UI_Form_Button::ACTION_SUBMIT, 'review[action]', 'approveAllFromThisContributor', 'return confirm(\'Are you sure you want to execute this batch operation? Danger: Validity checks (e.g. placeholders, whitespace, HTML) will not be performed!\');');
+                        $buttonRejectAllByContributor = new UI_Form_Button('Reject all from this contributor', UI_Link::TYPE_DANGER, UI_Form_Button::ACTION_SUBMIT, 'review[action]', 'rejectAllFromThisContributor', 'return confirm(\'Are you sure you want to execute this batch operation?\');');
 
                         $actionButtons = new UI_Form_ButtonGroup(array(
                             $buttonApprove,
@@ -868,8 +868,8 @@ abstract class UI {
                     $table = new UI_Table(array('', ''));
                     $table->setColumnPriorities(6, 6);
 
-                    $buttonAccept = new UI_Form_Button('Accept', UI_Form_Button::TYPE_SUCCESS, UI_Form_Button::ACTION_SUBMIT, 'invitations[accept]', Repository::INVITATION_ACCEPTED);
-                    $buttonDecline = new UI_Form_Button('Decline', UI_Form_Button::TYPE_WARNING, UI_Form_Button::ACTION_SUBMIT, 'invitations[accept]', Repository::INVITATION_DECLINED);
+                    $buttonAccept = new UI_Form_Button('Accept', UI_Link::TYPE_SUCCESS, UI_Form_Button::ACTION_SUBMIT, 'invitations[accept]', Repository::INVITATION_ACCEPTED);
+                    $buttonDecline = new UI_Form_Button('Decline', UI_Link::TYPE_WARNING, UI_Form_Button::ACTION_SUBMIT, 'invitations[accept]', Repository::INVITATION_DECLINED);
                     $actionButtons = new UI_Form_ButtonGroup(array(
                         $buttonAccept,
                         $buttonDecline
@@ -1002,7 +1002,7 @@ abstract class UI {
             // EMAIL ADDRESS FIELD END
             $form->addContent(new UI_Form_ButtonGroup(array(
                 new UI_Form_Button('Save'),
-                new UI_Link('Cancel', URL::toDashboard(), UI_Form_Button::TYPE_UNIMPORTANT)
+                new UI_Link('Cancel', URL::toDashboard(), UI_Link::TYPE_UNIMPORTANT)
             )));
             $contents[] = $form;
         }
@@ -1074,8 +1074,8 @@ abstract class UI {
                     $formMove->addContent($phraseGroupSelection);
 
                     $formButtonList = array(
-                        new UI_Form_Button('Update group', UI_Form_Button::TYPE_SUCCESS),
-                        new UI_Link('Manage groups', URL::toEditProject($repositoryID, true), UI_Form_Button::TYPE_UNIMPORTANT),
+                        new UI_Form_Button('Update group', UI_Link::TYPE_SUCCESS),
+                        new UI_Link('Manage groups', URL::toEditProject($repositoryID, true), UI_Link::TYPE_UNIMPORTANT),
                         new UI_Link('Cancel', URL::toLanguage($repositoryID, $languageID), UI_Link::TYPE_UNIMPORTANT)
                     );
                     $formMove->addContent(new UI_Form_ButtonGroup($formButtonList));
@@ -1095,7 +1095,7 @@ abstract class UI {
                     $formChange->addContent($actionTypeSelection);
 
                     $formButtonList = array(
-                        new UI_Form_Button('Execute', UI_Form_Button::TYPE_DANGER, UI_Form_Button::ACTION_SUBMIT, '', '', 'return confirm(\'Are you sure you want to execute the selected operation? This cannot be undone!\');'),
+                        new UI_Form_Button('Execute', UI_Link::TYPE_DANGER, UI_Form_Button::ACTION_SUBMIT, '', '', 'return confirm(\'Are you sure you want to execute the selected operation? This cannot be undone!\');'),
                         new UI_Link('Cancel', URL::toLanguage($repositoryID, $languageID), UI_Link::TYPE_UNIMPORTANT)
                     );
                     $formChange->addContent(new UI_Form_ButtonGroup($formButtonList));
@@ -1195,7 +1195,7 @@ abstract class UI {
                 }
 
                 $formButtonList = array(
-                    new UI_Form_Button('Save', UI_Form_Button::TYPE_SUCCESS, UI_Form_Button::ACTION_SUBMIT),
+                    new UI_Form_Button('Save', UI_Link::TYPE_SUCCESS, UI_Form_Button::ACTION_SUBMIT),
                     new UI_Link('Cancel', URL::toProject($repositoryID), UI_Link::TYPE_UNIMPORTANT)
                 );
                 $formWatch->addContent(new UI_Form_ButtonGroup($formButtonList));
@@ -1276,9 +1276,9 @@ abstract class UI {
                         $form->addContent($textPhrasePluralsValue);
                     }
 
-                    $buttonSubmit = new UI_Form_Button('Save phrase(s)', UI_Form_Button::TYPE_SUCCESS);
-                    $buttonAddItem = new UI_Link('Add item', '#', UI_Form_Button::TYPE_INFO, 'addPhraseGroup_StringArray', 'display:none;', 'addPhraseAddItem(\'add_phrase[string_array][]\'); return false;');
-                    $buttonCancel = new UI_Link('Cancel', URL::toLanguage($repositoryID, $languageID), UI_Form_Button::TYPE_UNIMPORTANT);
+                    $buttonSubmit = new UI_Form_Button('Save phrase(s)', UI_Link::TYPE_SUCCESS);
+                    $buttonAddItem = new UI_Link('Add item', '#', UI_Link::TYPE_INFO, 'addPhraseGroup_StringArray', 'display:none;', 'addPhraseAddItem(\'add_phrase[string_array][]\'); return false;');
+                    $buttonCancel = new UI_Link('Cancel', URL::toLanguage($repositoryID, $languageID), UI_Link::TYPE_UNIMPORTANT);
                     $form->addContent(new UI_Form_ButtonGroup(array(
                         $buttonSubmit,
                         $buttonAddItem,
@@ -1332,9 +1332,9 @@ abstract class UI {
 
                     $isAdmin = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_ADMINISTRATOR);
 
-                    $buttonSubmit = new UI_Form_Button('Export', UI_Form_Button::TYPE_SUCCESS);
-                    $buttonManageGroups = new UI_Link('Manage groups', URL::toEditProject($repositoryID, true), UI_Form_Button::TYPE_UNIMPORTANT);
-                    $buttonCancel = new UI_Link('Cancel', URL::toProject($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
+                    $buttonSubmit = new UI_Form_Button('Export', UI_Link::TYPE_SUCCESS);
+                    $buttonManageGroups = new UI_Link('Manage groups', URL::toEditProject($repositoryID, true), UI_Link::TYPE_UNIMPORTANT);
+                    $buttonCancel = new UI_Link('Cancel', URL::toProject($repositoryID), UI_Link::TYPE_UNIMPORTANT);
                     if ($isAdmin) {
                         $form->addContent(new UI_Form_ButtonGroup(array(
                             $buttonSubmit,
@@ -1388,9 +1388,9 @@ abstract class UI {
 
                     $isAdmin = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_ADMINISTRATOR);
 
-                    $buttonSubmit = new UI_Form_Button('Import XML', UI_Form_Button::TYPE_SUCCESS);
-                    $buttonManageGroups = new UI_Link('Manage groups', URL::toEditProject($repositoryID, true), UI_Form_Button::TYPE_UNIMPORTANT);
-                    $buttonCancel = new UI_Link('Cancel', URL::toProject($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
+                    $buttonSubmit = new UI_Form_Button('Import XML', UI_Link::TYPE_SUCCESS);
+                    $buttonManageGroups = new UI_Link('Manage groups', URL::toEditProject($repositoryID, true), UI_Link::TYPE_UNIMPORTANT);
+                    $buttonCancel = new UI_Link('Cancel', URL::toProject($repositoryID), UI_Link::TYPE_UNIMPORTANT);
                     if ($isAdmin) {
                         $form->addContent(new UI_Form_ButtonGroup(array(
                             $buttonSubmit,
@@ -1449,13 +1449,13 @@ abstract class UI {
 
                     $actionButtons = array();
                     if (Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_DEVELOPER)) {
-                        $actionButtons[] = new UI_Link('Export', URL::toExport($repositoryID), UI_Form_Button::TYPE_SUCCESS);
-                        $actionButtons[] = new UI_Link('Import XML', URL::toImport($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
+                        $actionButtons[] = new UI_Link('Export', URL::toExport($repositoryID), UI_Link::TYPE_SUCCESS);
+                        $actionButtons[] = new UI_Link('Import XML', URL::toImport($repositoryID), UI_Link::TYPE_UNIMPORTANT);
                         if (Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_ADMINISTRATOR)) {
-                            $actionButtons[] = new UI_Link('Edit project', URL::toEditProject($repositoryID), UI_Form_Button::TYPE_UNIMPORTANT);
+                            $actionButtons[] = new UI_Link('Edit project', URL::toEditProject($repositoryID), UI_Link::TYPE_UNIMPORTANT);
                         }
-                        $actionButtons[] = new UI_Link('Add phrase', URL::toAddPhrase($repositoryID, $defaultLanguage->getID()), UI_Form_Button::TYPE_UNIMPORTANT);
-                        $actionButtons[] = new UI_Link('Watch', URL::toWatchProject($repositoryID), UI_Form_Button::TYPE_INFO);
+                        $actionButtons[] = new UI_Link('Add phrase', URL::toAddPhrase($repositoryID, $defaultLanguage->getID()), UI_Link::TYPE_UNIMPORTANT);
+                        $actionButtons[] = new UI_Link('Watch', URL::toWatchProject($repositoryID), UI_Link::TYPE_INFO);
                     }
 
                     if (!empty($actionButtons)) {
@@ -1596,7 +1596,7 @@ abstract class UI {
 
                         $formTargetURL = URL::toLanguage($repositoryID, $languageID);
                         $addPhraseURL = URL::toAddPhrase($repositoryID, $languageID);
-                        $saveButton = new UI_Form_Button('Save changes', UI_Form_Button::TYPE_SUCCESS, UI_Form_Button::ACTION_SUBMIT, '', '', 'setUnsavedChanges(false);');
+                        $saveButton = new UI_Form_Button('Save changes', UI_Link::TYPE_SUCCESS, UI_Form_Button::ACTION_SUBMIT, '', '', 'setUnsavedChanges(false);');
 
                         if ($mayMovePhrases) {
                             $formButtonList = array(
@@ -1662,7 +1662,7 @@ abstract class UI {
         $form->addContent(new UI_Form_Text('Password', 'sign_in[password]', 'Type your password', true));
         $form->addContent(new UI_Form_Hidden('sign_in[returnURL]', base64_encode($_SERVER['REQUEST_URI'])));
 
-        $buttonSubmit = new UI_Form_Button('Sign in', UI_Form_Button::TYPE_SUCCESS);
+        $buttonSubmit = new UI_Form_Button('Sign in', UI_Link::TYPE_SUCCESS);
         $buttons = new UI_Form_ButtonGroup(array($buttonSubmit));
 
         $form->addContent($buttons);
@@ -1680,7 +1680,7 @@ abstract class UI {
 
         $form->addContent(new UI_Form_Hidden('requestInvitation[repositoryID]', URL::encodeID($repositoryID)));
 
-        $buttonSubmit = new UI_Form_Button('Request an invitation', UI_Form_Button::TYPE_SUCCESS);
+        $buttonSubmit = new UI_Form_Button('Request an invitation', UI_Link::TYPE_SUCCESS);
         $buttonCancel = new UI_Link('Cancel', URL::toDashboard(), UI_Link::TYPE_UNIMPORTANT);
         $buttons = new UI_Form_ButtonGroup(array(
             $buttonSubmit,

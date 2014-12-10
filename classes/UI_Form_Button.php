@@ -4,12 +4,6 @@ require_once('UI.php');
 
 class UI_Form_Button extends UI {
 
-    const TYPE_SUCCESS = 1;
-    const TYPE_INFO = 2;
-    const TYPE_WARNING = 3;
-    const TYPE_DANGER = 4;
-    const TYPE_IMPORTANT = 5;
-    const TYPE_UNIMPORTANT = 6;
     const ACTION_SUBMIT = 1;
     const ACTION_CANCEL = 2;
 
@@ -21,7 +15,7 @@ class UI_Form_Button extends UI {
     protected $enabled;
     protected $id;
 
-    function __construct($label, $type = self::TYPE_SUCCESS, $action = self::ACTION_SUBMIT, $key = '', $value = '', $jsEvents = '') {
+    function __construct($label, $type = UI_Link::TYPE_SUCCESS, $action = self::ACTION_SUBMIT, $key = '', $value = '', $jsEvents = '') {
         $this->label = $label;
         $this->key = $key;
         $this->value = $value;
