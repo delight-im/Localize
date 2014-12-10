@@ -768,10 +768,13 @@ abstract class UI {
                         $fullyQualifiedName = Phrase_Android::getFullyQualifiedName($referencedPhrase, $editData[0]['phraseSubKey']);
                         $fullyQualifiedNameHTML = '<span dir="ltr" class="small" style="display:block; color:#999; margin-top:4px;">'.htmlspecialchars($fullyQualifiedName).'</span>';
 
+                        $translateBackLink = self::linkToTranslationService('Check', $languageID, $repositoryData['defaultLanguage'], $editData[0]['suggestedValue']);
+                        $translateBackLink->setSize(UI_Link::SIZE_SMALL);
+
                         $table->addRow(array('<strong>'.Language::getLanguageNameFull($repositoryData['defaultLanguage']).'</strong>'.$fullyQualifiedNameHTML, '<span dir="'.(Language::isLanguageRTL($repositoryData['defaultLanguage']) ? 'rtl' : 'ltr').'">'.nl2br($phraseWithMarkedEntities).'</span>'));
                         $table->addRow(array('<strong>Old value</strong>'.$fullyQualifiedNameHTML, '<span dir="'.(Language::isLanguageRTL($languageID) ? 'rtl' : 'ltr').'">'.nl2br($originalWithMarkedEntities).'</span>'));
                         $table->addRow(array('<strong>Applied changes</strong>', '<span dir="'.(Language::isLanguageRTL($languageID) ? 'rtl' : 'ltr').'">'.nl2br(htmlDiff(htmlspecialchars($valuePrevious), htmlspecialchars($editData[0]['suggestedValue']))).'</span>'));
-                        $table->addRow(array('<strong>New value</strong>'.$fullyQualifiedNameHTML, $newValueHTML));
+                        $table->addRow(array('<strong>New value</strong>'.$fullyQualifiedNameHTML.'<br />'.$translateBackLink->getHTML(), $newValueHTML));
                         $table->addRow(array('<strong>Submit time</strong>', date('d.m.Y H:i', $editData[0]['submit_time'])));
                         if ($isAllowedToReview) {
                             $table->addRow(array('<strong>Contributor</strong>', $contributorName));
@@ -902,6 +905,20 @@ abstract class UI {
 
         $containers[] = new UI_Container(array($row));
         return new UI_Group($containers);
+    }
+
+    protected static function linkToTranslationService($label, $startLanguageId, $targetLanguageId, $text) {
+        // remove CDATA tags from the text
+        $text = preg_replace('/<!\[CDATA\[(.*?)]]>/i', '$1', $text);
+
+        // replace percentage symbols in the text (which seem to cause problems)
+        $text = str_replace('%', '#', $text);
+
+        // build the link object
+        $link = new UI_Link($label, sprintf(CONFIG_TRANSLATION_SERVICE_URL, Language_Android::getLanguageCode($startLanguageId), Language_Android::getLanguageCode($targetLanguageId), urlencode($text)), UI_Link::TYPE_INFO);
+        $link->setOpenNewTab(true);
+
+        return $link;
     }
 
     public static function getPage_Settings($contents, $containers) {
@@ -1525,6 +1542,7 @@ abstract class UI {
 
                                         if ($mayMovePhrases) {
                                             $editPhraseLink = new UI_Link('Edit', URL::toPhraseDetails($repositoryID, $languageID, $defaultPhrase->getID()), UI_Link::TYPE_UNIMPORTANT);
+                                            $editPhraseLink->setSize(UI_Link::SIZE_SMALL);
                                             $editPhraseLink->setTabIndex('-1');
                                             $phrasesTable->addRow(array(
                                                 $editPhraseLink->getHTML(),
@@ -1557,6 +1575,7 @@ abstract class UI {
 
                                         if ($mayMovePhrases) {
                                             $editPhraseLink = new UI_Link('Edit', URL::toPhraseDetails($repositoryID, $languageID, $defaultPhrase->getID()), UI_Link::TYPE_UNIMPORTANT);
+                                            $editPhraseLink->setSize(UI_Link::SIZE_SMALL);
                                             $editPhraseLink->setTabIndex('-1');
                                             $phrasesTable->addRow(array(
                                                 $editPhraseLink->getHTML(),

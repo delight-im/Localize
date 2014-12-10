@@ -19,4 +19,4 @@ define('CONFIG_TEMP_PATH', 'temp/'); // local directory where temporary files (e
 define('CONFIG_UPLOAD_PATH', 'uploads/'); // local directory where uploaded files will be saved (with trailing slash)
 define('CONFIG_MAX_FILE_SIZE', 1572864); // 1024 * 1024 * 1.5
 
-?>
+define('CONFIG_TRANSLATION_SERVICE_URL', 'https://translate.google.com/#%1$s/%2$s/%3$s'); // online translation service URL that accepts a text and two-letter language identifiers (placeholders: #1=start language, #2=target language, #3=text)
