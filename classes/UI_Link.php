@@ -19,6 +19,7 @@ class UI_Link extends UI {
     protected $cssStyles;
     protected $jsEvents;
     protected $tabIndex;
+    protected $openNewTab;
 
     function __construct($label, $target, $buttonType = self::TYPE_NONE, $cssClasses = '', $cssStyles = '', $jsEvents = '') {
         $this->label = $label;
@@ -28,6 +29,15 @@ class UI_Link extends UI {
         $this->cssStyles = $cssStyles;
         $this->jsEvents = $jsEvents;
         $this->tabIndex = NULL;
+        $this->openNewTab = false;
+    }
+
+    public function setOpenNewTab($openNewTab) {
+        $this->openNewTab = $openNewTab;
+    }
+
+    public function isOpenNewTab() {
+        return $this->openNewTab;
     }
 
     public function setTabIndex($tabIndex) {
@@ -37,6 +47,9 @@ class UI_Link extends UI {
     public function getHTML() {
         $out = '<a href="'.$this->target.'"';
         $out .= self::getButtonClass($this->buttonType, $this->cssClasses);
+        if ($this->openNewTab) {
+            $out .= ' target="_blank"';
+        }
         if (!empty($this->cssStyles)) {
             $out .= ' style="'.$this->cssStyles.'"';
         }
