@@ -11,6 +11,10 @@ class UI_Link extends UI {
     const TYPE_DANGER = 4;
     const TYPE_IMPORTANT = 5;
     const TYPE_UNIMPORTANT = 6;
+    const SIZE_DEFAULT = 0;
+    const SIZE_SMALL = 1;
+    const SIZE_LARGE = 2;
+    const SIZE_TINY = 3;
 
     protected $label;
     protected $target;
@@ -20,6 +24,7 @@ class UI_Link extends UI {
     protected $jsEvents;
     protected $tabIndex;
     protected $openNewTab;
+    protected $size;
 
     function __construct($label, $target, $buttonType = self::TYPE_NONE, $cssClasses = '', $cssStyles = '', $jsEvents = '') {
         $this->label = $label;
@@ -30,6 +35,15 @@ class UI_Link extends UI {
         $this->jsEvents = $jsEvents;
         $this->tabIndex = NULL;
         $this->openNewTab = false;
+        $this->size = self::SIZE_DEFAULT;
+    }
+
+    public function setSize($size) {
+        $this->size = $size;
+    }
+
+    public function getSize() {
+        return $this->size;
     }
 
     public function setOpenNewTab($openNewTab) {
@@ -46,7 +60,7 @@ class UI_Link extends UI {
 
     public function getHTML() {
         $out = '<a href="'.$this->target.'"';
-        $out .= self::getButtonClass($this->buttonType, $this->cssClasses);
+        $out .= self::getButtonClass($this->buttonType, $this->size, $this->cssClasses);
         if ($this->openNewTab) {
             $out .= ' target="_blank"';
         }
@@ -63,7 +77,20 @@ class UI_Link extends UI {
         return $out;
     }
 
-    public static function getButtonClass($type, $additionalClasses = '') {
+    protected static function getSizeClass($size, $prefix = '') {
+        switch ($size) {
+            case self::SIZE_SMALL:
+                return $prefix.'btn-sm';
+            case self::SIZE_LARGE:
+                return $prefix.'btn-lg';
+            case self::SIZE_TINY:
+                return $prefix.'btn-xs';
+            default:
+                return '';
+        }
+    }
+
+    public static function getButtonClass($type, $size = self::SIZE_DEFAULT, $additionalClasses = '') {
         switch ($type) {
             case self::TYPE_SUCCESS:
                 $cssClasses = 'btn btn-success';
@@ -86,6 +113,9 @@ class UI_Link extends UI {
             default:
                 $cssClasses = '';
         }
+
+        $cssClasses .= self::getSizeClass($size, empty($cssClasses) ? '' : ' ');
+
         if (empty($additionalClasses)) {
             if (empty($cssClasses)) {
                 return '';

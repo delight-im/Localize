@@ -52,7 +52,7 @@ class UI_Form_Button extends UI {
         else {
             $out .= ' type="submit"';
         }
-        $out .= ' class="btn'.self::getButtonClass($this->type).'"';
+        $out .= UI_Link::getButtonClass($this->type);
         if (!empty($this->key)) {
             $out .= ' name="'.htmlspecialchars($this->key).'"';
             if (!empty($this->value)) {
@@ -70,25 +70,6 @@ class UI_Form_Button extends UI {
         }
         $out .= '>'.$this->label.'</button>';
         return $out;
-    }
-
-    public static function getButtonClass($type) {
-        switch ($type) {
-            case self::TYPE_SUCCESS:
-                return ' btn-success';
-            case self::TYPE_INFO:
-                return ' btn-info';
-            case self::TYPE_WARNING:
-                return ' btn-warning';
-            case self::TYPE_DANGER:
-                return ' btn-danger';
-            case self::TYPE_IMPORTANT:
-                return ' btn-primary';
-            case self::TYPE_UNIMPORTANT:
-                return ' btn-default';
-            default:
-                throw new Exception('Unknown type ID '.$type);
-        }
     }
 
 }
