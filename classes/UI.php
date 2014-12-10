@@ -914,8 +914,12 @@ abstract class UI {
         // replace percentage symbols in the text (which seem to cause problems)
         $text = str_replace('%', '#', $text);
 
+        // retrieve the correct language codes for the translation service
+        $startLanguageCode = substr(Language_Android::getLanguageCode($startLanguageId), 0, 2);
+        $targetLanguageCode = substr(Language_Android::getLanguageCode($targetLanguageId), 0, 2);
+
         // build the link object
-        $link = new UI_Link($label, sprintf(CONFIG_TRANSLATION_SERVICE_URL, Language_Android::getLanguageCode($startLanguageId), Language_Android::getLanguageCode($targetLanguageId), urlencode($text)), UI_Link::TYPE_INFO);
+        $link = new UI_Link($label, sprintf(CONFIG_TRANSLATION_SERVICE_URL, $startLanguageCode, $targetLanguageCode, urlencode($text)), UI_Link::TYPE_INFO);
         $link->setOpenNewTab(true);
 
         return $link;
