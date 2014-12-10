@@ -121,6 +121,21 @@ abstract class Phrase_Android extends Phrase implements PhraseImplementation {
     }
 
     /**
+     * Returns an array of CDATA sections that have been found in the given phrase text
+     *
+     * @param string $phraseText
+     * @return array list of CDATA sections
+     */
+    public static function getCdataSections($phraseText) {
+        preg_match_all('/<!\[CDATA\[/i', $phraseText, $openingTags);
+        preg_match_all('/]]>/i', $phraseText, $closingTags);
+
+        $allTags = array_merge($openingTags[0], $closingTags[0]);
+
+        return $allTags;
+    }
+
+    /**
      * Returns an array of HTML tags that have been found in the given phrase text
      *
      * @param string $phraseText
@@ -151,5 +166,3 @@ abstract class Phrase_Android extends Phrase implements PhraseImplementation {
     }
 
 }
-
-?>

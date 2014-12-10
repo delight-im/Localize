@@ -256,11 +256,17 @@ elseif (UI::isPage('review')) {
                                 if (Phrase::areEntitiesMatching(Phrase_Android::getOuterWhitespace($data_referenceValue), Phrase_Android::getOuterWhitespace($data_newValue)) || $languageID == $repositoryData['defaultLanguage']) {
                                     // HTML tags (except their order) may only be changed in default language
                                     if (Phrase::areEntitiesMatching(Phrase_Android::getHTMLTags($data_referenceValue), Phrase_Android::getHTMLTags($data_newValue)) || $languageID == $repositoryData['defaultLanguage']) {
-                                        $data_phraseObject->setPhraseValue($data_phraseSubKey, $data_newValue);
-                                        Database::updatePhrase($repositoryID, $languageID, $data_phraseKey, $data_phraseObject->getPayload());
-                                        Database::updateContributor($repositoryID, $data_contributorID);
-                                        Database::deleteEdit($data_editID);
-                                        Authentication::setCachedLanguageProgress($repositoryID, NULL); // unset cached version of this repository's progress
+                                        // CDATA sections (except their order) may only be changed in default language
+                                        if (Phrase::areEntitiesMatching(Phrase_Android::getCdataSections($data_referenceValue), Phrase_Android::getCdataSections($data_newValue)) || $languageID == $repositoryData['defaultLanguage']) {
+                                            $data_phraseObject->setPhraseValue($data_phraseSubKey, $data_newValue);
+                                            Database::updatePhrase($repositoryID, $languageID, $data_phraseKey, $data_phraseObject->getPayload());
+                                            Database::updateContributor($repositoryID, $data_contributorID);
+                                            Database::deleteEdit($data_editID);
+                                            Authentication::setCachedLanguageProgress($repositoryID, NULL); // unset cached version of this repository's progress
+                                        }
+                                        else {
+                                            $alert = new UI_Alert('<p>The CDATA sections must match with those from the reference phrase.</p>', UI_Alert::TYPE_WARNING);
+                                        }
                                     }
                                     else {
                                         $alert = new UI_Alert('<p>The HTML tags must match with those from the reference phrase.</p>', UI_Alert::TYPE_WARNING);

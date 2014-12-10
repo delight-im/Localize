@@ -51,4 +51,12 @@ interface PhraseImplementation {
      */
     public static function getHTMLTags($phraseText);
 
+    /**
+     * Returns an array of CDATA sections that have been found in the given phrase text
+     *
+     * @param string $phraseText
+     * @return array list of CDATA sections
+     */
+    public static function getCdataSections($phraseText);
+
 }
