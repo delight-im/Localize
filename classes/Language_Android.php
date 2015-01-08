@@ -246,6 +246,24 @@ class Language_Android extends Language {
         }
     }
 
+    /**
+     * Returns the ISO 639-1 code (string) for the given language
+     *
+     * @param int $languageID the language ID to get the key for
+     * @return string code for this language
+     * @throws Exception if the given language ID could not be found
+     */
+    public static function getLanguageCodeIso($languageID) {
+        $code = self::getLanguageCode($languageID);
+        $code = substr($code, 0, 2);
+
+        switch ($code) {
+            case 'in': return 'id';
+            case 'ji': return 'yi';
+            default: return $code;
+        }
+    }
+
     public static function getLanguageNameFull($languageID) {
         return parent::getLanguageNameFull($languageID).' — '.self::getLanguageCode($languageID);
     }
@@ -265,7 +283,7 @@ class Language_Android extends Language {
      *
      * @param int $groupID the group ID to get the output for (or Phrase::GROUP_ALL)
      * @param boolean $ignoreIfSameAsDefaultLanguage exclude a phrase if it's the same as the default language
-     * @param Language $defaultLanguageObject the default language object	 
+     * @param Language $defaultLanguageObject the default language object
      * @return OutputContainer the output object containing both data and completeness in percent
      */
     public function outputAndroidXML($groupID, $ignoreIfSameAsDefault, $defaultLanguageObject) {
@@ -291,7 +309,7 @@ class Language_Android extends Language {
      *
      * @param int $groupID the group ID to get the output for (or Phrase::GROUP_ALL)
      * @param boolean $ignoreIfSameAsDefaultLanguage exclude a phrase if it's the same as the default language
-     * @param Language $defaultLanguageObject the default language object	 
+     * @param Language $defaultLanguageObject the default language object
      * @return OutputContainer the output object containing both data and completeness in percent
      */
     public function outputAndroidXMLEscapedHTML($groupID, $ignoreIfSameAsDefault, $defaultLanguageObject) {
@@ -317,7 +335,7 @@ class Language_Android extends Language {
      *
      * @param int $groupID the group ID to get the output for (or Phrase::GROUP_ALL)
      * @param boolean $ignoreIfSameAsDefaultLanguage exclude a phrase if it's the same as the default language
-     * @param Language $defaultLanguageObject the default language object	 
+     * @param Language $defaultLanguageObject the default language object
      * @return OutputContainer the output object containing both data and completeness in percent
      */
     public function outputJSON($groupID, $ignoreIfSameAsDefault, $defaultLanguageObject) {
@@ -327,7 +345,7 @@ class Language_Android extends Language {
         foreach ($this->phrases as $phrase) {
             // if we want all groups or if the phrase is in the selected group
             if ($groupID == Phrase::GROUP_ALL || $phrase->getGroupID() == $groupID) {
-				if (!$ignoreIfSameAsDefault || $phrase->outputJSON($groupID) != $defaultLanguageObject->getPhraseByKey($phrase->getPhraseKey())->outputJSON($groupID)) {			
+				if (!$ignoreIfSameAsDefault || $phrase->outputJSON($groupID) != $defaultLanguageObject->getPhraseByKey($phrase->getPhraseKey())->outputJSON($groupID)) {
 					$container->newPhrase($phrase->isEmpty());
 					$phraseEntries[] = $phrase->outputJSON($groupID);
 				}
@@ -343,7 +361,7 @@ class Language_Android extends Language {
      *
      * @param int $groupID the group ID to get the output for (or Phrase::GROUP_ALL)
      * @param boolean $ignoreIfSameAsDefaultLanguage exclude a phrase if it's the same as the default language
-     * @param Language $defaultLanguageObject the default language object	 
+     * @param Language $defaultLanguageObject the default language object
      * @return OutputContainer the output object containing both data and completeness in percent
      */
     public function outputPlaintext($groupID, $ignoreIfSameAsDefault, $defaultLanguageObject) {

@@ -915,8 +915,8 @@ abstract class UI {
         $text = str_replace('%', '#', $text);
 
         // retrieve the correct language codes for the translation service
-        $startLanguageCode = substr(Language_Android::getLanguageCode($startLanguageId), 0, 2);
-        $targetLanguageCode = substr(Language_Android::getLanguageCode($targetLanguageId), 0, 2);
+        $startLanguageCode = Language_Android::getLanguageCodeIso($startLanguageId);
+        $targetLanguageCode = Language_Android::getLanguageCodeIso($targetLanguageId);
 
         // build the link object
         $link = new UI_Link($label, sprintf(CONFIG_TRANSLATION_SERVICE_URL, $startLanguageCode, $targetLanguageCode, urlencode($text)), UI_Link::TYPE_INFO);
@@ -1311,7 +1311,7 @@ abstract class UI {
                         $selectGroupID->addOption($phraseGroup['name'], $phraseGroup['id']);
                     }
                     $form->addContent($selectGroupID);
-                    
+
                     $selectMinCompletion = new UI_Form_Select('Minimum completion', 'export[minCompletion]', 'You can either export all languages or only those with a given minimum completion.');
                     $selectMinCompletion->addOption('Export all languages', 0);
                     $selectMinCompletion->addOption('5% completion or more', 5);
