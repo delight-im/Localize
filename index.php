@@ -800,11 +800,13 @@ elseif (UI::isPage('phrase')) {
                 $data = UI::getDataPOST('phraseChange');
                 if (isset($data['phraseKey']) && isset($data['action'])) {
                     if ($data['action'] == 'untranslate') {
-                        Database::phraseUntranslate($repositoryID, $data['phraseKey'], $repositoryData['defaultLanguage']);
+                        $phraseKey = isset($data['phraseKey']) && is_string($data['phraseKey']) ? trim($data['phraseKey']) : '';
+                        Database::phraseUntranslate($repositoryID, $phraseKey, $repositoryData['defaultLanguage']);
                         $alert = new UI_Alert('<p>You have successfully removed all translations for this phrase!</p>', UI_Alert::TYPE_SUCCESS);
                     }
                     elseif ($data['action'] == 'delete') {
-                        Database::phraseDelete($repositoryID, $data['phraseKey']);
+                        $phraseKey = isset($data['phraseKey']) && is_string($data['phraseKey']) ? trim($data['phraseKey']) : '';
+                        Database::phraseDelete($repositoryID, $phraseKey);
                         $alert = new UI_Alert('<p>You have successfully deleted the phrase from the project completely!</p>', UI_Alert::TYPE_SUCCESS);
                     }
                 }
