@@ -35,3 +35,7 @@ RewriteRule ^settings/action/([a-zA-Z0-9_-]+)$ index.php?p=settings&action=$1
 
 # Internal redirects
 RewriteRule ^v/([a-zA-Z0-9_-]+)$ /projects/$1 [L,R=301]
+
+# Block access to PHP easter eggs
+RewriteCond %{QUERY_STRING} \=PHP[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12} [NC]
+RewriteRule .* - [F]
