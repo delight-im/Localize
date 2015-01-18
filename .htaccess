@@ -40,5 +40,5 @@ RewriteRule ^v/([a-zA-Z0-9_-]+)$ /projects/$1 [L,R=301]
 RewriteCond %{QUERY_STRING} \=PHP[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12} [NC]
 RewriteRule .* - [F]
 
-# Block access to README file
-RewriteRule ^README\.md$ - [F]
+# Block access to Markdown files in root directory
+RewriteRule ^[A-Z0-9_]+\.md$ - [F]
