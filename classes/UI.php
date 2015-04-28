@@ -773,7 +773,7 @@ abstract class UI {
 
                         $table->addRow(array('<strong>'.Language::getLanguageNameFull($repositoryData['defaultLanguage']).'</strong>'.$fullyQualifiedNameHTML, '<span dir="'.(Language::isLanguageRTL($repositoryData['defaultLanguage']) ? 'rtl' : 'ltr').'">'.nl2br($phraseWithMarkedEntities).'</span>'));
                         $table->addRow(array('<strong>Old value</strong>'.$fullyQualifiedNameHTML, '<span dir="'.(Language::isLanguageRTL($languageID) ? 'rtl' : 'ltr').'">'.nl2br($originalWithMarkedEntities).'</span>'));
-                        $table->addRow(array('<strong>Applied changes</strong>', '<span dir="'.(Language::isLanguageRTL($languageID) ? 'rtl' : 'ltr').'">'.nl2br(htmlDiff(htmlspecialchars($valuePrevious), htmlspecialchars($editData[0]['suggestedValue']))).'</span>'));
+                        $table->addRow(array('<strong>Applied changes</strong>', '<div dir="'.(Language::isLanguageRTL($languageID) ? 'rtl' : 'ltr').'">'.nl2br(htmlDiff(htmlspecialchars($valuePrevious), htmlspecialchars($editData[0]['suggestedValue']))).'</div>'));
                         $table->addRow(array('<strong>New value</strong>'.$fullyQualifiedNameHTML.'<br />'.$translateBackLink->getHTML(), $newValueHTML));
                         $table->addRow(array('<strong>Submit time</strong>', date('d.m.Y H:i', $editData[0]['submit_time'])));
                         if ($isAllowedToReview) {
