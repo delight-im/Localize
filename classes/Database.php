@@ -506,4 +506,8 @@ class Database {
         return $actionCount <= $actionCountMax;
     }
 
+    public static function getContributors($repositoryID) {
+        return self::select("SELECT b.username, b.real_name, IF(b.email_lastVerificationAttempt = 0, b.email, '') AS email, a.editCount FROM contributions AS a JOIN users AS b ON a.userID = b.id WHERE a.repositoryID = ".intval($repositoryID)." ORDER BY a.editCount DESC LIMIT 0, 100");
+    }
+
 }

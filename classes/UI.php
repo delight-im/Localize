@@ -500,6 +500,15 @@ abstract class UI {
             $formAdd->addContent(new UI_Form_Button('Run now', UI_Link::TYPE_SUCCESS, UI_Form_Button::ACTION_SUBMIT, 'cleanLanguages[run]', 1));
 
             $contents[] = $formAdd;
+
+            $contents[] = new UI_Heading('Contributors', false, 3, null, 'contributors');
+            $contributors = Database::getContributors($repositoryID);
+            $contributorsList = new UI_List();
+            $contributorsList->setOrdered(true);
+            foreach ($contributors as $contributor) {
+                $contributorsList->addItem(self::getUserNameTag($contributor['username'], $contributor['real_name'], $contributor['email']).' &mdash; '.$contributor['editCount'].'&times;');
+            }
+            $contents[] = $contributorsList;
         }
 
         $cell = new UI_Cell($contents);
@@ -714,7 +723,7 @@ abstract class UI {
                         $form = new UI_Form(htmlspecialchars($currentPageURL), false);
                         $table = new UI_Table(array('', ''));
                         $table->setColumnPriorities(3, 9);
-                        $contributorName = empty($editData[0]['real_name']) ? '<span class="text-muted">'.htmlspecialchars($editData[0]['username']).'</span>' : htmlspecialchars($editData[0]['real_name']).' <span class="text-muted">('.htmlspecialchars($editData[0]['username']).')</span>';
+                        $contributorName = self::getUserNameTag($editData[0]['username'], $editData[0]['real_name']);
 
                         $buttonApprove = new UI_Form_Button('Approve', UI_Link::TYPE_SUCCESS, UI_Form_Button::ACTION_SUBMIT, 'review[action]', 'approve');
                         $buttonReviewLater = new UI_Form_Button('Review later', UI_Link::TYPE_UNIMPORTANT, UI_Form_Button::ACTION_SUBMIT, 'review[action]', 'reviewLater');
@@ -999,6 +1008,7 @@ abstract class UI {
                     $emailHelpText = 'You cannot change your email address again, yet. Please visit this page later.';
                 }
             }
+            $emailHelpText .= '<br />When you make contributions to other projects, the owners of those projects will be able to see your email address. This allows the project owners to contact you, e.g. to check back on certain issues or to ask if they may give public credit to you.';
             $textEmail = new UI_Form_Text('Email address', 'settings[email]', 'Enter your email address here', false, $emailVerificationStatus.$emailHelpText);
             $textEmail->setReadOnly($emailReadonly);
             $textEmail->setDefaultValue(Authentication::getUserEmail());
@@ -1457,6 +1467,7 @@ abstract class UI {
                         $actionButtons[] = new UI_Link('Import XML', URL::toImport($repositoryID), UI_Link::TYPE_UNIMPORTANT);
                         if (Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_ADMINISTRATOR)) {
                             $actionButtons[] = new UI_Link('Edit project', URL::toEditProject($repositoryID), UI_Link::TYPE_UNIMPORTANT);
+                            $actionButtons[] = new UI_Link('Contributors', URL::toEditProject($repositoryID) . '#contributors', UI_Link::TYPE_UNIMPORTANT);
                         }
                         $actionButtons[] = new UI_Link('Add phrase', URL::toAddPhrase($repositoryID, $defaultLanguage->getID()), UI_Link::TYPE_UNIMPORTANT);
                         $actionButtons[] = new UI_Link('Watch', URL::toWatchProject($repositoryID), UI_Link::TYPE_INFO);
@@ -1729,6 +1740,23 @@ abstract class UI {
         return isset($_SERVER['REMOTE_ADDR']) ? trim($_SERVER['REMOTE_ADDR']) : '0.0.0.0';
     }
 
-}
+    public static function getUserNameTag($username, $realName = null, $emailAddress = null) {
+        $openingTag = '<span class="text-muted">';
+        $closingTag = '</span>';
 
-?>
+        if (empty($realName)) {
+            $nameTag = $openingTag . htmlspecialchars($username) . $closingTag;
+        }
+        else {
+            $nameTag = htmlspecialchars($realName) . ' ' . $openingTag . '(' . htmlspecialchars($username) . ')' . $closingTag;
+        }
+
+        if (empty($emailAddress)) {
+            return $nameTag;
+        }
+        else {
+            return '<a href="mailto:' . urlencode($emailAddress) . '">' . $nameTag . '</a>';
+        }
+    }
+
+}
