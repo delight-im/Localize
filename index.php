@@ -190,7 +190,7 @@ elseif (UI::isPage('language')) {
                             foreach ($phraseSubKeys as $phraseSubKey => $phraseSuggestedValue) {
                                 $previousValue = isset($data['previous'][$phraseID][$phraseSubKey]) && is_string($data['previous'][$phraseID][$phraseSubKey]) ? trim($data['previous'][$phraseID][$phraseSubKey]) : '';
                                 $phraseSuggestedValue = isset($phraseSuggestedValue) && is_string($phraseSuggestedValue) ? trim($phraseSuggestedValue) : '';
-                                if ($phraseSuggestedValue != '' && $phraseSuggestedValue != $previousValue) {
+                                if ($phraseSuggestedValue !== $previousValue) {
                                     $editData[] = new Edit(URL::decodeID($phraseID), $phraseSubKey, $phraseSuggestedValue);
                                     $counter++;
                                 }
@@ -203,7 +203,7 @@ elseif (UI::isPage('language')) {
                             Repository::sendNotificationToWatchers($repositoryID, Repository::WATCH_EVENT_NEW_TRANSLATIONS, $repositoryData['name']);
                         }
                         else {
-                            $alert = new UI_Alert('<p>You did change any phrase. Please try again!</p>', UI_Alert::TYPE_WARNING);
+                            $alert = new UI_Alert('<p>You didn\'t change any phrase. Please try again!</p>', UI_Alert::TYPE_WARNING);
                         }
                     }
                     else {
