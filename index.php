@@ -125,7 +125,7 @@ elseif (UI::isPage('settings')) {
     }
     else {
         $verificationToken = UI::getDataGET('verify');
-        if (!empty($verificationToken)) {
+        if (!empty($verificationToken) && is_string($verificationToken)) {
             $verificationUser = Database::getVerificationUser($verificationToken);
             if (isset($verificationUser['userID'])) {
                 $userObject = Authentication::getUser();
@@ -552,7 +552,7 @@ elseif (UI::isPage('add_phrase')) {
                                 $phraseValuesCandidates = $data['string_array'];
                                 $phraseValuesComplete = true;
                                 foreach ($phraseValuesCandidates as $phraseValuesCandidate) {
-                                    $phraseValuesCandidate = trim($phraseValuesCandidate);
+                                    $phraseValuesCandidate = is_string($phraseValuesCandidate) ? trim($phraseValuesCandidate) : '';
                                     if (!empty($phraseValuesCandidate)) {
                                         $phraseValues[] = $phraseValuesCandidate;
                                     }
@@ -583,7 +583,7 @@ elseif (UI::isPage('add_phrase')) {
                                 $phraseValuesCandidates = $data['plurals'];
                                 $phraseValuesComplete = true;
                                 foreach ($phraseValuesCandidates as $phraseValuesKey => $phraseValuesCandidate) {
-                                    $phraseValuesCandidate = trim($phraseValuesCandidate);
+                                    $phraseValuesCandidate = is_string($phraseValuesCandidate) ? trim($phraseValuesCandidate) : '';
                                     if (!empty($phraseValuesCandidate)) {
                                         $phraseValues[$phraseValuesKey] = $phraseValuesCandidate;
                                     }
