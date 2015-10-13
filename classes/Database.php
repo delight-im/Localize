@@ -458,7 +458,9 @@ class Database {
             }
         }
 
-        self::delete("DELETE FROM phrases WHERE id IN (".implode(',', $phraseIDsToDelete).")");
+        if (count($phraseIDsToDelete) > 0) {
+            self::delete("DELETE FROM phrases WHERE id IN (".implode(',', $phraseIDsToDelete).")");
+        }
     }
 
     /**
