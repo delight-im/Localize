@@ -232,83 +232,93 @@ elseif (UI::isPage('language')) {
 elseif (UI::isPage('review')) {
     $alert = NULL;
     if (UI::isAction('review')) {
-        $languageID = UI::validateID(UI::getDataGET('language'), true);
-        $repositoryID = UI::validateID(UI::getDataGET('project'), true);
-        $repositoryData = Database::getRepositoryData($repositoryID);
-        if (!empty($repositoryData)) {
-            $isAllowed = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_MODERATOR);
-            if ($isAllowed) {
-                $data = UI::getDataPOST('review');
-                $data_action = isset($data['action']) && is_string($data['action']) ? trim($data['action']) : '';
-                $data_editID = isset($data['editID']) ? UI::validateID($data['editID'], true) : '';
-                $data_phraseObject = isset($data['phraseObject']) ? @unserialize(base64_decode($data['phraseObject'])) : NULL;
-                $data_phraseKey = isset($data['phraseKey']) && is_string($data['phraseKey']) ? trim($data['phraseKey']) : '';
-                $data_phraseSubKey = isset($data['phraseSubKey']) && is_string($data['phraseSubKey']) ? trim($data['phraseSubKey']) : '';
-                $data_contributorID = isset($data['contributorID']) ? UI::validateID($data['contributorID'], true) : '';
-                $data_newValue = isset($data['newValue']) && is_string($data['newValue']) ? $data['newValue'] : '';
-                $data_referenceValue = isset($data['referenceValue']) && is_string($data['referenceValue']) ? $data['referenceValue'] : '';
-                if (!empty($data_phraseObject)) {
-                    switch ($data_action) {
-                        case 'approve':
-                            // placeholders (except their order) may only be changed in default language
-                            if (Phrase::areEntitiesMatching(Phrase_Android::getPlaceholders($data_referenceValue), Phrase_Android::getPlaceholders($data_newValue)) || $languageID == $repositoryData['defaultLanguage']) {
-                                // leading or trailing whitespace (except the order) may only be changed in default language
-                                if (Phrase::areEntitiesMatching(Phrase_Android::getOuterWhitespace($data_referenceValue), Phrase_Android::getOuterWhitespace($data_newValue)) || $languageID == $repositoryData['defaultLanguage']) {
-                                    // HTML tags (except their order) may only be changed in default language
-                                    if (Phrase::areEntitiesMatching(Phrase_Android::getHTMLTags($data_referenceValue), Phrase_Android::getHTMLTags($data_newValue)) || $languageID == $repositoryData['defaultLanguage']) {
-                                        // CDATA sections (except their order) may only be changed in default language
-                                        if (Phrase::areEntitiesMatching(Phrase_Android::getCdataSections($data_referenceValue), Phrase_Android::getCdataSections($data_newValue)) || $languageID == $repositoryData['defaultLanguage']) {
-                                            $data_phraseObject->setPhraseValue($data_phraseSubKey, $data_newValue);
-                                            Database::updatePhrase($repositoryID, $languageID, $data_phraseKey, $data_phraseObject->getPayload());
-                                            Database::updateContributor($repositoryID, $data_contributorID);
-                                            Database::deleteEdit($data_editID);
-                                            Authentication::setCachedLanguageProgress($repositoryID, NULL); // unset cached version of this repository's progress
+        if (UI_Form::isCSRFTokenValid($_POST)) {
+            $languageID = UI::validateID(UI::getDataGET('language'), true);
+            $repositoryID = UI::validateID(UI::getDataGET('project'), true);
+            $repositoryData = Database::getRepositoryData($repositoryID);
+            if (!empty($repositoryData)) {
+                $isAllowed = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_MODERATOR);
+                if ($isAllowed) {
+                    $data = UI::getDataPOST('review');
+                    $data_action = isset($data['action']) && is_string($data['action']) ? trim($data['action']) : '';
+                    $data_editID = isset($data['editID']) ? UI::validateID($data['editID'], true) : '';
+                    $data_phraseObject = isset($data['phraseObject']) ? @unserialize(base64_decode($data['phraseObject'])) : NULL;
+                    $data_phraseKey = isset($data['phraseKey']) && is_string($data['phraseKey']) ? trim($data['phraseKey']) : '';
+                    $data_phraseSubKey = isset($data['phraseSubKey']) && is_string($data['phraseSubKey']) ? trim($data['phraseSubKey']) : '';
+                    $data_contributorID = isset($data['contributorID']) ? UI::validateID($data['contributorID'], true) : '';
+                    $data_newValue = isset($data['newValue']) && is_string($data['newValue']) ? $data['newValue'] : '';
+                    $data_referenceValue = isset($data['referenceValue']) && is_string($data['referenceValue']) ? $data['referenceValue'] : '';
+                    if (!empty($data_phraseObject)) {
+                        switch ($data_action) {
+                            case 'approve':
+                                // placeholders (except their order) may only be changed in default language
+                                if (Phrase::areEntitiesMatching(Phrase_Android::getPlaceholders($data_referenceValue), Phrase_Android::getPlaceholders($data_newValue)) || $languageID == $repositoryData['defaultLanguage']) {
+                                    // leading or trailing whitespace (except the order) may only be changed in default language
+                                    if (Phrase::areEntitiesMatching(Phrase_Android::getOuterWhitespace($data_referenceValue), Phrase_Android::getOuterWhitespace($data_newValue)) || $languageID == $repositoryData['defaultLanguage']) {
+                                        // HTML tags (except their order) may only be changed in default language
+                                        if (Phrase::areEntitiesMatching(Phrase_Android::getHTMLTags($data_referenceValue), Phrase_Android::getHTMLTags($data_newValue)) || $languageID == $repositoryData['defaultLanguage']) {
+                                            // CDATA sections (except their order) may only be changed in default language
+                                            if (Phrase::areEntitiesMatching(Phrase_Android::getCdataSections($data_referenceValue), Phrase_Android::getCdataSections($data_newValue)) || $languageID == $repositoryData['defaultLanguage']) {
+                                                $data_phraseObject->setPhraseValue($data_phraseSubKey, $data_newValue);
+                                                Database::updatePhrase($repositoryID, $languageID, $data_phraseKey, $data_phraseObject->getPayload());
+                                                Database::updateContributor($repositoryID, $data_contributorID);
+                                                Database::deleteEdit($data_editID);
+                                                Authentication::setCachedLanguageProgress($repositoryID, NULL); // unset cached version of this repository's progress
+                                            }
+                                            else {
+                                                $alert = new UI_Alert('<p>The CDATA sections must match with those from the reference phrase.</p>', UI_Alert::TYPE_WARNING);
+                                            }
                                         }
                                         else {
-                                            $alert = new UI_Alert('<p>The CDATA sections must match with those from the reference phrase.</p>', UI_Alert::TYPE_WARNING);
+                                            $alert = new UI_Alert('<p>The HTML tags must match with those from the reference phrase.</p>', UI_Alert::TYPE_WARNING);
                                         }
                                     }
                                     else {
-                                        $alert = new UI_Alert('<p>The HTML tags must match with those from the reference phrase.</p>', UI_Alert::TYPE_WARNING);
+                                        $alert = new UI_Alert('<p>Any leading or trailing whitespace must match with that from the reference phrase.</p>', UI_Alert::TYPE_WARNING);
                                     }
                                 }
                                 else {
-                                    $alert = new UI_Alert('<p>Any leading or trailing whitespace must match with that from the reference phrase.</p>', UI_Alert::TYPE_WARNING);
+                                    $alert = new UI_Alert('<p>The placeholders must match with those from the reference phrase.</p>', UI_Alert::TYPE_WARNING);
                                 }
-                            }
-                            else {
-                                $alert = new UI_Alert('<p>The placeholders must match with those from the reference phrase.</p>', UI_Alert::TYPE_WARNING);
-                            }
-                            break;
-                        case 'reviewLater':
-                            Database::postponeEdit($data_editID);
-                            break;
-                        case 'reject':
-                            Database::deleteEdit($data_editID);
-                            break;
-						case 'approveAllFromThisContributor':
-							Database::approveEditsByContributor($repositoryID, $languageID, $data_contributorID);
-							break;
-                        case 'rejectAllFromThisContributor':
-                            Database::deleteEditsByContributor($data_contributorID);
-                            break;
+                                break;
+                            case 'reviewLater':
+                                Database::postponeEdit($data_editID);
+                                break;
+                            case 'reject':
+                                Database::deleteEdit($data_editID);
+                                break;
+                            case 'approveAllFromThisContributor':
+                                Database::approveEditsByContributor($repositoryID, $languageID, $data_contributorID);
+                                break;
+                            case 'rejectAllFromThisContributor':
+                                Database::deleteEditsByContributor($data_contributorID);
+                                break;
+                        }
                     }
+                }
+                else {
+                    $alert = new UI_Alert('<p>You are not allowed to review contributions for this project.</p>', UI_Alert::TYPE_WARNING);
                 }
             }
             else {
-                $alert = new UI_Alert('<p>You are not allowed to review contributions for this project.</p>', UI_Alert::TYPE_WARNING);
+                $alert = new UI_Alert('<p>The project could not be found.</p>', UI_Alert::TYPE_WARNING);
             }
         }
         else {
-            $alert = new UI_Alert('<p>The project could not be found.</p>', UI_Alert::TYPE_WARNING);
+            $alert = new UI_Alert('<p>Oops, that didn\'t work! Please try again!</p>', UI_Alert::TYPE_WARNING);
         }
     }
     elseif (UI::isAction('discussion')) {
-        $data = UI::getDataPOST('discussion');
-        $data_editID = isset($data['editID']) ? UI::validateID($data['editID'], true) : '';
-        $data_message = isset($data['message']) && is_string($data['message']) ? trim($data['message']) : '';
-        Database::saveDiscussionEntry($data_editID, Authentication::getUserID(), time(), $data_message);
-        $alert = new UI_Alert('<p>Your message has been saved to the discussion on this page.</p>', UI_Alert::TYPE_SUCCESS);
+        if (UI_Form::isCSRFTokenValid($_POST)) {
+            $data = UI::getDataPOST('discussion');
+            $data_editID = isset($data['editID']) ? UI::validateID($data['editID'], true) : '';
+            $data_message = isset($data['message']) && is_string($data['message']) ? trim($data['message']) : '';
+            Database::saveDiscussionEntry($data_editID, Authentication::getUserID(), time(), $data_message);
+            $alert = new UI_Alert('<p>Your message has been saved to the discussion on this page.</p>', UI_Alert::TYPE_SUCCESS);
+        }
+        else {
+            $alert = new UI_Alert('<p>Oops, that didn\'t work! Please try again!</p>', UI_Alert::TYPE_WARNING);
+        }
     }
     if (empty($alert)) {
         echo UI::getPage(UI::PAGE_REVIEW);
@@ -792,31 +802,36 @@ elseif (UI::isPage('create_project') && Authentication::isSignedIn()) {
 elseif (UI::isPage('phrase')) {
     $alert = NULL;
     if (UI::isAction('phraseChange')) {
-        $repositoryID = UI::validateID(UI::getDataGET('project'), true);
-        $repositoryData = Database::getRepositoryData($repositoryID);
-        if (!empty($repositoryData)) {
-            $isAllowed = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_DEVELOPER);
-            if ($isAllowed) {
-                $data = UI::getDataPOST('phraseChange');
-                if (isset($data['phraseKey']) && isset($data['action'])) {
-                    if ($data['action'] == 'untranslate') {
-                        $phraseKey = isset($data['phraseKey']) && is_string($data['phraseKey']) ? trim($data['phraseKey']) : '';
-                        Database::phraseUntranslate($repositoryID, $phraseKey, $repositoryData['defaultLanguage']);
-                        $alert = new UI_Alert('<p>You have successfully removed all translations for this phrase!</p>', UI_Alert::TYPE_SUCCESS);
+        if (UI_Form::isCSRFTokenValid($_POST)) {
+            $repositoryID = UI::validateID(UI::getDataGET('project'), true);
+            $repositoryData = Database::getRepositoryData($repositoryID);
+            if (!empty($repositoryData)) {
+                $isAllowed = Repository::hasUserPermissions(Authentication::getUserID(), $repositoryID, $repositoryData, Repository::ROLE_DEVELOPER);
+                if ($isAllowed) {
+                    $data = UI::getDataPOST('phraseChange');
+                    if (isset($data['phraseKey']) && isset($data['action'])) {
+                        if ($data['action'] == 'untranslate') {
+                            $phraseKey = isset($data['phraseKey']) && is_string($data['phraseKey']) ? trim($data['phraseKey']) : '';
+                            Database::phraseUntranslate($repositoryID, $phraseKey, $repositoryData['defaultLanguage']);
+                            $alert = new UI_Alert('<p>You have successfully removed all translations for this phrase!</p>', UI_Alert::TYPE_SUCCESS);
+                        }
+                        elseif ($data['action'] == 'delete') {
+                            $phraseKey = isset($data['phraseKey']) && is_string($data['phraseKey']) ? trim($data['phraseKey']) : '';
+                            Database::phraseDelete($repositoryID, $phraseKey);
+                            $alert = new UI_Alert('<p>You have successfully deleted the phrase from the project completely!</p>', UI_Alert::TYPE_SUCCESS);
+                        }
                     }
-                    elseif ($data['action'] == 'delete') {
-                        $phraseKey = isset($data['phraseKey']) && is_string($data['phraseKey']) ? trim($data['phraseKey']) : '';
-                        Database::phraseDelete($repositoryID, $phraseKey);
-                        $alert = new UI_Alert('<p>You have successfully deleted the phrase from the project completely!</p>', UI_Alert::TYPE_SUCCESS);
-                    }
+                }
+                else {
+                    $alert = new UI_Alert('<p>You are not allowed to edit phrases for this project.</p>', UI_Alert::TYPE_WARNING);
                 }
             }
             else {
-                $alert = new UI_Alert('<p>You are not allowed to edit phrases for this project.</p>', UI_Alert::TYPE_WARNING);
+                $alert = new UI_Alert('<p>The project could not be found.</p>', UI_Alert::TYPE_WARNING);
             }
         }
         else {
-            $alert = new UI_Alert('<p>The project could not be found.</p>', UI_Alert::TYPE_WARNING);
+            $alert = new UI_Alert('<p>Oops, that didn\'t work! Please try again!</p>', UI_Alert::TYPE_WARNING);
         }
     }
     elseif (UI::isAction('phraseMove')) {
