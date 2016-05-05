@@ -32,7 +32,7 @@ class Time {
         self::$countries['BJ'] = 'Benin';
         self::$countries['BM'] = 'Bermuda';
         self::$countries['BT'] = 'Bhutan';
-        self::$countries['BO'] = 'Bolivia, Plurinational State of';
+        self::$countries['BO'] = 'Bolivia';
         self::$countries['BQ'] = 'Bonaire, Sint Eustatius and Saba';
         self::$countries['BA'] = 'Bosnia and Herzegovina';
         self::$countries['BW'] = 'Botswana';
@@ -110,7 +110,7 @@ class Time {
         self::$countries['IS'] = 'Iceland';
         self::$countries['IN'] = 'India';
         self::$countries['ID'] = 'Indonesia';
-        self::$countries['IR'] = 'Iran, Islamic Republic of';
+        self::$countries['IR'] = 'Iran';
         self::$countries['IQ'] = 'Iraq';
         self::$countries['IE'] = 'Ireland';
         self::$countries['IM'] = 'Isle of Man';
@@ -137,7 +137,7 @@ class Time {
         self::$countries['LT'] = 'Lithuania';
         self::$countries['LU'] = 'Luxembourg';
         self::$countries['MO'] = 'Macao';
-        self::$countries['MK'] = 'Macedonia, the former Yugoslav Republic of';
+        self::$countries['MK'] = 'Macedonia';
         self::$countries['MG'] = 'Madagascar';
         self::$countries['MW'] = 'Malawi';
         self::$countries['MY'] = 'Malaysia';
@@ -150,8 +150,8 @@ class Time {
         self::$countries['MU'] = 'Mauritius';
         self::$countries['YT'] = 'Mayotte';
         self::$countries['MX'] = 'Mexico';
-        self::$countries['FM'] = 'Micronesia, Federated States of';
-        self::$countries['MD'] = 'Moldova, Republic of';
+        self::$countries['FM'] = 'Micronesia';
+        self::$countries['MD'] = 'Moldova';
         self::$countries['MC'] = 'Monaco';
         self::$countries['MN'] = 'Mongolia';
         self::$countries['ME'] = 'Montenegro';
@@ -175,7 +175,7 @@ class Time {
         self::$countries['OM'] = 'Oman';
         self::$countries['PK'] = 'Pakistan';
         self::$countries['PW'] = 'Palau';
-        self::$countries['PS'] = 'Palestine, State of';
+        self::$countries['PS'] = 'Palestine';
         self::$countries['PA'] = 'Panama';
         self::$countries['PG'] = 'Papua New Guinea';
         self::$countries['PY'] = 'Paraguay';
@@ -194,7 +194,7 @@ class Time {
         self::$countries['SH'] = 'Saint Helena, Ascension and Tristan da Cunha';
         self::$countries['KN'] = 'Saint Kitts and Nevis';
         self::$countries['LC'] = 'Saint Lucia';
-        self::$countries['MF'] = 'Saint Martin (French part)';
+        self::$countries['MF'] = 'Saint Martin';
         self::$countries['PM'] = 'Saint Pierre and Miquelon';
         self::$countries['VC'] = 'Saint Vincent and the Grenadines';
         self::$countries['WS'] = 'Samoa';
@@ -206,7 +206,7 @@ class Time {
         self::$countries['SC'] = 'Seychelles';
         self::$countries['SL'] = 'Sierra Leone';
         self::$countries['SG'] = 'Singapore';
-        self::$countries['SX'] = 'Sint Maarten (Dutch part)';
+        self::$countries['SX'] = 'Sint Maarten';
         self::$countries['SK'] = 'Slovakia';
         self::$countries['SI'] = 'Slovenia';
         self::$countries['SB'] = 'Solomon Islands';
@@ -223,9 +223,9 @@ class Time {
         self::$countries['SE'] = 'Sweden';
         self::$countries['CH'] = 'Switzerland';
         self::$countries['SY'] = 'Syrian Arab Republic';
-        self::$countries['TW'] = 'Taiwan, Province of China';
+        self::$countries['TW'] = 'Taiwan';
         self::$countries['TJ'] = 'Tajikistan';
-        self::$countries['TZ'] = 'Tanzania, United Republic of';
+        self::$countries['TZ'] = 'Tanzania';
         self::$countries['TH'] = 'Thailand';
         self::$countries['TL'] = 'Timor-Leste';
         self::$countries['TG'] = 'Togo';
@@ -246,7 +246,7 @@ class Time {
         self::$countries['UY'] = 'Uruguay';
         self::$countries['UZ'] = 'Uzbekistan';
         self::$countries['VU'] = 'Vanuatu';
-        self::$countries['VE'] = 'Venezuela, Bolivarian Republic of';
+        self::$countries['VE'] = 'Venezuela';
         self::$countries['VN'] = 'Viet Nam';
         self::$countries['VG'] = 'Virgin Islands, British';
         self::$countries['VI'] = 'Virgin Islands, U.S.';
