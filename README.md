@@ -11,9 +11,18 @@ Invite staff members to collaborate with assigned roles, let users contribute an
 
 **Live website:** [www.localize.im](https://www.localize.im/)
 
-## Configuration
+## Requirements
 
-All configuration is done in `config.php` in the root directory.
+ * Apache HTTP Server 2.2.0+
+ * PHP 5.3.0+
+   * `mbstring` extension
+ * MySQL 5.5.3+ **or** MariaDB 5.5.23+
+
+## Installation
+
+ 1. Create a new MySQL or MariaDB database
+ 1. Import the tables from [`database/structure.sql`](database/structure.sql) into the database
+ 1. Rename `config.example.php` to `config.php` and fill in proper values
 
 ## Contributing
 
